@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#000000">
     <title>Studio Visite Pro 360°</title>
+    <!-- Import de Three.js pour une vraie projection sphérique 3D fluide -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         :root{ --black:#000; --bg:#070707; --panel:#101010; --line:#292929; --text:#f5f5f5; --muted:#929292; --green:#38dc7c; --yellow:#ffc14a; --red:#ff3045; }
         *{box-sizing:border-box}
@@ -91,10 +93,16 @@
         .permission-card{width:min(520px,100%)}.permission-card .big-icon{font-size:44px;margin-bottom:12px}.permission-card h1{font-size:26px;margin:0 0 9px}.permission-card p{margin:0 auto;max-width:480px;color:#8f8f8f;line-height:1.55}
         
         .viewer{position:absolute;inset:0;background:#000;z-index:20}
-        .viewer canvas{display:block;width:100%;height:100%}
+        #viewerContainer{width:100%;height:100%;position:absolute;inset:0}
         .viewer-ui{position:absolute;left:18px;top:max(16px,env(safe-area-inset-top));z-index:4;pointer-events:none}
         .viewer-ui h2{margin:0;font-size:16px}.viewer-ui p{margin:5px 0;color:#999;font-size:11px}
         .viewer-close{position:absolute;right:18px;top:max(16px,env(safe-area-inset-top));z-index:4;border:1px solid #303030;background:#101010dd;color:#fff;border-radius:8px;padding:8px 10px;pointer-events:auto}
+
+        /* Adaptation Responsive Mobile Pления */
+        @media(max-width: 768px){
+            .workspace{grid-template-columns:1fr; grid-template-rows:240px 1fr;}
+            .sidebar{border-right:none; border-bottom:1px solid var(--line);}
+        }
     </style>
 </head>
 <body>
@@ -171,7 +179,7 @@
                 </div>
                 
                 <div class="viewer hidden" id="viewer">
-                    <canvas id="viewerCanvas"></canvas>
+                    <div id="viewerContainer"></div>
                     <div class="viewer-ui">
                         <h2>Panorama 360° Sphérique</h2>
                         <p>Glissez pour explorer la pièce à 360°</p>
@@ -186,7 +194,7 @@
 <script>
 "use strict";
 
-const TOTAL_PHOTOS = 16, YAW_TOLERANCE = 9, PITCH_TOLERANCE = 10, PANO_WIDTH = 3000, PANO_HEIGHT = 1500;
+const TOTAL_PHOTOS = 16, YAW_TOLERANCE = 9, PITCH_TOLERANCE = 10, PANO_WIDTH = 4000, PANO_HEIGHT = 2000;
 const state = {mode: "2d", running: false, stream: null, sensorListening: false, yaw: null, pitch: null, startYaw: null, step: 0, targets: [], photos: [], pano: null, viewer: null, projectName: "Visite immersive", scenes: [], captureBusy: false, stableSince: 0, lastAutoCapture: 0};
 
 const $ = s => document.querySelector(s);
@@ -467,14 +475,14 @@ function createPanoramaCanvas(){
     const c = document.createElement("canvas");
     c.width = PANO_WIDTH; c.height = PANO_HEIGHT;
     const ctx = c.getContext("2d");
-    ctx.fillStyle = "#000000";
+    ctx.fillStyle = "#111111";
     ctx.fillRect(0, 0, c.width, c.height);
     return { canvas: c, ctx };
 }
 
 function stitchPhotoIntoPanorama(src, photo){
     if(!state.pano) state.pano = createPanoramaCanvas();
-    const ctx = state.pano.ctx, sw = src.width, sh = src.height;
+    const ctx = state.pano.ctx;
     const relYaw = signedAngle(photo.yaw, state.startYaw);
     const centerX = ((relYaw + 360) % 360) / 360 * PANO_WIDTH;
     const centerY = PANO_HEIGHT / 2 - (photo.pitch / 90) * (PANO_HEIGHT / 2);
@@ -487,6 +495,7 @@ function stitchPhotoIntoPanorama(src, photo){
     const tc = tile.getContext("2d");
     tc.drawImage(src, 0, 0, tileW, tileH);
     
+    // Vignettage doux pour éviter les carrés visibles
     const im = tc.getImageData(0, 0, tileW, tileH), d = im.data;
     const cx = tileW / 2, cy = tileH / 2, maxR = Math.hypot(cx, cy);
     for(let y = 0; y < tileH; y++){
@@ -494,13 +503,13 @@ function stitchPhotoIntoPanorama(src, photo){
             const dist = Math.hypot(x - cx, y - cy);
             const alpha = clamp(1 - (dist / maxR), 0, 1);
             const idx = (y * tileW + x) * 4 + 3;
-            d[idx] = Math.round(d[idx] * (alpha * alpha * 0.7 + 0.3));
+            d[idx] = Math.round(d[idx] * (alpha * alpha * 0.8 + 0.2));
         }
     }
     tc.putImageData(im, 0, 0);
     
     ctx.save();
-    ctx.globalCompositeOperation = "screen";
+    ctx.globalCompositeOperation = "source-over";
     drawWrapped(ctx, tile, centerX - tileW / 2, centerY - tileH / 2);
     ctx.restore();
 }
@@ -537,7 +546,7 @@ function openScene(i){
         $("#captureScreen").classList.add("hidden");
         $("#viewer").classList.remove("hidden");
         if(state.viewer) state.viewer.destroy();
-        state.viewer = new PanoViewer($("#viewerCanvas"), img);
+        state.viewer = new ThreePanoViewer($("#viewerContainer"), img);
     };
     img.src = s.panoDataUrl;
 }
@@ -546,7 +555,7 @@ function openViewerWithCanvas(source){
     $("#captureScreen").classList.add("hidden");
     $("#viewer").classList.remove("hidden");
     if(state.viewer) state.viewer.destroy();
-    state.viewer = new PanoViewer($("#viewerCanvas"), source);
+    state.viewer = new ThreePanoViewer($("#viewerContainer"), source);
 }
 
 function closeViewer(){
@@ -566,54 +575,123 @@ async function restart360(){
     renderMinimap();
 }
 
-class PanoViewer{
-    constructor(canvas, source){
-        this.canvas = canvas; this.ctx = canvas.getContext("2d"); this.source = source;
-        this.lon = 0; this.lat = 0; this.fov = 75; this.dragging = false;
-        this.resize = this.resize.bind(this);
-        this.render = this.render.bind(this);
-        this.down = this.down.bind(this);
-        this.move = this.move.bind(this);
-        this.up = this.up.bind(this);
-        
-        window.addEventListener("resize", this.resize);
-        canvas.addEventListener("pointerdown", this.down);
-        window.addEventListener("pointermove", this.move);
-        window.addEventListener("pointerup", this.up);
-        
-        this.resize();
-        this.raf = requestAnimationFrame(this.render);
+// Visionneuse 3D Sphérique réelle avec Three.js
+class ThreePanoViewer {
+    constructor(container, imageSource) {
+        this.container = container;
+        this.isUserInteracting = false;
+        this.onPointerDownPointerX = 0;
+        this.onPointerDownPointerY = 0;
+        this.lon = 0;
+        this.onPointerDownLon = 0;
+        this.lat = 0;
+        this.onPointerDownLat = 0;
+        this.phi = 0;
+        this.theta = 0;
+        this.fov = 75;
+
+        // Scène Three.js
+        this.scene = new THREE.Scene();
+        this.camera = new THREE.PerspectiveCamera(this.fov, container.clientWidth / container.clientHeight, 1, 1100);
+        this.camera.target = new THREE.Vector3(0, 0, 0);
+
+        // Sphère inversée pour texturer l'intérieur
+        const geometry = new THREE.SphereGeometry(500, 60, 40);
+        geometry.scale(-1, 1, 1);
+
+        let texture;
+        if(imageSource instanceof HTMLCanvasElement || imageSource instanceof HTMLImageElement){
+            texture = new THREE.CanvasTexture(imageSource);
+        } else {
+            texture = new THREE.TextureLoader().load(imageSource);
+        }
+        texture.generateMipmaps = false;
+        texture.minFilter = THREE.LinearFilter;
+
+        const material = new THREE.MeshBasicMaterial({ map: texture });
+        const mesh = new THREE.Mesh(geometry, material);
+        this.scene.add(mesh);
+
+        this.renderer = new THREE.WebGLRenderer({ antialias: true });
+        this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.setSize(container.clientWidth, container.clientHeight);
+        container.appendChild(this.renderer.domElement);
+
+        // Événements tactiles et souris
+        this.onWindowResize = this.onWindowResize.bind(this);
+        this.onPointerDown = this.onPointerDown.bind(this);
+        this.onPointerMove = this.onPointerMove.bind(this);
+        this.onPointerUp = this.onPointerUp.bind(this);
+        this.onWheel = this.onWheel.bind(this);
+
+        window.addEventListener('resize', this.onWindowResize);
+        container.addEventListener('pointerdown', this.onPointerDown);
+        window.addEventListener('pointermove', this.onPointerMove);
+        window.addEventListener('pointerup', this.onPointerUp);
+        container.addEventListener('wheel', this.onWheel, { passive: false });
+
+        this.animate = this.animate.bind(this);
+        this.raf = requestAnimationFrame(this.animate);
     }
-    destroy(){
-        window.removeEventListener("resize", this.resize);
-        this.canvas.removeEventListener("pointerdown", this.down);
-        window.removeEventListener("pointermove", this.move);
-        window.removeEventListener("pointerup", this.up);
-        cancelAnimationFrame(this.raf);
+
+    onWindowResize() {
+        if(!this.container) return;
+        this.camera.aspect = this.container.clientWidth / this.container.clientHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
     }
-    resize(){ this.canvas.width = window.innerWidth; this.canvas.height = window.innerHeight; }
-    down(e){ this.dragging = true; this.lastX = e.clientX; this.lastY = e.clientY; }
-    move(e){
-        if(!this.dragging) return;
-        this.lon -= (e.clientX - this.lastX) * 0.25;
-        this.lat += (e.clientY - this.lastY) * 0.25;
+
+    onPointerDown(event) {
+        this.isUserInteracting = true;
+        this.onPointerDownPointerX = event.clientX;
+        this.onPointerDownPointerY = event.clientY;
+        this.onPointerDownLon = this.lon;
+        this.onPointerDownLat = this.lat;
+    }
+
+    onPointerMove(event) {
+        if (!this.isUserInteracting) return;
+        this.lon = (this.onPointerDownPointerX - event.clientX) * 0.1 + this.onPointerDownLon;
+        this.lat = (event.clientY - this.onPointerDownPointerY) * 0.1 + this.onPointerDownLat;
+    }
+
+    onPointerUp() {
+        this.isUserInteracting = false;
+    }
+
+    onWheel(event) {
+        event.preventDefault();
+        this.fov = clamp(this.fov + event.deltaY * 0.05, 30, 100);
+        this.camera.fov = this.fov;
+        this.camera.updateProjectionMatrix();
+    }
+
+    animate() {
+        this.raf = requestAnimationFrame(this.animate);
         this.lat = clamp(this.lat, -85, 85);
-        this.lastX = e.clientX; this.lastY = e.clientY;
+        this.phi = THREE.MathUtils.degToRad(90 - this.lat);
+        this.theta = THREE.MathUtils.degToRad(this.lon);
+
+        const x = 500 * Math.sin(this.phi) * Math.cos(this.theta);
+        const y = 500 * Math.cos(this.phi);
+        const z = 500 * Math.sin(this.phi) * Math.sin(this.theta);
+
+        this.camera.lookAt(x, y, z);
+        this.renderer.render(this.scene, this.camera);
     }
-    up(){ this.dragging = false; }
-    render(){
-        if(!this.source) return;
-        const ctx = this.ctx, w = this.canvas.width, h = this.canvas.height;
-        ctx.fillStyle = "#000"; ctx.fillRect(0, 0, w, h);
-        
-        const drawW = w * (120 / this.fov), drawH = h * (120 / this.fov);
-        const offsetX = (this.lon % 360) / 360 * drawW, offsetY = (this.lat / 90) * (drawH / 2.5);
-        
-        ctx.drawImage(this.source, -offsetX, -offsetY + (h - drawH)/2, drawW, drawH);
-        if(offsetX > 0) ctx.drawImage(this.source, -offsetX + drawW, -offsetY + (h - drawH)/2, drawW, drawH);
-        else ctx.drawImage(this.source, -offsetX - drawW, -offsetY + (h - drawH)/2, drawW, drawH);
-        
-        this.raf = requestAnimationFrame(this.render);
+
+    destroy() {
+        window.removeEventListener('resize', this.onWindowResize);
+        if(this.container){
+            this.container.removeEventListener('pointerdown', this.onPointerDown);
+            this.container.removeEventListener('wheel', this.onWheel);
+        }
+        window.removeEventListener('pointermove', this.onPointerMove);
+        window.removeEventListener('pointerup', this.onPointerUp);
+        cancelAnimationFrame(this.raf);
+        if(this.renderer && this.renderer.domElement){
+            this.renderer.domElement.remove();
+        }
     }
 }
 </script>
