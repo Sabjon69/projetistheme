@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio 360° Pro - Accueil</title>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --text: #000000;
+            --border: #000000;
+            --gray-light: #f7f7f7;
+            --gray-dark: #333333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 50px;
+            border-bottom: 2px solid var(--border);
+            background: var(--bg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-weight: bold;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        nav {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        nav a {
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        .btn-black {
+            background-color: var(--text);
+            color: var(--bg);
+            padding: 10px 20px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9rem;
+            border: 2px solid var(--text);
+            display: inline-block;
+            transition: all 0.2s;
+        }
+
+        .btn-black:hover {
+            background-color: var(--bg);
+            color: var(--text);
+        }
+
+        .btn-outline {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 10px 20px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9rem;
+            border: 2px solid var(--text);
+            display: inline-block;
+            transition: all 0.2s;
+        }
+
+        .btn-outline:hover {
+            background-color: var(--text);
+            color: var(--bg);
+        }
+
+        .hero {
+            padding: 100px 50px;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            align-items: center;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .hero-content h1 {
+            font-size: 3.5rem;
+            line-height: 1.1;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        .hero-content p {
+            font-size: 1.1rem;
+            color: var(--gray-dark);
+            margin-bottom: 35px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .hero-box {
+            border: 2px solid var(--border);
+            height: 350px;
+            background: var(--gray-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            border-bottom: 2px solid var(--border);
+        }
+
+        .stat-item {
+            padding: 40px;
+            text-align: center;
+            border-right: 2px solid var(--border);
+        }
+
+        .stat-item:last-child {
+            border-right: none;
+        }
+
+        .stat-item h2 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-item p {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            color: var(--gray-dark);
+        }
+
+        .features {
+            padding: 100px 50px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .features h2 {
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            margin-bottom: 60px;
+            text-align: center;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .feature-card {
+            border: 2px solid var(--border);
+            padding: 30px;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.2rem;
+            text-transform: uppercase;
+        }
+
+        .feature-card p {
+            font-size: 0.95rem;
+            color: var(--gray-dark);
+        }
+
+        .cta-section {
+            padding: 100px 50px;
+            text-align: center;
+            border-top: 2px solid var(--border);
+            background: var(--gray-light);
+        }
+
+        .cta-section h2 {
+            font-size: 3rem;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .cta-section p {
+            font-size: 1.1rem;
+            color: var(--gray-dark);
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        footer {
+            padding: 40px 50px;
+            border-top: 2px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 900px) {
+            .hero, .features-grid, .stats {
+                grid-template-columns: 1fr;
+            }
+            .stat-item {
+                border-right: none;
+                border-bottom: 2px solid var(--border);
+            }
+            header {
+                padding: 20px;
+            }
+            .hero, .features {
+                padding: 50px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">[ Studio 360° Pro ]</div>
+        <nav>
+            <a href="#features">Fonctionnalités</a>
+            <a href="#stats">Performance</a>
+            <a href="studio.html" class="btn-black">Lancer le Studio</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Générez des visites 360° sans limites.</h1>
+                <p>La plateforme professionnelle tout-en-un pour concevoir, personnaliser et exporter des expériences immersives haute performance. Pensée pour scaler à 300 000 utilisateurs mensuels.</p>
+                <div class="hero-buttons">
+                    <a href="studio.html" class="btn-black">Créer une visite</a>
+                    <a href="#features" class="btn-outline">En savoir plus</a>
+                </div>
+            </div>
+            <div class="hero-box">
+                [ Aperçu Visuel 360° ]
+            </div>
+        </section>
+
+        <section class="stats" id="stats">
+            <div class="stat-item">
+                <h2>300K</h2>
+                <p>Visiteurs mensuels supportés</p>
+            </div>
+            <div class="stat-item">
+                <h2>100%</h2>
+                <p>Exécuté côté client (Zéro serveur)</p>
+            </div>
+            <div class="stat-item">
+                <h2>0 ms</h2>
+                <p>Temps de latence d'export ZIP</p>
+            </div>
+        </section>
+
+        <section class="features" id="features">
+            <h2>Fonctionnalités Clés</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3>Navigation Google Earth</h3>
+                    <p>Déplacement fluide entre les scènes avec des flèches directionnelles activables ou désactivables à voleté.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>E-commerce Intégré</h3>
+                    <p>Ajoutez des hotspots interactifs sur les objets pour permettre l'achat direct sans quitter la visite.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Marque Blanche Totale</h3>
+                    <p>Suppression complète des logos tiers pour mettre en avant l'identité exclusive de votre entreprise.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Plans de Masse & Radar</h3>
+                    <p>Affichez un plan 2D interactif en coin d'écran avec un indicateur radar de direction en temps réel.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Prise de Mesures 3D</h3>
+                    <p>Outils d'estimation dimensionnelle adaptés pour les architectes, artisans et promoteurs immobiliers.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Analytiques & Heatmaps</h3>
+                    <p>Suivez les zones de clics et l'attention des utilisateurs pour optimiser vos espaces virtuels.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <h2>Prêt à propulser vos visites ?</h2>
+            <p>Accédez instantanément à l'éditeur et commencez à structurer vos projets 360° dès maintenant.</p>
+            <a href="studio.html" class="btn-black" style="padding: 15px 30px; font-size: 1rem;">Ouvrir le Studio 360°</a>
+        </section>
+    </main>
+
+    <footer>
+        <div>&copy; 2026 Studio 360° Pro. Tous droits réservés.</div>
+        <div>[ Noir & Blanc Minimaliste ]</div>
+    </footer>
+
+</body>
+</html>
