@@ -2,25 +2,21 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#000000">
-    <meta name="color-scheme" content="dark">
-    <title>Studio Visite Pro 360</title>
+    <title>Studio Visite Pro 360°</title>
     <style>
-        :root{ --black:#000;--bg:#070707;--panel:#101010;--panel2:#171717;--line:#292929; --text:#f5f5f5;--muted:#929292;--red:#ff3045;--green:#38dc7c;--yellow:#ffc14a; }
+        :root{ --black:#000; --bg:#070707; --panel:#101010; --line:#292929; --text:#f5f5f5; --muted:#929292; --green:#38dc7c; --yellow:#ffc14a; --red:#ff3045; }
         *{box-sizing:border-box}
-        html,body{margin:0;width:100%;height:100%;background:#000;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-        body{overflow:hidden}
+        html,body{margin:0;width:100%;height:100%;background:#000;color:var(--text);font-family:Inter,system-ui,-apple-system,sans-serif;overflow:hidden}
         button,input{font:inherit}
         button{cursor:pointer}
-        button:disabled{cursor:not-allowed}
         .hidden{display:none!important}
         
         .app{height:100dvh;display:grid;grid-template-rows:60px 1fr;background:var(--bg)}
         .topbar{display:flex;align-items:center;gap:18px;padding:0 18px;background:#0c0c0c;border-bottom:1px solid var(--line);z-index:30}
-        .brand{font-weight:850;letter-spacing:-.5px;white-space:nowrap}.brand span{color:var(--red)}
+        .brand{font-weight:850;letter-spacing:-.5px;white-space:nowrap}.brand span{color:var(--yellow)}
         .tabs{display:flex;gap:4px}.tab{border:0;background:transparent;color:#8f8f8f;padding:9px 14px;border-radius:9px;font-weight:750}.tab.active{background:#202020;color:#fff}
-        .top-actions{margin-left:auto;display:flex;gap:8px}.icon-btn,.small-btn{border:1px solid var(--line);background:#151515;color:#eee;border-radius:9px;padding:9px 12px}
         
         .workspace{min-height:0;display:grid;grid-template-columns:320px 1fr}
         .sidebar{background:#0d0d0d;border-right:1px solid var(--line);padding:16px;overflow:auto}
@@ -36,129 +32,124 @@
         .main{position:relative;min-width:0;min-height:0;background:#000}
         .mode{height:100%;width:100%}
         .mode-2d{padding:28px;overflow:auto;background:#0a0a0a}
-        
         .empty-2d{min-height:100%;border:1px dashed #353535;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px}
         .empty-2d h2{margin:0 0 8px}.empty-2d p{max-width:580px;color:var(--muted);line-height:1.55}
         
-        /* 360 CAPTURE */
+        /* CAPTURE 360 */
         .capture{position:relative;height:100%;width:100%;overflow:hidden;background:#000}
-        
-        #camera {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: 1;
-        }
+        #camera{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
+        .flash-overlay{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:100;transition:opacity .1s ease-out}
+        .flash-overlay.flash{opacity:1}
 
-        .flash-overlay {
-            position: absolute;
-            inset: 0;
-            background: #ffffff;
-            opacity: 0;
-            pointer-events: none;
-            z-index: 100;
-            transition: opacity 0.1s ease-out;
-        }
-        .flash-overlay.flash {
-            opacity: 1;
-        }
-
-        .capture-ui{
-            position:absolute;
-            inset:0;
-            z-index:5;
-            pointer-events:none;
-            background: radial-gradient(circle at center, transparent 40%, rgba(0,0,0,0.6) 100%);
-        }
-        
+        .capture-ui{position:absolute;inset:0;z-index:5;pointer-events:none;background:radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.7) 100%)}
         .capture-top{position:absolute;left:0;right:0;top:max(16px,env(safe-area-inset-top));display:flex;align-items:flex-start;justify-content:space-between;padding:0 18px}
-        .capture-title{font-size:15px;font-weight:800; text-shadow: 0 2px 4px #000;}.capture-sub{font-size:13px;color:var(--yellow);margin-top:3px; text-shadow: 0 1px 3px #000; font-weight:700;}
+        .capture-title{font-size:15px;font-weight:800;text-shadow:0 2px 4px #000}
+        .capture-sub{font-size:13px;color:var(--yellow);margin-top:3px;text-shadow:0 1px 3px #000;font-weight:700}
         .capture-tools{display:flex;gap:7px;pointer-events:auto}.capture-tools button{border:1px solid #555;background:#0009;color:#fff;border-radius:8px;padding:8px 10px}
         
-        .panorama-stage{
-            position:absolute;
-            left:50%;
-            bottom:110px; 
-            transform:translateX(-50%);
-            width:min(80vw,350px);
-            aspect-ratio:2.5/1;
-            background:#0009;
-            border:1px solid #444;
-            border-radius: 8px;
-            overflow:hidden;
-            box-shadow:0 10px 30px rgba(0,0,0,.6);
-            opacity: 0.9;
-        }
-        #panoCanvas{display:block;width:100%;height:100%}
-        
-        /* Cible fixe au centre */
+        /* Réticule de visée central fixe */
         .target{
             position:absolute;
             left:50%;
             top:45%;
             transform:translate(-50%,-50%);
-            width: 75px;
-            height: 75px;
+            width:75px;
+            height:75px;
             border:3px solid rgba(255,255,255,.85);
             border-radius:50%;
             pointer-events:none;
-            transition:border-color .2s,box-shadow .2s, transform 0.2s ease-out;
-            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            transition:border-color .2s,box-shadow .2s,transform .2s;
+            box-shadow:0 0 15px rgba(0,0,0,0.5);
         }
-        .target.ready{
-            border-color:var(--green);
-            box-shadow:0 0 35px rgba(56,220,124,.6);
-            transform:translate(-50%,-50%) scale(0.9);
-        }
+        .target.ready{border-color:var(--green);box-shadow:0 0 35px rgba(56,220,124,.6);transform:translate(-50%,-50%) scale(0.9)}
 
-        /* Point mobile stratégique */
-        .target-dot {
-            position: absolute;
-            left: 50%;
-            top: 45%;
-            width: 26px;
-            height: 26px;
-            background: var(--yellow);
-            border: 2px solid #fff;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 0 12px rgba(0,0,0,0.7);
-            transition: transform 0.1s linear, background 0.2s;
-            z-index: 6;
-            display: none;
+        /* Point cible jaune fixe dans l'espace virtuel qui vient se caler sous le viseur */
+        .target-dot{
+            position:absolute;
+            left:50%;
+            top:45%;
+            width:28px;
+            height:28px;
+            background:var(--yellow);
+            border:2px solid #fff;
+            border-radius:50%;
+            transform:translate(-50%,-50%);
+            box-shadow:0 0 12px rgba(0,0,0,0.8);
+            transition:transform .08s linear,background .2s;
+            z-index:6;
+            display:none;
         }
-        .target-dot.ready {
-            background: var(--green);
-            transform: translate(-50%, -50%) scale(1.25);
-        }
+        .target-dot.ready{background:var(--green);transform:translate(-50%,-50%) scale(1.25)}
         
-        .guidance{position:absolute;left:50%;top:calc(45% + 65px);transform:translateX(-50%);background:#050505d9;border:1px solid #333;padding:7px 14px;border-radius:999px;font-size:12px;font-weight:800;white-space:nowrap}
+        .guidance{position:absolute;left:50%;top:calc(45% + 68px);transform:translateX(-50%);background:#050505d9;border:1px solid #333;padding:6px 14px;border-radius:999px;font-size:12px;font-weight:800;white-space:nowrap}
         .guidance.ready{color:#7df2ac;border-color:#235d3c}
         
-        .capture-bottom{position:absolute;left:0;right:0;bottom:max(25px,env(safe-area-inset-top));display:flex;flex-direction:column;align-items:center;gap:12px}
-        .status-row{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap}.pill{background:#0009;border:1px solid #333;padding:6px 10px;border-radius:999px;font-size:11px;color:#ddd}.pill.ok{color:#7df2ac;border-color:#245d3d;background:#08150e99}.pill.bad{color:#ff8b96;border-color:#5e242b;background:#17090b99}
-        .progress-wrap{width:min(430px,72vw);height:4px;background:#242424;border-radius:99px;overflow:hidden}.progress{height:100%;width:0;background:#fff;transition:width .2s}
+        /* MINICARTE RADAR EN BAS */
+        .minimap{
+            position:absolute;
+            bottom:90px;
+            left:50%;
+            transform:translateX(-50%);
+            display:flex;
+            gap:6px;
+            background:rgba(10,10,10,0.85);
+            border:1px solid #333;
+            padding:8px 12px;
+            border-radius:14px;
+            pointer-events:auto;
+            z-index:10;
+            max-width:95vw;
+            overflow-x:auto;
+        }
+        .mini-dot{
+            width:22px;
+            height:22px;
+            border-radius:50%;
+            background:#222;
+            border:1px solid #444;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:9px;
+            font-weight:700;
+            color:#888;
+            flex-shrink:0;
+            transition:all .2s;
+        }
+        .mini-dot.active{border-color:var(--yellow);background:#332900;color:var(--yellow);transform:scale(1.15)}
+        .mini-dot.done{border-color:var(--green);background:#0d2617;color:var(--green)}
+
+        .capture-bottom{position:absolute;left:0;right:0;bottom:max(15px,env(safe-area-inset-top));display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
+        .status-row{display:flex;align-items:center;justify-content:center;gap:7px}
+        .pill{background:#0009;border:1px solid #333;padding:5px 10px;border-radius:999px;font-size:11px;color:#ddd}
+        .pill.ok{color:#7df2ac;border-color:#245d3d;background:#08150e99}
+        .pill.bad{color:#ff8b96;border-color:#5e242b;background:#17090b99}
+        .progress-wrap{width:min(380px,70vw);height:4px;background:#242424;border-radius:99px;overflow:hidden}
+        .progress{height:100%;width:0;background:#fff;transition:width .2s}
         
-        .orientation-data{position:absolute;right:18px;top:70px;min-width:155px;padding:9px 11px;background:#050505c9;border:1px solid #242424;border-radius:10px;font-size:11px;line-height:1.75;color:#bcbcbc}.orientation-data b{color:#fff}
+        .permission{position:absolute;inset:0;z-index:20;background:#000;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px}
+        .permission-card{width:min(520px,100%)}.permission-card .big-icon{font-size:44px;margin-bottom:12px}.permission-card h1{font-size:26px;margin:0 0 9px}.permission-card p{margin:0 auto;max-width:480px;color:#8f8f8f;line-height:1.55}
         
-        .permission{position:absolute;inset:0;z-index:20;background:#000;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px}.permission-card{width:min(560px,100%)}.permission-card .big-icon{font-size:44px;margin-bottom:12px}.permission-card h1{font-size:27px;margin:0 0 9px}.permission-card p{margin:0 auto;max-width:520px;color:#8f8f8f;line-height:1.6}.permission-card button{margin-top:18px;max-width:310px}
+        .viewer{position:absolute;inset:0;background:#000;z-index:20}
+        .viewer canvas{display:block;width:100%;height:100%}
+        .viewer-ui{position:absolute;left:18px;top:max(16px,env(safe-area-inset-top));z-index:4;pointer-events:none}
+        .viewer-ui h2{margin:0;font-size:16px}.viewer-ui p{margin:5px 0;color:#999;font-size:11px}
+        .viewer-close{position:absolute;right:18px;top:max(16px,env(safe-area-inset-top));z-index:4;border:1px solid #303030;background:#101010dd;color:#fff;border-radius:8px;padding:8px 10px;pointer-events:auto}
         
-        .viewer{position:absolute;inset:0;background:#000;z-index: 20;}.viewer canvas{display:block;width:100%;height:100%}.viewer-ui{position:absolute;left:18px;top:max(16px,env(safe-area-inset-top));z-index:4;pointer-events:none}.viewer-ui h2{margin:0;font-size:16px}.viewer-ui p{margin:5px 0;color:#999;font-size:11px}.viewer-close{position:absolute;right:18px;top:max(16px,env(safe-area-inset-top));z-index:4;border:1px solid #303030;background:#101010dd;color:#fff;border-radius:8px;padding:8px 10px; pointer-events:auto;}
-        
-        .modal{position:fixed;inset:0;background:#000c;z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}.modal-card{width:min(520px,100%);background:#151515;border:1px solid #303030;border-radius:15px;padding:20px}.modal-card h2{margin:0 0 8px}.modal-card p{color:#aaa;line-height:1.5}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.modal-actions .primary{width:auto;padding:10px 14px}
+        .modal{position:fixed;inset:0;background:#000c;z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
+        .modal-card{width:min(480px,100%);background:#151515;border:1px solid #303030;border-radius:15px;padding:20px}
+        .modal-card h2{margin:0 0 8px}.modal-card p{color:#aaa;line-height:1.5}
+        .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
         
         @media(max-width:800px){
-            .app{grid-template-rows:56px 1fr}.workspace{grid-template-columns:1fr}.sidebar{display:none}.topbar{padding:0 10px;gap:8px}.brand{font-size:14px}.tabs{margin-left:auto}.tab{padding:8px 9px;font-size:12px}.top-actions{display:none}
-            .capture-top{padding:0 10px}.orientation-data{display:none;}
+            .app{grid-template-rows:56px 1fr}.workspace{grid-template-columns:1fr}.sidebar{display:none}
         }
     </style>
 </head>
 <body>
 <div class="app" id="app">
     <header class="topbar">
-        <div class="brand">Studio Visite <span>Pro 360</span></div>
+        <div class="brand">Studio Visite <span>Pro 360°</span></div>
         <nav class="tabs" aria-label="Modes">
             <button class="tab active" data-mode="2d">2D</button>
             <button class="tab" data-mode="360">360° Spatial</button>
@@ -168,19 +159,19 @@
     <div class="workspace">
         <aside class="sidebar">
             <div class="section-title">Projet</div>
-            <div class="project-name" id="projectName">Visite immobilière</div>
+            <div class="project-name" id="projectName">Visite immersive</div>
             <button class="primary" id="renameBtn">Renommer le projet</button>
-            <div class="section-title" style="margin-top:24px">Scènes</div>
+            <div class="section-title" style="margin-top:24px">Scènes 360°</div>
             <div class="scene-list" id="sceneList"></div>
         </aside>
 
         <main class="main">
             <section class="mode mode-2d" id="mode2d">
-                <div class="empty-2d" id="empty2d">
-                    <div style="font-size:44px">▧</div>
-                    <h2>Importer des photos 2D</h2>
-                    <p>Le mode 2D sert uniquement à importer des photos normales de tes pièces.</p>
-                    <button class="primary" id="import2d" style="max-width:280px">Importer des photos</button>
+                <div class="empty-2d">
+                    <div style="font-size:40px">▧</div>
+                    <h2>Gestionnaire de pièces</h2>
+                    <p>Utilisez l'onglet 360° Spatial pour réaliser vos panoramas sans trous ni zones noires.</p>
+                    <button class="primary" id="import2d" style="max-width:260px">Importer des photos 2D</button>
                     <input id="photoInput" type="file" accept="image/*" multiple class="hidden">
                 </div>
             </section>
@@ -190,14 +181,13 @@
                     <div class="permission" id="permission">
                         <div class="permission-card">
                             <div class="big-icon">◎</div>
-                            <h1>Panorama 360° Sans Trous</h1>
-                            <p>16 points stratégiques couvrent toute la pièce. Vise chaque point jaune, <b>reste dessus 1 seconde</b> : la photo se prend toute seule sans laisser de zones noires.</p>
-                            <button class="primary" id="start360">Démarrer le Scan 360°</button>
+                            <h1>Scan 360° Prédéfini</h1>
+                            <p>Suivez les 16 points stratégiques fixes de la mini-carte en bas. Visez chaque point jaune et <b>restez immobile 1 seconde</b> pour capturer automatiquement l'image sans rater un seul recoin.</p>
+                            <button class="primary" id="start360">Démarrer le Scan</button>
                         </div>
                     </div>
 
                     <div id="flashOverlay" class="flash-overlay"></div>
-
                     <video id="camera" autoplay playsinline muted></video>
                     <canvas id="captureCanvas" class="hidden"></canvas>
                     
@@ -205,7 +195,7 @@
                         <div class="capture-top">
                             <div>
                                 <div class="capture-title">Scan 360° Intégral</div>
-                                <div class="capture-sub" id="positionLabel">Point de départ</div>
+                                <div class="capture-sub" id="positionLabel">Point initial</div>
                             </div>
                             <div class="capture-tools">
                                 <button id="restart360">Recommencer</button>
@@ -213,18 +203,12 @@
                             </div>
                         </div>
                         
-                        <div class="target" id="targetRing" aria-hidden="true"></div>
-                        <div class="target-dot" id="targetDot" aria-hidden="true"></div>
+                        <div class="target" id="targetRing"></div>
+                        <div class="target-dot" id="targetDot"></div>
                         
                         <div class="guidance" id="guidance">Prêt</div>
                         
-                        <div class="panorama-stage" aria-label="Aperçu Panorama">
-                            <canvas id="panoCanvas" width="1600" height="800"></canvas>
-                        </div>
-
-                        <div class="orientation-data" id="orientData" style="display:none;">
-                            <div>Orientation : <b id="currentYaw">—</b>°</div>
-                        </div>
+                        <div class="minimap" id="minimap"></div>
                         
                         <div class="capture-bottom">
                             <div class="status-row">
@@ -239,8 +223,8 @@
                 <div class="viewer hidden" id="viewer">
                     <canvas id="viewerCanvas"></canvas>
                     <div class="viewer-ui">
-                        <h2>Panorama 360° Complet</h2>
-                        <p>Glisse ton doigt pour regarder autour de toi</p>
+                        <h2>Panorama 360° Terminé</h2>
+                        <p>Glissez pour explorer la pièce</p>
                     </div>
                     <button class="viewer-close" id="closeViewer">Fermer</button>
                 </div>
@@ -254,8 +238,7 @@
         <h2 id="modalTitle"></h2>
         <p id="modalText"></p>
         <div class="modal-actions">
-            <button class="small-btn" id="modalCancel">Annuler</button>
-            <button class="primary" id="modalOk">Valider</button>
+            <button class="primary" id="modalOk" style="width:auto;padding:10px 16px">Valider</button>
         </div>
     </div>
 </div>
@@ -263,26 +246,26 @@
 <script>
 "use strict";
 
-const TOTAL_PHOTOS = 16, YAW_TOLERANCE = 8, PITCH_TOLERANCE = 10, PANO_WIDTH = 2400, PANO_HEIGHT = 1200, JPEG_QUALITY = .90;
-const state = {mode: "2d", running: false, stream: null, sensorListening: false, yaw: null, pitch: null, startYaw: null, step: 0, targets: [], photos: [], pano: null, viewer: null, projectName: "Visite immobilière", scenes: [], captureBusy: false, stableSince: 0, lastAutoCapture: 0};
+const TOTAL_PHOTOS = 16, YAW_TOLERANCE = 8, PITCH_TOLERANCE = 10, PANO_WIDTH = 2400, PANO_HEIGHT = 1200;
+const state = {mode: "2d", running: false, stream: null, sensorListening: false, yaw: null, pitch: null, startYaw: null, step: 0, targets: [], photos: [], pano: null, viewer: null, projectName: "Visite immersive", scenes: [], captureBusy: false, stableSince: 0, lastAutoCapture: 0};
 
 const $ = s => document.querySelector(s);
-const camera = $("#camera"), captureCanvas = $("#captureCanvas"), panoCanvas = $("#panoCanvas"), panoCtx = panoCanvas.getContext("2d");
+const camera = $("#camera"), captureCanvas = $("#captureCanvas");
 
 function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
 function normalizeAngle(v){ return ((v % 360) + 360) % 360; }
 function signedAngle(t, c){ return ((t - c + 540) % 360) - 180; }
-function escapeHtml(v){ return String(v).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"}[c])); }
+function escapeHtml(v){ return String(v).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", "\": "&quot;", "'": "&#39;"}[c])); }
 
 document.addEventListener("DOMContentLoaded", () => {
     renderSceneList();
-    document.querySelectorAll(".tab").forEach(t => { t.addEventListener("click", e => setMode(e.target.dataset.mode)); });
+    document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", e => setMode(e.target.dataset.mode)));
     $("#start360").addEventListener("click", start360);
     $("#restart360").addEventListener("click", restart360);
     $("#exit360").addEventListener("click", () => { stopCamera(); setMode('2d'); });
     $("#closeViewer").addEventListener("click", closeViewer);
     $("#renameBtn").addEventListener("click", renameProject);
-    $("#import2d").addEventListener("click", () => $("#photoInput").click());
+    renderMinimap();
 });
 
 function setMode(mode){
@@ -297,15 +280,15 @@ function renderSceneList(){
     const list = $("#sceneList");
     list.innerHTML = "";
     if(!state.scenes.length){
-        list.innerHTML = '<div class="scene"><div class="scene-name">Aucune scène</div><div class="scene-meta">Crée un panorama 360° sans trous</div></div>';
+        list.innerHTML = '<div class="scene"><div class="scene-name">Aucune scène</div><div class="scene-meta">Aucun panorama enregistré</div></div>';
         return;
     }
     state.scenes.forEach((scene, index) => {
         const item = document.createElement("div");
         item.className = "scene" + (index === state.scenes.length - 1 ? " active" : "");
-        item.innerHTML = `<div class="scene-name">${escapeHtml(scene.name)}</div><div class="scene-meta">${scene.count} zones · ${escapeHtml(scene.date)}</div><div class="scene-actions"><button data-action="open">Ouvrir</button><button data-action="delete">Supprimer</button></div>`;
+        item.innerHTML = `<div class="scene-name">${escapeHtml(scene.name)}</div><div class="scene-meta">16 points · ${escapeHtml(scene.date)}</div><div class="scene-actions"><button data-action="open">Ouvrir</button><button data-action="delete">Suppr</button></div>`;
         item.querySelector('[data-action="open"]').onclick = () => openScene(index);
-        item.querySelector('[data-action="delete"]').onclick = () => deleteScene(index);
+        item.querySelector('[data-action="delete"]').onclick = () => { state.scenes.splice(index, 1); renderSceneList(); };
         list.appendChild(item);
     });
 }
@@ -315,78 +298,54 @@ function renameProject(){
     if(v && v.trim()){ state.projectName = v.trim(); $("#projectName").textContent = state.projectName; }
 }
 
-async function deleteScene(i){
-    const s = state.scenes[i];
-    if(!s) return;
-    if(await showModal("Supprimer la scène", `Supprimer « ${s.name} » ?`, "Supprimer")){
-        state.scenes.splice(i, 1);
-        renderSceneList();
+function renderMinimap(){
+    const map = $("#minimap");
+    map.innerHTML = "";
+    for(let i = 0; i < TOTAL_PHOTOS; i++){
+        const dot = document.createElement("div");
+        dot.className = "mini-dot";
+        if(i < state.step) dot.classList.add("done");
+        else if(i === state.step && state.running) dot.classList.add("active");
+        dot.textContent = i + 1;
+        map.appendChild(dot);
     }
 }
 
-function openScene(i){
-    const s = state.scenes[i];
-    if(!s) return;
-    const img = new Image();
-    img.onload = () => {
-        setMode("360");
-        $("#captureScreen").classList.add("hidden");
-        $("#viewer").classList.remove("hidden");
-        if(state.viewer) state.viewer.destroy();
-        state.viewer = new PanoViewer($("#viewerCanvas"), img);
-    };
-    img.src = s.panoDataUrl;
-}
-
-function showModal(title, text, confirmLabel = "Valider"){
-    return new Promise(resolve => {
-        $("#modalTitle").textContent = title;
-        $("#modalText").textContent = text;
-        $("#modalOk").textContent = confirmLabel;
-        $("#modal").classList.remove("hidden");
-        const done = r => { $("#modal").classList.add("hidden"); $("#modalOk").onclick = null; $("#modalCancel").onclick = null; resolve(r); };
-        $("#modalOk").onclick = () => done(true);
-        $("#modalCancel").onclick = () => done(false);
-    });
-}
-
-// Définition des 16 points stratégiques fixes pour couvrir 100% de la sphère sans trous noirs
 function buildTargets(startYaw){
     const targets = [];
     const base = normalizeAngle(startYaw);
     
-    // 1. Cercle Horizon (8 points tous les 45°)
+    // 8 points Horizon (tous les 45°)
     const hAngles = [0, 45, 90, 135, 180, 225, 270, 315];
-    const hLabels = ["Nord (Face)", "Nord-Est", "Est (Droite)", "Sud-Est", "Sud (Dos)", "Sud-Ouest", "Ouest (Gauche)", "Nord-Ouest"];
+    const hLabels = ["Nord (Face)", "Nord-Est", "Est", "Sud-Est", "Sud (Dos)", "Sud-Ouest", "Ouest", "Nord-Ouest"];
     for(let i = 0; i < 8; i++){
         targets.push({ yaw: normalizeAngle(base + hAngles[i]), pitch: 0, label: `Horizon : ${hLabels[i]}` });
     }
     
-    // 2. Cercle Plafond / Haut (4 points)
+    // 4 points Plafond (haut)
     const tAngles = [0, 90, 180, 270];
     const tLabels = ["Nord", "Est", "Sud", "Ouest"];
     for(let i = 0; i < 4; i++){
         targets.push({ yaw: normalizeAngle(base + tAngles[i]), pitch: 42, label: `Plafond : ${tLabels[i]}` });
     }
     
-    // 3. Cercle Sol / Bas (4 points)
+    // 4 points Sol (bas)
     for(let i = 0; i < 4; i++){
         targets.push({ yaw: normalizeAngle(base + tAngles[i]), pitch: -42, label: `Sol : ${tLabels[i]}` });
     }
-    
-    return targets; // Total exact : 16 photos parfaitement réparties
+    return targets;
 }
 
 async function start360(){
     try {
-        if(!window.isSecureContext) throw new Error("HTTPS ou localhost requis pour les capteurs.");
-        if(!navigator.mediaDevices?.getUserMedia) throw new Error("Caméra non disponible.");
+        if(!window.isSecureContext) throw new Error("HTTPS ou localhost obligatoire pour les capteurs d'orientation.");
+        if(!navigator.mediaDevices?.getUserMedia) throw new Error("Caméra non supportée.");
         
         resetCaptureState();
         
         if(typeof DeviceOrientationEvent?.requestPermission === "function"){
-            const permission = await DeviceOrientationEvent.requestPermission();
-            if(permission !== "granted") throw new Error("Permission capteurs refusée.");
+            const res = await DeviceOrientationEvent.requestPermission();
+            if(res !== "granted") throw new Error("Accès aux capteurs refusé.");
         }
         
         attachSensors();
@@ -402,23 +361,21 @@ async function start360(){
         $("#viewer").classList.add("hidden");
         
         const initialYaw = await waitForYaw(3000);
-        if(initialYaw == null) throw new Error("Aucune orientation détectée. Bouge un peu ton téléphone.");
+        if(initialYaw == null) throw new Error("Capteur d'orientation introuvable ou bloqué.");
         
         state.startYaw = initialYaw;
         state.targets = buildTargets(initialYaw);
         state.step = 0;
         state.photos = [];
         state.pano = createPanoramaCanvas();
-        state.stableSince = 0;
-        state.lastAutoCapture = 0;
         
         setStep(0);
-        drawPanoramaPreview();
+        renderMinimap();
         captureLoop();
     } catch(e) {
         stopCamera();
         $("#permission").classList.remove("hidden");
-        alert("Erreur: " + (e?.message || e));
+        alert("Erreur : " + e.message);
     }
 }
 
@@ -459,7 +416,6 @@ function stopCamera(){
     camera.srcObject = null;
     state.running = false;
     state.captureBusy = false;
-    state.stableSince = 0;
     if(state.sensorListening){
         window.removeEventListener("deviceorientation", handleOrientation, true);
         window.removeEventListener("deviceorientationabsolute", handleOrientation, true);
@@ -477,7 +433,6 @@ function resetCaptureState(){
     state.targets = [];
     state.captureBusy = false;
     state.stableSince = 0;
-    state.lastAutoCapture = 0;
     $("#counter").textContent = "Point 0 / 16";
     $("#progress").style.width = "0%";
     $("#qualityPill").textContent = "Cherche le point jaune";
@@ -489,6 +444,7 @@ function resetCaptureState(){
 
 function setStep(step){
     state.step = step;
+    renderMinimap();
     if(step >= TOTAL_PHOTOS){ finishCapture(); return; }
     const t = state.targets[step];
     if(!t) return;
@@ -496,7 +452,6 @@ function setStep(step){
     $("#progress").style.width = `${(step / TOTAL_PHOTOS) * 100}%`;
     $("#positionLabel").textContent = t.label;
     state.stableSince = 0;
-    updateGuidance();
 }
 
 function alignment(){
@@ -509,25 +464,13 @@ function alignment(){
 function updateGuidance(){
     const a = alignment();
     const dot = $("#targetDot");
-    if(!a){
-        $("#currentYaw").textContent = "—";
-        if(dot) dot.style.display = "none";
-        return;
-    }
+    if(!a){ if(dot) dot.style.display = "none"; return; }
 
     if(dot) dot.style.display = "block";
-    $("#currentYaw").textContent = Math.round(state.yaw);
-
     const pxPerDeg = 7;
-    let dx = a.yd * pxPerDeg; 
-    let dy = a.pd * pxPerDeg; 
-
-    const maxDist = window.innerWidth / 2.6;
-    const dist = Math.hypot(dx, dy);
-    if(dist > maxDist){
-        dx = (dx / dist) * maxDist;
-        dy = (dy / dist) * maxDist;
-    }
+    let dx = a.yd * pxPerDeg, dy = a.pd * pxPerDeg;
+    const maxDist = window.innerWidth / 2.6, dist = Math.hypot(dx, dy);
+    if(dist > maxDist){ dx = (dx / dist) * maxDist; dy = (dy / dist) * maxDist; }
 
     dot.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
 
@@ -538,31 +481,23 @@ function updateGuidance(){
     $("#targetRing").classList.toggle("ready", ready);
     dot.classList.toggle("ready", ready);
     $("#guidance").classList.toggle("ready", ready);
-
-    if(ready){
-        $("#guidance").textContent = "Ne bouge plus ! Capture...";
-    } else {
-        $("#guidance").textContent = "Centre le point jaune";
-    }
+    $("#guidance").textContent = ready ? "Ne bouge plus ! Capture..." : "Centre le point jaune";
 }
 
-function captureLoop() {
-    if(!state.running || state.captureBusy || state.step >= TOTAL_PHOTOS) {
+function captureLoop(){
+    if(!state.running || state.captureBusy || state.step >= TOTAL_PHOTOS){
         if(state.running) requestAnimationFrame(captureLoop);
         return;
     }
-    
     const a = alignment();
     if(!a?.ready){
-        state.stableSince = 0; 
+        state.stableSince = 0;
     } else {
         const now = performance.now();
-        if(!state.stableSince) state.stableSince = now; 
-        
-        // Maintien d'exactement 1 seconde (1000ms) sur la cible
+        if(!state.stableSince) state.stableSince = now;
         if(now - state.stableSince >= 1000 && now - state.lastAutoCapture > 1500){
             capturePhoto();
-            state.stableSince = 0; 
+            state.stableSince = 0;
         }
     }
     requestAnimationFrame(captureLoop);
@@ -570,9 +505,7 @@ function captureLoop() {
 
 function capturePhoto(){
     if(!camera.videoWidth || !camera.videoHeight) return;
-    
     state.captureBusy = true;
-    updateGuidance();
     flashCapture();
     
     try {
@@ -591,18 +524,15 @@ function capturePhoto(){
         
         state.lastAutoCapture = performance.now();
         state.captureBusy = false;
-        
         setStep(state.step + 1);
-        drawPanoramaPreview();
-    } catch(e) {
+    } catch(e){
         state.captureBusy = false;
-        updateGuidance();
         alert("Erreur de capture : " + e.message);
     }
 }
 
 function flashCapture(){
-    const flash = document.getElementById("flashOverlay");
+    const flash = $("#flashOverlay");
     flash.classList.add("flash");
     setTimeout(() => flash.classList.remove("flash"), 150);
 }
@@ -616,21 +546,6 @@ function createPanoramaCanvas(){
     return { canvas: c, ctx };
 }
 
-function drawPanoramaPreview(){
-    panoCtx.clearRect(0, 0, panoCanvas.width, panoCanvas.height);
-    panoCtx.fillStyle = "#111";
-    panoCtx.fillRect(0, 0, panoCanvas.width, panoCanvas.height);
-    if(state.pano) panoCtx.drawImage(state.pano.canvas, 0, 0, panoCanvas.width, panoCanvas.height);
-    
-    if(!state.photos.length){
-        panoCtx.fillStyle = "rgba(255,255,255,.5)";
-        panoCtx.font = "600 360 system-ui";
-        panoCtx.textAlign = "center";
-        panoCtx.fillText("Scan 360 en cours...", panoCanvas.width / 2, panoCanvas.height / 2);
-    }
-}
-
-// Fusion avec masquage dégradé pour éviter tout trou noir
 function stitchPhotoIntoPanorama(src, photo){
     if(!state.pano) state.pano = createPanoramaCanvas();
     const ctx = state.pano.ctx, sw = src.width, sh = src.height;
@@ -645,10 +560,8 @@ function stitchPhotoIntoPanorama(src, photo){
     const tile = document.createElement("canvas");
     tile.width = tileW; tile.height = tileH;
     const tc = tile.getContext("2d");
-    
     tc.drawImage(src, 0, 0, tileW, tileH);
     
-    // Dégradé radial pour un fondu parfait sans traces noires
     const im = tc.getImageData(0, 0, tileW, tileH), d = im.data;
     const cx = tileW / 2, cy = tileH / 2, maxR = Math.hypot(cx, cy);
     for(let y = 0; y < tileH; y++){
@@ -680,16 +593,30 @@ function finishCapture(){
     $("#progress").style.width = "100%";
     $("#counter").textContent = `Point ${TOTAL_PHOTOS} / ${TOTAL_PHOTOS}`;
     $("#qualityPill").textContent = "Panorama complet !";
-    $("#qualityPill").className = "pill ok";
+    $("#qualityPill.ok");
     $("#guidance").textContent = "✓ TERMINÉ SANS TROU";
     
     stopCamera();
     
     if(!state.pano) return;
-    const data = state.pano.canvas.toDataURL("image/jpeg", JPEG_QUALITY);
+    const data = state.pano.canvas.toDataURL("image/jpeg", 0.90);
     state.scenes.push({ name: `Visite 360° ${state.scenes.length + 1}`, count: TOTAL_PHOTOS, date: new Date().toLocaleDateString("fr-FR"), panoDataUrl: data });
     renderSceneList();
     openViewerWithCanvas(state.pano.canvas);
+}
+
+function openScene(i){
+    const s = state.scenes[i];
+    if(!s) return;
+    const img = new Image();
+    img.onload = () => {
+        setMode("360");
+        $("#captureScreen").classList.add("hidden");
+        $("#viewer").classList.remove("hidden");
+        if(state.viewer) state.viewer.destroy();
+        state.viewer = new PanoViewer($("#viewerCanvas"), img);
+    };
+    img.src = s.panoDataUrl;
 }
 
 function openViewerWithCanvas(source){
@@ -707,19 +634,19 @@ function closeViewer(){
 }
 
 async function restart360(){
-    if(!await showModal("Recommencer", "Effacer ce scan et recommencer ?", "Recommencer")) return;
+    if(!confirm("Effacer ce scan et recommencer ?")) return;
     stopCamera();
     resetCaptureState();
     $("#viewer").classList.add("hidden");
     $("#captureScreen").classList.remove("hidden");
     $("#permission").classList.remove("hidden");
+    renderMinimap();
 }
 
 class PanoViewer{
     constructor(canvas, source){
         this.canvas = canvas; this.ctx = canvas.getContext("2d"); this.source = source;
         this.lon = 0; this.lat = 0; this.fov = 90; this.dragging = false;
-        
         this.resize = this.resize.bind(this);
         this.render = this.render.bind(this);
         this.down = this.down.bind(this);
@@ -734,20 +661,14 @@ class PanoViewer{
         this.resize();
         this.raf = requestAnimationFrame(this.render);
     }
-    
-    destroy() {
+    destroy(){
         window.removeEventListener("resize", this.resize);
         this.canvas.removeEventListener("pointerdown", this.down);
         window.removeEventListener("pointermove", this.move);
         window.removeEventListener("pointerup", this.up);
         cancelAnimationFrame(this.raf);
     }
-    
-    resize(){
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
-    }
-    
+    resize(){ this.canvas.width = window.innerWidth; this.canvas.height = window.innerHeight; }
     down(e){ this.dragging = true; this.lastX = e.clientX; this.lastY = e.clientY; }
     move(e){
         if(!this.dragging) return;
@@ -757,16 +678,12 @@ class PanoViewer{
         this.lastX = e.clientX; this.lastY = e.clientY;
     }
     up(){ this.dragging = false; }
-    
     render(){
         if(!this.source) return;
         const ctx = this.ctx, w = this.canvas.width, h = this.canvas.height;
         ctx.fillStyle = "#000"; ctx.fillRect(0, 0, w, h);
-        
-        const drawW = w * (180 / this.fov);
-        const drawH = h * (180 / this.fov);
-        const offsetX = (this.lon % 360) / 360 * drawW;
-        const offsetY = (this.lat / 90) * (drawH / 4);
+        const drawW = w * (180 / this.fov), drawH = h * (180 / this.fov);
+        const offsetX = (this.lon % 360) / 360 * drawW, offsetY = (this.lat / 90) * (drawH / 4);
         
         ctx.drawImage(this.source, -offsetX, -offsetY - (drawH - h)/2, drawW, drawH);
         if(offsetX > 0) ctx.drawImage(this.source, -offsetX + drawW, -offsetY - (drawH - h)/2, drawW, drawH);
