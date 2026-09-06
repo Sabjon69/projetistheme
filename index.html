@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#000000">
     <title>Studio Visite Pro 360°</title>
-    <!-- Import de Three.js pour une vraie projection sphérique 3D fluide -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         :root{ --black:#000; --bg:#070707; --panel:#101010; --line:#292929; --text:#f5f5f5; --muted:#929292; --green:#38dc7c; --yellow:#ffc14a; --red:#ff3045; }
@@ -98,9 +97,9 @@
         .viewer-ui h2{margin:0;font-size:16px}.viewer-ui p{margin:5px 0;color:#999;font-size:11px}
         .viewer-close{position:absolute;right:18px;top:max(16px,env(safe-area-inset-top));z-index:4;border:1px solid #303030;background:#101010dd;color:#fff;border-radius:8px;padding:8px 10px;pointer-events:auto}
 
-        /* Adaptation Responsive Mobile Pления */
+        /* Responsive Mobile */
         @media(max-width: 768px){
-            .workspace{grid-template-columns:1fr; grid-template-rows:240px 1fr;}
+            .workspace{grid-template-columns:1fr; grid-template-rows:220px 1fr;}
             .sidebar{border-right:none; border-bottom:1px solid var(--line);}
         }
     </style>
@@ -495,7 +494,6 @@ function stitchPhotoIntoPanorama(src, photo){
     const tc = tile.getContext("2d");
     tc.drawImage(src, 0, 0, tileW, tileH);
     
-    // Vignettage doux pour éviter les carrés visibles
     const im = tc.getImageData(0, 0, tileW, tileH), d = im.data;
     const cx = tileW / 2, cy = tileH / 2, maxR = Math.hypot(cx, cy);
     for(let y = 0; y < tileH; y++){
@@ -590,12 +588,10 @@ class ThreePanoViewer {
         this.theta = 0;
         this.fov = 75;
 
-        // Scène Three.js
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(this.fov, container.clientWidth / container.clientHeight, 1, 1100);
         this.camera.target = new THREE.Vector3(0, 0, 0);
 
-        // Sphère inversée pour texturer l'intérieur
         const geometry = new THREE.SphereGeometry(500, 60, 40);
         geometry.scale(-1, 1, 1);
 
@@ -617,7 +613,6 @@ class ThreePanoViewer {
         this.renderer.setSize(container.clientWidth, container.clientHeight);
         container.appendChild(this.renderer.domElement);
 
-        // Événements tactiles et souris
         this.onWindowResize = this.onWindowResize.bind(this);
         this.onPointerDown = this.onPointerDown.bind(this);
         this.onPointerMove = this.onPointerMove.bind(this);
