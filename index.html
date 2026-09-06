@@ -43,7 +43,7 @@
         /* 360 CAPTURE */
         .capture{position:relative;height:100%;width:100%;overflow:hidden;background:#000}
         
-        /* VIDEO BACKGROUND VISIBLE */
+        /* VIDEO BACKGROUND */
         #camera {
             position: absolute;
             inset: 0;
@@ -51,6 +51,20 @@
             height: 100%;
             object-fit: cover;
             z-index: 1;
+        }
+
+        /* OVERLAY FLASH POUR LE FEEDBACK VISUEL */
+        .flash-overlay {
+            position: absolute;
+            inset: 0;
+            background: #ffffff;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 100;
+            transition: opacity 0.1s ease-out;
+        }
+        .flash-overlay.flash {
+            opacity: 1;
         }
 
         .capture-ui{
@@ -65,11 +79,11 @@
         .capture-title{font-size:15px;font-weight:800; text-shadow: 0 2px 4px #000;}.capture-sub{font-size:12px;color:#eee;margin-top:3px; text-shadow: 0 1px 3px #000;}
         .capture-tools{display:flex;gap:7px;pointer-events:auto}.capture-tools button{border:1px solid #555;background:#0009;color:#fff;border-radius:8px;padding:8px 10px}
         
-        /* Mini-map panorama au lieu du gros bloc central */
+        /* Mini-map panorama */
         .panorama-stage{
             position:absolute;
             left:50%;
-            bottom:130px; 
+            bottom:120px; 
             transform:translateX(-50%);
             width:min(80vw,350px);
             aspect-ratio:2.5/1;
@@ -93,12 +107,16 @@
             border:3px solid rgba(255,255,255,.9);
             border-radius:50%;
             pointer-events:none;
-            transition:border-color .2s,box-shadow .2s;
+            transition:border-color .2s,box-shadow .2s, transform 0.2s ease-out;
             box-shadow: 0 0 10px rgba(0,0,0,0.5);
         }
-        .target.ready{border-color:var(--green);box-shadow:0 0 30px rgba(56,220,124,.5)}
+        .target.ready{
+            border-color:var(--green);
+            box-shadow:0 0 30px rgba(56,220,124,.5);
+            transform:translate(-50%,-50%) scale(0.85); /* Petit effet d'écrasement quand on cible bien */
+        }
 
-        /* Point mobile qui flotte (Gyrophare) */
+        /* Point mobile qui flotte (Gyrophare lissé) */
         .target-dot {
             position: absolute;
             left: 50%;
@@ -110,9 +128,10 @@
             border-radius: 50%;
             transform: translate(-50%, -50%);
             box-shadow: 0 0 10px rgba(0,0,0,0.6);
-            transition: transform 0.1s linear, background 0.2s;
+            /* Transition plus fluide pour éviter l'effet Tom & Jerry */
+            transition: transform 0.15s ease-out, background 0.2s;
             z-index: 6;
-            display: none; /* caché jusqu'à activation */
+            display: none;
         }
         .target-dot.ready {
             background: var(--green);
@@ -122,11 +141,9 @@
         .guidance{position:absolute;left:50%;top:calc(45% + 60px);transform:translateX(-50%);background:#050505d9;border:1px solid #333;padding:7px 12px;border-radius:999px;font-size:12px;font-weight:800;white-space:nowrap}
         .guidance.ready{color:#7df2ac;border-color:#235d3c}
         
-        .capture-bottom{position:absolute;left:0;right:0;bottom:max(14px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:10px}
+        .capture-bottom{position:absolute;left:0;right:0;bottom:max(30px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:16px}
         .status-row{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap}.pill{background:#0009;border:1px solid #333;padding:6px 9px;border-radius:999px;font-size:11px;color:#ddd}.pill.ok{color:#7df2ac;border-color:#245d3d;background:#08150e99}.pill.bad{color:#ff8b96;border-color:#5e242b;background:#17090b99}
         .progress-wrap{width:min(430px,72vw);height:4px;background:#242424;border-radius:99px;overflow:hidden}.progress{height:100%;width:0;background:#fff;transition:width .2s}
-        
-        .shutter{width:70px;height:70px;border-radius:50%;border:5px solid #fff;background:var(--red);box-shadow:0 4px 15px rgba(0,0,0,0.5);pointer-events:auto;transition:transform .12s,opacity .12s,background .12s}.shutter:not(:disabled):active{transform:scale(.94)}.shutter.flash{transform:scale(1.12);filter:brightness(1.35)}.shutter:disabled{background:#373737;border-color:#777;opacity:.6}
         
         .orientation-data{position:absolute;right:18px;top:70px;min-width:155px;padding:9px 11px;background:#050505c9;border:1px solid #242424;border-radius:10px;font-size:11px;line-height:1.75;color:#bcbcbc}.orientation-data b{color:#fff}
         
@@ -163,7 +180,6 @@
         </aside>
 
         <main class="main">
-            <!-- Mode 2D -->
             <section class="mode mode-2d" id="mode2d">
                 <div class="empty-2d" id="empty2d">
                     <div style="font-size:44px">▧</div>
@@ -174,19 +190,19 @@
                 </div>
             </section>
 
-            <!-- Mode 360 -->
             <section class="mode hidden" id="mode360">
                 <div class="capture" id="captureScreen">
                     <div class="permission" id="permission">
                         <div class="permission-card">
                             <div class="big-icon">◎</div>
                             <h1>Créer un panorama 360°</h1>
-                            <p>Tourne progressivement autour de toi. Place le point jaune dans le cercle blanc. La photo se capture toute seule.</p>
+                            <p>Tourne doucement. Place le point orange dans le cercle blanc et <b>reste dessus pendant 1 seconde</b>. La photo se capture toute seule.</p>
                             <button class="primary" id="start360">Activer la Caméra & le Guidage 360°</button>
                         </div>
                     </div>
 
-                    <!-- FLUX CAMÉRA VISIBLE -->
+                    <div id="flashOverlay" class="flash-overlay"></div>
+
                     <video id="camera" autoplay playsinline muted></video>
                     <canvas id="captureCanvas" class="hidden"></canvas>
                     
@@ -202,13 +218,11 @@
                             </div>
                         </div>
                         
-                        <!-- Cible et réticule -->
                         <div class="target" id="targetRing" aria-hidden="true"></div>
                         <div class="target-dot" id="targetDot" aria-hidden="true"></div>
                         
                         <div class="guidance" id="guidance">Active le guidage</div>
                         
-                        <!-- Mini panorama au-dessus du bouton -->
                         <div class="panorama-stage" aria-label="Panorama en construction">
                             <canvas id="panoCanvas" width="1600" height="800"></canvas>
                         </div>
@@ -225,8 +239,7 @@
                                 <span class="pill bad" id="qualityPill">Alignement requis</span>
                             </div>
                             <div class="progress-wrap"><div class="progress" id="progress"></div></div>
-                            <button class="shutter" id="shutter" disabled aria-label="Capture automatique"></button>
-                        </div>
+                            </div>
                     </div>
                 </div>
                 
@@ -257,8 +270,8 @@
 <script>
 "use strict";
 
-const TOTAL_PHOTOS = 20, HORIZONTAL_COUNT = 12, YAW_TOLERANCE = 5, PITCH_TOLERANCE = 8, PANO_WIDTH = 2400, PANO_HEIGHT = 1200, JPEG_QUALITY = .88;
-const state = {mode: "2d", running: false, stream: null, sensorListening: false, yaw: null, pitch: null, roll: null, startYaw: null, step: 0, targets: [], photos: [], pano: null, viewer: null, projectName: "Visite immobilière", scenes: [], captureBusy: false, stableSince: 0, lastAutoCapture: 0, orientationSamples: []};
+const TOTAL_PHOTOS = 20, YAW_TOLERANCE = 5, PITCH_TOLERANCE = 8, PANO_WIDTH = 2400, PANO_HEIGHT = 1200, JPEG_QUALITY = .88;
+const state = {mode: "2d", running: false, stream: null, sensorListening: false, yaw: null, pitch: null, startYaw: null, step: 0, targets: [], photos: [], pano: null, viewer: null, projectName: "Visite immobilière", scenes: [], captureBusy: false, stableSince: 0, lastAutoCapture: 0};
 
 const $ = s => document.querySelector(s);
 const camera = $("#camera"), captureCanvas = $("#captureCanvas"), panoCanvas = $("#panoCanvas"), panoCtx = panoCanvas.getContext("2d");
@@ -268,14 +281,9 @@ function normalizeAngle(v){ return ((v % 360) + 360) % 360; }
 function signedAngle(t, c){ return ((t - c + 540) % 360) - 180; }
 function escapeHtml(v){ return String(v).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"}[c])); }
 
-// ================= BRANCHEMENT DES BOUTONS (CE QUI MANQUAIT) =================
 document.addEventListener("DOMContentLoaded", () => {
     renderSceneList();
-    
-    document.querySelectorAll(".tab").forEach(t => {
-        t.addEventListener("click", e => setMode(e.target.dataset.mode));
-    });
-
+    document.querySelectorAll(".tab").forEach(t => { t.addEventListener("click", e => setMode(e.target.dataset.mode)); });
     $("#start360").addEventListener("click", start360);
     $("#restart360").addEventListener("click", restart360);
     $("#exit360").addEventListener("click", () => { stopCamera(); setMode('2d'); });
@@ -283,7 +291,6 @@ document.addEventListener("DOMContentLoaded", () => {
     $("#renameBtn").addEventListener("click", renameProject);
     $("#import2d").addEventListener("click", () => $("#photoInput").click());
 });
-// =============================================================================
 
 function setMode(mode){
     state.mode = mode;
@@ -344,12 +351,7 @@ function showModal(title, text, confirmLabel = "Valider"){
         $("#modalText").textContent = text;
         $("#modalOk").textContent = confirmLabel;
         $("#modal").classList.remove("hidden");
-        const done = r => {
-            $("#modal").classList.add("hidden");
-            $("#modalOk").onclick = null;
-            $("#modalCancel").onclick = null;
-            resolve(r);
-        };
+        const done = r => { $("#modal").classList.add("hidden"); $("#modalOk").onclick = null; $("#modalCancel").onclick = null; resolve(r); };
         $("#modalOk").onclick = () => done(true);
         $("#modalCancel").onclick = () => done(false);
     });
@@ -358,9 +360,9 @@ function showModal(title, text, confirmLabel = "Valider"){
 function buildTargets(startYaw){
     const t = [], b = normalizeAngle(startYaw);
     const labels = ["Avant", "Avant-droite", "Droite", "Arrière-droite", "Arrière", "Arrière-gauche", "Gauche", "Avant-gauche", "Avant", "Avant-droite", "Droite", "Arrière-droite"];
-    for(let i = 0; i < 12; i++) t.push({ yaw: normalizeAngle(b + i * 30), pitch: 0, phase: "horizontal", label: labels[i] });
-    [0, 90, 180, 270].forEach((o, i) => t.push({ yaw: normalizeAngle(b + o), pitch: 35, phase: "up", label: "Haut" }));
-    [0, 90, 180, 270].forEach((o, i) => t.push({ yaw: normalizeAngle(b + o), pitch: -35, phase: "down", label: "Bas" }));
+    for(let i = 0; i < 12; i++) t.push({ yaw: normalizeAngle(b + i * 30), pitch: 0, label: labels[i] });
+    [0, 90, 180, 270].forEach(o => t.push({ yaw: normalizeAngle(b + o), pitch: 35, label: "Haut" }));
+    [0, 90, 180, 270].forEach(o => t.push({ yaw: normalizeAngle(b + o), pitch: -35, label: "Bas" }));
     return t;
 }
 
@@ -371,7 +373,6 @@ async function start360(){
         
         resetCaptureState();
         
-        // Demande permission gyroscope sur iOS 13+
         if(typeof DeviceOrientationEvent?.requestPermission === "function"){
             const permission = await DeviceOrientationEvent.requestPermission();
             if(permission !== "granted") throw new Error("Permission des capteurs refusée.");
@@ -402,6 +403,7 @@ async function start360(){
         
         setStep(0);
         drawPanoramaPreview();
+        captureLoop(); // Lance la boucle pour valider la durée de 1 seconde
     } catch(e) {
         stopCamera();
         $("#permission").classList.remove("hidden");
@@ -426,12 +428,7 @@ function handleOrientation(e){
     
     state.yaw = yaw;
     state.pitch = pitch;
-    state.roll = typeof e.gamma === "number" ? e.gamma : null;
-    state.orientationSamples.push({yaw, pitch, t: performance.now()});
-    if(state.orientationSamples.length > 12) state.orientationSamples.shift();
-    
     updateGuidance();
-    autoCaptureTick();
 }
 
 function waitForYaw(timeout){
@@ -447,15 +444,11 @@ function waitForYaw(timeout){
 }
 
 function stopCamera(){
-    if(state.stream){
-        state.stream.getTracks().forEach(t => t.stop());
-        state.stream = null;
-    }
+    if(state.stream){ state.stream.getTracks().forEach(t => t.stop()); state.stream = null; }
     camera.srcObject = null;
     state.running = false;
     state.captureBusy = false;
     state.stableSince = 0;
-    $("#shutter").disabled = true;
     if(state.sensorListening){
         window.removeEventListener("deviceorientation", handleOrientation, true);
         window.removeEventListener("deviceorientationabsolute", handleOrientation, true);
@@ -474,7 +467,6 @@ function resetCaptureState(){
     state.captureBusy = false;
     state.stableSince = 0;
     state.lastAutoCapture = 0;
-    state.orientationSamples = [];
     $("#counter").textContent = "Photo 0 / 20";
     $("#progress").style.width = "0%";
     $("#qualityPill").textContent = "Alignement requis";
@@ -483,7 +475,6 @@ function resetCaptureState(){
     $("#guidance").classList.remove("ready");
     $("#targetRing").classList.remove("ready");
     $("#targetDot").classList.remove("ready");
-    $("#shutter").disabled = true;
 }
 
 function setStep(step){
@@ -503,7 +494,7 @@ function alignment(){
     const t = state.targets[state.step];
     if(!t || state.yaw == null) return null;
     const yd = signedAngle(t.yaw, state.yaw), pd = t.pitch - (state.pitch ?? 0);
-    return { t, yd, pd, yawOK: Math.abs(yd) <= YAW_TOLERANCE, pitchOK: Math.abs(pd) <= PITCH_TOLERANCE, ready: Math.abs(yd) <= YAW_TOLERANCE && Math.abs(pd) <= PITCH_TOLERANCE };
+    return { t, yd, pd, ready: Math.abs(yd) <= YAW_TOLERANCE && Math.abs(pd) <= PITCH_TOLERANCE };
 }
 
 function updateGuidance(){
@@ -521,13 +512,13 @@ function updateGuidance(){
     $("#currentYaw").textContent = Math.round(state.yaw);
     $("#deltaYaw").textContent = Math.round(Math.abs(a.yd));
 
-    // Déplacement visuel du point (Réticule façon 360 App)
-    const pxPerDeg = 14; 
+    // Correction de l'inversion et de la sensibilité (Tom & Jerry)
+    const pxPerDeg = 8; // Sensibilité plus douce
     let dx = a.yd * pxPerDeg; 
-    let dy = a.pd * pxPerDeg;
+    let dy = -a.pd * pxPerDeg; // <-- Le "moins" corrige l'inversion de l'axe vertical
 
-    // Limiter le déplacement à l'écran
-    const maxDist = window.innerWidth / 2.2;
+    // Limiter le déplacement pour qu'il ne sorte pas trop de l'écran
+    const maxDist = window.innerWidth / 2.5;
     const dist = Math.hypot(dx, dy);
     if(dist > maxDist){
         dx = (dx / dist) * maxDist;
@@ -537,59 +528,49 @@ function updateGuidance(){
     dot.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
 
     const ready = a.ready && state.running && !state.captureBusy;
-    $("#qualityPill").textContent = ready ? "Parfait !" : "Aligne le point jaune";
+    $("#qualityPill").textContent = ready ? "Reste sans bouger..." : "Aligne le point orange";
     $("#qualityPill").className = "pill " + (ready ? "ok" : "bad");
     
     $("#targetRing").classList.toggle("ready", ready);
     dot.classList.toggle("ready", ready);
     $("#guidance").classList.toggle("ready", ready);
-    $("#shutter").disabled = true;
 
     if(ready){
-        $("#guidance").textContent = "Ne bouge plus...";
+        $("#guidance").textContent = "Ne bouge plus !";
     } else {
         $("#guidance").textContent = "Place le point dans le cercle central";
     }
 }
 
-function isStable(){
-    const a = alignment();
-    if(!a?.ready) return false;
-    const now = performance.now();
-    const recent = state.orientationSamples.filter(s => now - s.t < 350 && s.yaw != null);
-    if(recent.length < 3) return false;
-    const yawVals = recent.map(s => s.yaw);
-    const pitchVals = recent.map(s => s.pitch ?? 0);
-    const ref = yawVals[yawVals.length - 1];
-    const yawSpread = Math.max(...yawVals.map(v => Math.abs(signedAngle(ref, v))));
-    const pitchSpread = Math.max(...pitchVals) - Math.min(...pitchVals);
-    return yawSpread <= 2.5 && pitchSpread <= 3.5;
-}
-
-function autoCaptureTick(){
-    if(!state.running || state.captureBusy || state.step >= TOTAL_PHOTOS) return;
-    const a = alignment();
-    if(!a?.ready){ state.stableSince = 0; return; }
-    if(!isStable()){ state.stableSince = 0; return; }
-    
-    const now = performance.now();
-    if(!state.stableSince) state.stableSince = now;
-    
-    const hold = state.step < 12 ? 400 : 500;
-    if(now - state.stableSince >= hold && now - state.lastAutoCapture > 1000){
-        capturePhoto(true);
+// Boucle gérant le chronomètre d'1 seconde
+function captureLoop() {
+    if(!state.running || state.captureBusy || state.step >= TOTAL_PHOTOS) {
+        if(state.running) requestAnimationFrame(captureLoop);
+        return;
     }
+    
+    const a = alignment();
+    if(!a?.ready){
+        state.stableSince = 0; // Remise à 0 si on sort du cercle
+    } else {
+        const now = performance.now();
+        if(!state.stableSince) state.stableSince = now; // Démarre le chrono
+        
+        // Si ça fait 1000 millisecondes (1 seconde) qu'on est sur le point
+        if(now - state.stableSince >= 1000 && now - state.lastAutoCapture > 1500){
+            capturePhoto();
+            state.stableSince = 0; // Remise à zéro pour la prochaine photo
+        }
+    }
+    requestAnimationFrame(captureLoop);
 }
 
-function capturePhoto(auto = false){
-    if(!state.running || state.captureBusy || state.step >= TOTAL_PHOTOS) return;
+function capturePhoto(){
     if(!camera.videoWidth || !camera.videoHeight) return;
     
-    const a = alignment();
-    if(!a?.ready && auto) return;
-    
     state.captureBusy = true;
-    updateGuidance();
+    updateGuidance(); // Met en pause le point visuel
+    flashCapture(); // Déclenche le flash blanc !
     
     try {
         const sw = camera.videoWidth, sh = camera.videoHeight;
@@ -599,14 +580,14 @@ function capturePhoto(auto = false){
         captureCanvas.width = w; captureCanvas.height = h;
         captureCanvas.getContext("2d").drawImage(camera, 0, 0, w, h);
         
-        const photo = { index: state.step, yaw: state.yaw, pitch: state.pitch ?? 0, targetYaw: a.t.yaw, targetPitch: a.t.pitch, width: w, height: h };
+        const photo = { index: state.step, yaw: state.yaw, pitch: state.pitch ?? 0, width: w, height: h };
         stitchPhotoIntoPanorama(captureCanvas, photo);
         state.photos.push(photo);
         
         state.lastAutoCapture = performance.now();
         state.captureBusy = false;
-        flashCapture();
-        setStep(state.step + 1);
+        
+        setStep(state.step + 1); // Passe à la cible suivante
         drawPanoramaPreview();
     } catch(e) {
         state.captureBusy = false;
@@ -616,8 +597,10 @@ function capturePhoto(auto = false){
 }
 
 function flashCapture(){
-    $("#shutter").classList.add("flash");
-    setTimeout(() => $("#shutter").classList.remove("flash"), 150);
+    const flash = document.getElementById("flashOverlay");
+    flash.classList.add("flash");
+    // Retire le flash après 150 millisecondes
+    setTimeout(() => flash.classList.remove("flash"), 150);
 }
 
 function createPanoramaCanvas(){
@@ -633,7 +616,6 @@ function drawPanoramaPreview(){
     panoCtx.clearRect(0, 0, panoCanvas.width, panoCanvas.height);
     panoCtx.fillStyle = "#111";
     panoCtx.fillRect(0, 0, panoCanvas.width, panoCanvas.height);
-    
     if(state.pano) panoCtx.drawImage(state.pano.canvas, 0, 0, panoCanvas.width, panoCanvas.height);
     
     if(!state.photos.length){
@@ -661,7 +643,6 @@ function stitchPhotoIntoPanorama(src, photo){
     
     tc.drawImage(src, cropX, cropY, cropW, cropH, 0, 0, stripW, stripH);
     
-    // Fondu des bords
     const im = tc.getImageData(0, 0, stripW, stripH), d = im.data;
     for(let y = 0; y < stripH; y++){
         const vy = Math.min(1, y / (stripH * .15), (stripH - y) / (stripH * .15));
@@ -726,7 +707,6 @@ async function restart360(){
     $("#permission").classList.remove("hidden");
 }
 
-// Visionneuse simplifiée
 class PanoViewer{
     constructor(canvas, source){
         this.canvas = canvas; this.ctx = canvas.getContext("2d"); this.source = source;
@@ -775,7 +755,6 @@ class PanoViewer{
         const ctx = this.ctx, w = this.canvas.width, h = this.canvas.height;
         ctx.fillStyle = "#000"; ctx.fillRect(0, 0, w, h);
         
-        // Affichage très basique pour la démo en 2D en attendant le WebGL
         const drawW = w * (180 / this.fov);
         const drawH = h * (180 / this.fov);
         const offsetX = (this.lon % 360) / 360 * drawW;
