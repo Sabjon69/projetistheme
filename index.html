@@ -124,7 +124,7 @@ button:disabled{cursor:not-allowed}
               <div class="big-icon">◎</div>
               <h1>Créer un panorama 360°</h1>
               <p>Tourne progressivement autour de toi. Le téléphone te guide en degrés et autorise chaque photo seulement lorsque la position est correcte. Le panorama se construit au centre de l'écran.</p>
-              <button class="primary" id="start360">Activer la caméra et le guidage</button>
+              <button class="primary" id="start360">Activer le guidage 360°</button>
             </div>
           </div>
 
@@ -396,18 +396,27 @@ function buildTargets(startYaw){
    CAMÉRA / CAPTEURS
 ----------------------------- */
 async function start360(){
+  /*
+    IMPORTANT iPhone/Safari:
+    requestPermission() doit être appelé DIRECTEMENT depuis le clic
+    utilisateur. Il ne faut surtout pas attendre getUserMedia() avant
+    de demander la permission d'orientation : après un await, Safari
+    peut considérer que la demande n'est plus liée au geste utilisateur.
+  */
   try{
     if(!window.isSecureContext){
-      throw new Error("La caméra et les capteurs nécessitent HTTPS ou localhost. Ouvre le site depuis un serveur local ou HTTPS.");
+      throw new Error("Cette page n'est pas dans un contexte sécurisé. Pour un test local, utilise http://localhost (pas file://). Pour un téléphone réel, utilise HTTPS.");
     }
     if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
       throw new Error("La caméra n'est pas disponible dans ce navigateur.");
     }
 
-    // Remise à zéro d'une éventuelle ancienne capture.
     resetCaptureState();
 
-    // Caméra arrière. Le flux est utilisé en interne pour prendre des photos fixes.
+    // 1) DEMANDE DES CAPTEURS EN PREMIER, directement depuis le clic.
+    await requestOrientationPermission();
+
+    // 2) Ensuite seulement, demande la caméra arrière.
     const stream = await navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: { ideal: "environment" },
@@ -421,8 +430,6 @@ async function start360(){
     state.stream = stream;
     camera.srcObject = stream;
     await camera.play();
-
-    await requestOrientationPermission();
 
     state.running = true;
     $("#permission").classList.add("hidden");
@@ -446,7 +453,7 @@ async function start360(){
   }catch(error){
     stopCamera();
     $("#permission").classList.remove("hidden");
-    alert("Impossible de démarrer le mode 360°.\n\n" + (error?.message || error) + "\n\nSur iPhone, autorise les capteurs lorsqu'ils sont demandés et utilise HTTPS ou localhost.");
+    alert("Impossible de démarrer le mode 360°.\n\n" + (error?.message || error));
   }
 }
 
@@ -456,9 +463,17 @@ async function requestOrientationPermission(){
     throw new Error("Ce navigateur ne fournit pas DeviceOrientationEvent.");
   }
 
+  // Sur iOS, cette fonction doit être appelée pendant le geste utilisateur.
   if(typeof DeviceOrientation.requestPermission === "function"){
-    const result = await DeviceOrientation.requestPermission();
-    if(result !== "granted") throw new Error("Permission d'orientation refusée.");
+    let result;
+    try{
+      result = await DeviceOrientation.requestPermission();
+    }catch(error){
+      throw new Error("Safari a bloqué la demande des capteurs. Appuie à nouveau sur « Activer le guidage 360° » puis accepte l'autorisation.");
+    }
+    if(result !== "granted"){
+      throw new Error("Permission des capteurs refusée. Autorise les mouvements et l'orientation pour ce site dans Safari.");
+    }
   }
 
   if(!state.sensorListening){
