@@ -43,7 +43,6 @@
         /* 360 CAPTURE */
         .capture{position:relative;height:100%;width:100%;overflow:hidden;background:#000}
         
-        /* VIDEO BACKGROUND */
         #camera {
             position: absolute;
             inset: 0;
@@ -53,7 +52,6 @@
             z-index: 1;
         }
 
-        /* OVERLAY FLASH POUR LE FEEDBACK VISUEL */
         .flash-overlay {
             position: absolute;
             inset: 0;
@@ -76,14 +74,13 @@
         }
         
         .capture-top{position:absolute;left:0;right:0;top:max(16px,env(safe-area-inset-top));display:flex;align-items:flex-start;justify-content:space-between;padding:0 18px}
-        .capture-title{font-size:15px;font-weight:800; text-shadow: 0 2px 4px #000;}.capture-sub{font-size:12px;color:#eee;margin-top:3px; text-shadow: 0 1px 3px #000;}
+        .capture-title{font-size:15px;font-weight:800; text-shadow: 0 2px 4px #000;}.capture-sub{font-size:13px;color:var(--yellow);margin-top:3px; text-shadow: 0 1px 3px #000; font-weight:700;}
         .capture-tools{display:flex;gap:7px;pointer-events:auto}.capture-tools button{border:1px solid #555;background:#0009;color:#fff;border-radius:8px;padding:8px 10px}
         
-        /* Mini-map panorama */
         .panorama-stage{
             position:absolute;
             left:50%;
-            bottom:120px; 
+            bottom:110px; 
             transform:translateX(-50%);
             width:min(80vw,350px);
             aspect-ratio:2.5/1;
@@ -102,54 +99,52 @@
             left:50%;
             top:45%;
             transform:translate(-50%,-50%);
-            width: 70px;
-            height: 70px;
-            border:3px solid rgba(255,255,255,.9);
+            width: 75px;
+            height: 75px;
+            border:3px solid rgba(255,255,255,.85);
             border-radius:50%;
             pointer-events:none;
             transition:border-color .2s,box-shadow .2s, transform 0.2s ease-out;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
         }
         .target.ready{
             border-color:var(--green);
-            box-shadow:0 0 30px rgba(56,220,124,.5);
-            transform:translate(-50%,-50%) scale(0.85); /* Petit effet d'écrasement quand on cible bien */
+            box-shadow:0 0 35px rgba(56,220,124,.6);
+            transform:translate(-50%,-50%) scale(0.9);
         }
 
-        /* Point mobile qui flotte (Gyrophare lissé) */
+        /* Point mobile stratégique */
         .target-dot {
             position: absolute;
             left: 50%;
             top: 45%;
-            width: 24px;
-            height: 24px;
+            width: 26px;
+            height: 26px;
             background: var(--yellow);
             border: 2px solid #fff;
             border-radius: 50%;
             transform: translate(-50%, -50%);
-            box-shadow: 0 0 10px rgba(0,0,0,0.6);
-            /* Transition plus fluide pour éviter l'effet Tom & Jerry */
-            transition: transform 0.15s ease-out, background 0.2s;
+            box-shadow: 0 0 12px rgba(0,0,0,0.7);
+            transition: transform 0.1s linear, background 0.2s;
             z-index: 6;
             display: none;
         }
         .target-dot.ready {
             background: var(--green);
-            transform: translate(-50%, -50%) scale(1.3);
+            transform: translate(-50%, -50%) scale(1.25);
         }
         
-        .guidance{position:absolute;left:50%;top:calc(45% + 60px);transform:translateX(-50%);background:#050505d9;border:1px solid #333;padding:7px 12px;border-radius:999px;font-size:12px;font-weight:800;white-space:nowrap}
+        .guidance{position:absolute;left:50%;top:calc(45% + 65px);transform:translateX(-50%);background:#050505d9;border:1px solid #333;padding:7px 14px;border-radius:999px;font-size:12px;font-weight:800;white-space:nowrap}
         .guidance.ready{color:#7df2ac;border-color:#235d3c}
         
-        .capture-bottom{position:absolute;left:0;right:0;bottom:max(30px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:16px}
-        .status-row{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap}.pill{background:#0009;border:1px solid #333;padding:6px 9px;border-radius:999px;font-size:11px;color:#ddd}.pill.ok{color:#7df2ac;border-color:#245d3d;background:#08150e99}.pill.bad{color:#ff8b96;border-color:#5e242b;background:#17090b99}
+        .capture-bottom{position:absolute;left:0;right:0;bottom:max(25px,env(safe-area-inset-top));display:flex;flex-direction:column;align-items:center;gap:12px}
+        .status-row{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap}.pill{background:#0009;border:1px solid #333;padding:6px 10px;border-radius:999px;font-size:11px;color:#ddd}.pill.ok{color:#7df2ac;border-color:#245d3d;background:#08150e99}.pill.bad{color:#ff8b96;border-color:#5e242b;background:#17090b99}
         .progress-wrap{width:min(430px,72vw);height:4px;background:#242424;border-radius:99px;overflow:hidden}.progress{height:100%;width:0;background:#fff;transition:width .2s}
         
         .orientation-data{position:absolute;right:18px;top:70px;min-width:155px;padding:9px 11px;background:#050505c9;border:1px solid #242424;border-radius:10px;font-size:11px;line-height:1.75;color:#bcbcbc}.orientation-data b{color:#fff}
         
         .permission{position:absolute;inset:0;z-index:20;background:#000;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px}.permission-card{width:min(560px,100%)}.permission-card .big-icon{font-size:44px;margin-bottom:12px}.permission-card h1{font-size:27px;margin:0 0 9px}.permission-card p{margin:0 auto;max-width:520px;color:#8f8f8f;line-height:1.6}.permission-card button{margin-top:18px;max-width:310px}
         
-        /* 360 viewer */
         .viewer{position:absolute;inset:0;background:#000;z-index: 20;}.viewer canvas{display:block;width:100%;height:100%}.viewer-ui{position:absolute;left:18px;top:max(16px,env(safe-area-inset-top));z-index:4;pointer-events:none}.viewer-ui h2{margin:0;font-size:16px}.viewer-ui p{margin:5px 0;color:#999;font-size:11px}.viewer-close{position:absolute;right:18px;top:max(16px,env(safe-area-inset-top));z-index:4;border:1px solid #303030;background:#101010dd;color:#fff;border-radius:8px;padding:8px 10px; pointer-events:auto;}
         
         .modal{position:fixed;inset:0;background:#000c;z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}.modal-card{width:min(520px,100%);background:#151515;border:1px solid #303030;border-radius:15px;padding:20px}.modal-card h2{margin:0 0 8px}.modal-card p{color:#aaa;line-height:1.5}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.modal-actions .primary{width:auto;padding:10px 14px}
@@ -195,9 +190,9 @@
                     <div class="permission" id="permission">
                         <div class="permission-card">
                             <div class="big-icon">◎</div>
-                            <h1>Créer un panorama 360°</h1>
-                            <p>Tourne doucement. Place le point orange dans le cercle blanc et <b>reste dessus pendant 1 seconde</b>. La photo se capture toute seule.</p>
-                            <button class="primary" id="start360">Activer la Caméra & le Guidage 360°</button>
+                            <h1>Panorama 360° Sans Trous</h1>
+                            <p>16 points stratégiques couvrent toute la pièce. Vise chaque point jaune, <b>reste dessus 1 seconde</b> : la photo se prend toute seule sans laisser de zones noires.</p>
+                            <button class="primary" id="start360">Démarrer le Scan 360°</button>
                         </div>
                     </div>
 
@@ -209,7 +204,7 @@
                     <div class="capture-ui">
                         <div class="capture-top">
                             <div>
-                                <div class="capture-title">Création du panorama</div>
+                                <div class="capture-title">Scan 360° Intégral</div>
                                 <div class="capture-sub" id="positionLabel">Point de départ</div>
                             </div>
                             <div class="capture-tools">
@@ -221,33 +216,31 @@
                         <div class="target" id="targetRing" aria-hidden="true"></div>
                         <div class="target-dot" id="targetDot" aria-hidden="true"></div>
                         
-                        <div class="guidance" id="guidance">Active le guidage</div>
+                        <div class="guidance" id="guidance">Prêt</div>
                         
-                        <div class="panorama-stage" aria-label="Panorama en construction">
+                        <div class="panorama-stage" aria-label="Aperçu Panorama">
                             <canvas id="panoCanvas" width="1600" height="800"></canvas>
                         </div>
 
                         <div class="orientation-data" id="orientData" style="display:none;">
                             <div>Orientation : <b id="currentYaw">—</b>°</div>
-                            <div>Cible : <b id="targetYaw">—</b>°</div>
-                            <div>Écart : <b id="deltaYaw">—</b>°</div>
                         </div>
                         
                         <div class="capture-bottom">
                             <div class="status-row">
-                                <span class="pill" id="counter">Photo 0 / 20</span>
-                                <span class="pill bad" id="qualityPill">Alignement requis</span>
+                                <span class="pill" id="counter">Point 0 / 16</span>
+                                <span class="pill bad" id="qualityPill">Cherche le point jaune</span>
                             </div>
                             <div class="progress-wrap"><div class="progress" id="progress"></div></div>
-                            </div>
+                        </div>
                     </div>
                 </div>
                 
                 <div class="viewer hidden" id="viewer">
                     <canvas id="viewerCanvas"></canvas>
                     <div class="viewer-ui">
-                        <h2>Panorama 360° terminé</h2>
-                        <p>Glisse pour regarder autour de toi</p>
+                        <h2>Panorama 360° Complet</h2>
+                        <p>Glisse ton doigt pour regarder autour de toi</p>
                     </div>
                     <button class="viewer-close" id="closeViewer">Fermer</button>
                 </div>
@@ -270,7 +263,7 @@
 <script>
 "use strict";
 
-const TOTAL_PHOTOS = 20, YAW_TOLERANCE = 5, PITCH_TOLERANCE = 8, PANO_WIDTH = 2400, PANO_HEIGHT = 1200, JPEG_QUALITY = .88;
+const TOTAL_PHOTOS = 16, YAW_TOLERANCE = 8, PITCH_TOLERANCE = 10, PANO_WIDTH = 2400, PANO_HEIGHT = 1200, JPEG_QUALITY = .90;
 const state = {mode: "2d", running: false, stream: null, sensorListening: false, yaw: null, pitch: null, startYaw: null, step: 0, targets: [], photos: [], pano: null, viewer: null, projectName: "Visite immobilière", scenes: [], captureBusy: false, stableSince: 0, lastAutoCapture: 0};
 
 const $ = s => document.querySelector(s);
@@ -304,13 +297,13 @@ function renderSceneList(){
     const list = $("#sceneList");
     list.innerHTML = "";
     if(!state.scenes.length){
-        list.innerHTML = '<div class="scene"><div class="scene-name">Aucune scène</div><div class="scene-meta">Crée un panorama 360° pour commencer</div></div>';
+        list.innerHTML = '<div class="scene"><div class="scene-name">Aucune scène</div><div class="scene-meta">Crée un panorama 360° sans trous</div></div>';
         return;
     }
     state.scenes.forEach((scene, index) => {
         const item = document.createElement("div");
         item.className = "scene" + (index === state.scenes.length - 1 ? " active" : "");
-        item.innerHTML = `<div class="scene-name">${escapeHtml(scene.name)}</div><div class="scene-meta">${scene.count} photos · ${escapeHtml(scene.date)}</div><div class="scene-actions"><button data-action="open">Ouvrir</button><button data-action="delete">Supprimer</button></div>`;
+        item.innerHTML = `<div class="scene-name">${escapeHtml(scene.name)}</div><div class="scene-meta">${scene.count} zones · ${escapeHtml(scene.date)}</div><div class="scene-actions"><button data-action="open">Ouvrir</button><button data-action="delete">Supprimer</button></div>`;
         item.querySelector('[data-action="open"]').onclick = () => openScene(index);
         item.querySelector('[data-action="delete"]').onclick = () => deleteScene(index);
         list.appendChild(item);
@@ -357,25 +350,43 @@ function showModal(title, text, confirmLabel = "Valider"){
     });
 }
 
+// Définition des 16 points stratégiques fixes pour couvrir 100% de la sphère sans trous noirs
 function buildTargets(startYaw){
-    const t = [], b = normalizeAngle(startYaw);
-    const labels = ["Avant", "Avant-droite", "Droite", "Arrière-droite", "Arrière", "Arrière-gauche", "Gauche", "Avant-gauche", "Avant", "Avant-droite", "Droite", "Arrière-droite"];
-    for(let i = 0; i < 12; i++) t.push({ yaw: normalizeAngle(b + i * 30), pitch: 0, label: labels[i] });
-    [0, 90, 180, 270].forEach(o => t.push({ yaw: normalizeAngle(b + o), pitch: 35, label: "Haut" }));
-    [0, 90, 180, 270].forEach(o => t.push({ yaw: normalizeAngle(b + o), pitch: -35, label: "Bas" }));
-    return t;
+    const targets = [];
+    const base = normalizeAngle(startYaw);
+    
+    // 1. Cercle Horizon (8 points tous les 45°)
+    const hAngles = [0, 45, 90, 135, 180, 225, 270, 315];
+    const hLabels = ["Nord (Face)", "Nord-Est", "Est (Droite)", "Sud-Est", "Sud (Dos)", "Sud-Ouest", "Ouest (Gauche)", "Nord-Ouest"];
+    for(let i = 0; i < 8; i++){
+        targets.push({ yaw: normalizeAngle(base + hAngles[i]), pitch: 0, label: `Horizon : ${hLabels[i]}` });
+    }
+    
+    // 2. Cercle Plafond / Haut (4 points)
+    const tAngles = [0, 90, 180, 270];
+    const tLabels = ["Nord", "Est", "Sud", "Ouest"];
+    for(let i = 0; i < 4; i++){
+        targets.push({ yaw: normalizeAngle(base + tAngles[i]), pitch: 42, label: `Plafond : ${tLabels[i]}` });
+    }
+    
+    // 3. Cercle Sol / Bas (4 points)
+    for(let i = 0; i < 4; i++){
+        targets.push({ yaw: normalizeAngle(base + tAngles[i]), pitch: -42, label: `Sol : ${tLabels[i]}` });
+    }
+    
+    return targets; // Total exact : 16 photos parfaitement réparties
 }
 
 async function start360(){
     try {
-        if(!window.isSecureContext) throw new Error("HTTPS ou localhost requis pour utiliser les capteurs de mouvements.");
-        if(!navigator.mediaDevices?.getUserMedia) throw new Error("La caméra n'est pas disponible.");
+        if(!window.isSecureContext) throw new Error("HTTPS ou localhost requis pour les capteurs.");
+        if(!navigator.mediaDevices?.getUserMedia) throw new Error("Caméra non disponible.");
         
         resetCaptureState();
         
         if(typeof DeviceOrientationEvent?.requestPermission === "function"){
             const permission = await DeviceOrientationEvent.requestPermission();
-            if(permission !== "granted") throw new Error("Permission des capteurs refusée.");
+            if(permission !== "granted") throw new Error("Permission capteurs refusée.");
         }
         
         attachSensors();
@@ -391,7 +402,7 @@ async function start360(){
         $("#viewer").classList.add("hidden");
         
         const initialYaw = await waitForYaw(3000);
-        if(initialYaw == null) throw new Error("Aucune orientation reçue. Bouge ton téléphone ou vérifie les capteurs.");
+        if(initialYaw == null) throw new Error("Aucune orientation détectée. Bouge un peu ton téléphone.");
         
         state.startYaw = initialYaw;
         state.targets = buildTargets(initialYaw);
@@ -403,7 +414,7 @@ async function start360(){
         
         setStep(0);
         drawPanoramaPreview();
-        captureLoop(); // Lance la boucle pour valider la durée de 1 seconde
+        captureLoop();
     } catch(e) {
         stopCamera();
         $("#permission").classList.remove("hidden");
@@ -424,7 +435,7 @@ function handleOrientation(e){
     else if(typeof e.alpha === "number" && Number.isFinite(e.alpha)) yaw = normalizeAngle(360 - e.alpha);
     
     let pitch = null;
-    if(typeof e.beta === "number" && Number.isFinite(e.beta)) pitch = clamp(e.beta - 90, -90, 90);
+    if(typeof e.beta === "number" && Number.isFinite(e.beta)) pitch = clamp(90 - e.beta, -90, 90);
     
     state.yaw = yaw;
     state.pitch = pitch;
@@ -467,12 +478,11 @@ function resetCaptureState(){
     state.captureBusy = false;
     state.stableSince = 0;
     state.lastAutoCapture = 0;
-    $("#counter").textContent = "Photo 0 / 20";
+    $("#counter").textContent = "Point 0 / 16";
     $("#progress").style.width = "0%";
-    $("#qualityPill").textContent = "Alignement requis";
+    $("#qualityPill").textContent = "Cherche le point jaune";
     $("#qualityPill").className = "pill bad";
-    $("#guidance").textContent = "Active le guidage";
-    $("#guidance").classList.remove("ready");
+    $("#guidance").textContent = "Prêt";
     $("#targetRing").classList.remove("ready");
     $("#targetDot").classList.remove("ready");
 }
@@ -482,9 +492,8 @@ function setStep(step){
     if(step >= TOTAL_PHOTOS){ finishCapture(); return; }
     const t = state.targets[step];
     if(!t) return;
-    $("#counter").textContent = `Photo ${step + 1} / ${TOTAL_PHOTOS}`;
+    $("#counter").textContent = `Point ${step + 1} / ${TOTAL_PHOTOS}`;
     $("#progress").style.width = `${(step / TOTAL_PHOTOS) * 100}%`;
-    $("#targetYaw").textContent = Math.round(t.yaw);
     $("#positionLabel").textContent = t.label;
     state.stableSince = 0;
     updateGuidance();
@@ -502,23 +511,18 @@ function updateGuidance(){
     const dot = $("#targetDot");
     if(!a){
         $("#currentYaw").textContent = "—";
-        $("#deltaYaw").textContent = "—";
-        $("#guidance").textContent = "Recherche de capteur...";
         if(dot) dot.style.display = "none";
         return;
     }
 
     if(dot) dot.style.display = "block";
     $("#currentYaw").textContent = Math.round(state.yaw);
-    $("#deltaYaw").textContent = Math.round(Math.abs(a.yd));
 
-    // Correction de l'inversion et de la sensibilité (Tom & Jerry)
-    const pxPerDeg = 8; // Sensibilité plus douce
+    const pxPerDeg = 7;
     let dx = a.yd * pxPerDeg; 
-    let dy = -a.pd * pxPerDeg; // <-- Le "moins" corrige l'inversion de l'axe vertical
+    let dy = a.pd * pxPerDeg; 
 
-    // Limiter le déplacement pour qu'il ne sorte pas trop de l'écran
-    const maxDist = window.innerWidth / 2.5;
+    const maxDist = window.innerWidth / 2.6;
     const dist = Math.hypot(dx, dy);
     if(dist > maxDist){
         dx = (dx / dist) * maxDist;
@@ -528,7 +532,7 @@ function updateGuidance(){
     dot.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
 
     const ready = a.ready && state.running && !state.captureBusy;
-    $("#qualityPill").textContent = ready ? "Reste sans bouger..." : "Aligne le point orange";
+    $("#qualityPill").textContent = ready ? "Immobile 1s..." : "Vise le point jaune";
     $("#qualityPill").className = "pill " + (ready ? "ok" : "bad");
     
     $("#targetRing").classList.toggle("ready", ready);
@@ -536,13 +540,12 @@ function updateGuidance(){
     $("#guidance").classList.toggle("ready", ready);
 
     if(ready){
-        $("#guidance").textContent = "Ne bouge plus !";
+        $("#guidance").textContent = "Ne bouge plus ! Capture...";
     } else {
-        $("#guidance").textContent = "Place le point dans le cercle central";
+        $("#guidance").textContent = "Centre le point jaune";
     }
 }
 
-// Boucle gérant le chronomètre d'1 seconde
 function captureLoop() {
     if(!state.running || state.captureBusy || state.step >= TOTAL_PHOTOS) {
         if(state.running) requestAnimationFrame(captureLoop);
@@ -551,15 +554,15 @@ function captureLoop() {
     
     const a = alignment();
     if(!a?.ready){
-        state.stableSince = 0; // Remise à 0 si on sort du cercle
+        state.stableSince = 0; 
     } else {
         const now = performance.now();
-        if(!state.stableSince) state.stableSince = now; // Démarre le chrono
+        if(!state.stableSince) state.stableSince = now; 
         
-        // Si ça fait 1000 millisecondes (1 seconde) qu'on est sur le point
+        // Maintien d'exactement 1 seconde (1000ms) sur la cible
         if(now - state.stableSince >= 1000 && now - state.lastAutoCapture > 1500){
             capturePhoto();
-            state.stableSince = 0; // Remise à zéro pour la prochaine photo
+            state.stableSince = 0; 
         }
     }
     requestAnimationFrame(captureLoop);
@@ -569,8 +572,8 @@ function capturePhoto(){
     if(!camera.videoWidth || !camera.videoHeight) return;
     
     state.captureBusy = true;
-    updateGuidance(); // Met en pause le point visuel
-    flashCapture(); // Déclenche le flash blanc !
+    updateGuidance();
+    flashCapture();
     
     try {
         const sw = camera.videoWidth, sh = camera.videoHeight;
@@ -580,14 +583,16 @@ function capturePhoto(){
         captureCanvas.width = w; captureCanvas.height = h;
         captureCanvas.getContext("2d").drawImage(camera, 0, 0, w, h);
         
-        const photo = { index: state.step, yaw: state.yaw, pitch: state.pitch ?? 0, width: w, height: h };
+        const target = state.targets[state.step];
+        const photo = { index: state.step, yaw: target.yaw, pitch: target.pitch, width: w, height: h };
+        
         stitchPhotoIntoPanorama(captureCanvas, photo);
         state.photos.push(photo);
         
         state.lastAutoCapture = performance.now();
         state.captureBusy = false;
         
-        setStep(state.step + 1); // Passe à la cible suivante
+        setStep(state.step + 1);
         drawPanoramaPreview();
     } catch(e) {
         state.captureBusy = false;
@@ -599,7 +604,6 @@ function capturePhoto(){
 function flashCapture(){
     const flash = document.getElementById("flashOverlay");
     flash.classList.add("flash");
-    // Retire le flash après 150 millisecondes
     setTimeout(() => flash.classList.remove("flash"), 150);
 }
 
@@ -620,42 +624,46 @@ function drawPanoramaPreview(){
     
     if(!state.photos.length){
         panoCtx.fillStyle = "rgba(255,255,255,.5)";
-        panoCtx.font = "600 40px system-ui";
+        panoCtx.font = "600 360 system-ui";
         panoCtx.textAlign = "center";
-        panoCtx.fillText("Construction du panorama...", panoCanvas.width / 2, panoCanvas.height / 2);
+        panoCtx.fillText("Scan 360 en cours...", panoCanvas.width / 2, panoCanvas.height / 2);
     }
 }
 
+// Fusion avec masquage dégradé pour éviter tout trou noir
 function stitchPhotoIntoPanorama(src, photo){
     if(!state.pano) state.pano = createPanoramaCanvas();
     const ctx = state.pano.ctx, sw = src.width, sh = src.height;
     
-    const hfov = 72, vfov = 52;
-    const stripW = Math.round(PANO_WIDTH * (hfov / 360) * .72), stripH = Math.round(PANO_HEIGHT * (vfov / 180) * .78);
-    const relYaw = normalizeAngle(photo.yaw - (state.startYaw ?? 0));
-    const centerX = relYaw / 360 * PANO_WIDTH;
-    const centerY = PANO_HEIGHT / 2 - (photo.pitch / 90) * (PANO_HEIGHT / 2) * .82;
+    const relYaw = signedAngle(photo.yaw, state.startYaw);
+    const centerX = ((relYaw + 360) % 360) / 360 * PANO_WIDTH;
+    const centerY = PANO_HEIGHT / 2 - (photo.pitch / 90) * (PANO_HEIGHT / 2);
     
-    const cropW = sw * .76, cropH = sh * .80, cropX = (sw - cropW) / 2, cropY = (sh - cropH) / 2;
+    const tileW = Math.round(PANO_WIDTH * 0.40);
+    const tileH = Math.round(PANO_HEIGHT * 0.50);
+    
     const tile = document.createElement("canvas");
-    tile.width = stripW; tile.height = stripH;
+    tile.width = tileW; tile.height = tileH;
     const tc = tile.getContext("2d");
     
-    tc.drawImage(src, cropX, cropY, cropW, cropH, 0, 0, stripW, stripH);
+    tc.drawImage(src, 0, 0, tileW, tileH);
     
-    const im = tc.getImageData(0, 0, stripW, stripH), d = im.data;
-    for(let y = 0; y < stripH; y++){
-        const vy = Math.min(1, y / (stripH * .15), (stripH - y) / (stripH * .15));
-        for(let x = 0; x < stripW; x++){
-            const vx = Math.min(1, x / (stripW * .15), (stripW - x) / (stripW * .15));
-            d[(y * stripW + x) * 4 + 3] = Math.round(255 * clamp(Math.min(vx, vy), 0, 1));
+    // Dégradé radial pour un fondu parfait sans traces noires
+    const im = tc.getImageData(0, 0, tileW, tileH), d = im.data;
+    const cx = tileW / 2, cy = tileH / 2, maxR = Math.hypot(cx, cy);
+    for(let y = 0; y < tileH; y++){
+        for(let x = 0; x < tileW; x++){
+            const dist = Math.hypot(x - cx, y - cy);
+            const alphaFactor = clamp(1 - (dist / maxR), 0, 1);
+            const idx = (y * tileW + x) * 4 + 3;
+            d[idx] = Math.round(d[idx] * Math.pow(alphaFactor, 0.4));
         }
     }
     tc.putImageData(im, 0, 0);
     
     ctx.save();
-    ctx.globalAlpha = .95;
-    drawWrapped(ctx, tile, centerX - stripW / 2, centerY - stripH / 2);
+    ctx.globalCompositeOperation = "source-over";
+    drawWrapped(ctx, tile, centerX - tileW / 2, centerY - tileH / 2);
     ctx.restore();
 }
 
@@ -670,16 +678,16 @@ function finishCapture(){
     state.running = false;
     state.captureBusy = false;
     $("#progress").style.width = "100%";
-    $("#counter").textContent = `Photo ${TOTAL_PHOTOS} / ${TOTAL_PHOTOS}`;
-    $("#qualityPill").textContent = "Panorama terminé";
+    $("#counter").textContent = `Point ${TOTAL_PHOTOS} / ${TOTAL_PHOTOS}`;
+    $("#qualityPill").textContent = "Panorama complet !";
     $("#qualityPill").className = "pill ok";
-    $("#guidance").textContent = "✓ TERMINÉ";
+    $("#guidance").textContent = "✓ TERMINÉ SANS TROU";
     
     stopCamera();
     
     if(!state.pano) return;
     const data = state.pano.canvas.toDataURL("image/jpeg", JPEG_QUALITY);
-    state.scenes.push({ name: `Panorama ${state.scenes.length + 1}`, count: TOTAL_PHOTOS, date: new Date().toLocaleDateString("fr-FR"), panoDataUrl: data });
+    state.scenes.push({ name: `Visite 360° ${state.scenes.length + 1}`, count: TOTAL_PHOTOS, date: new Date().toLocaleDateString("fr-FR"), panoDataUrl: data });
     renderSceneList();
     openViewerWithCanvas(state.pano.canvas);
 }
@@ -699,7 +707,7 @@ function closeViewer(){
 }
 
 async function restart360(){
-    if(!await showModal("Recommencer", "Supprimer les photos et recommencer ?", "Recommencer")) return;
+    if(!await showModal("Recommencer", "Effacer ce scan et recommencer ?", "Recommencer")) return;
     stopCamera();
     resetCaptureState();
     $("#viewer").classList.add("hidden");
