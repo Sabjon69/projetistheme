@@ -2,3757 +2,1061 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="color-scheme" content="dark">
 <title>Studio Visite Pro 360</title>
-
 <style>
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-html,
-body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-    background: #f4f5f7;
-    color: #111;
-}
-
-button {
-    font-family: inherit;
-    border: 0;
-    cursor: pointer;
-}
-
-button:disabled {
-    opacity: .45;
-    cursor: not-allowed;
-}
-
-/* =========================================================
-   APP
-========================================================= */
-
-#app {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-/* =========================================================
-   HEADER
-========================================================= */
-
-.header {
-    height: 72px;
-    min-height: 72px;
-    background: white;
-    border-bottom: 1px solid #ddd;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 18px;
-    z-index: 20;
-}
-
-.brand {
-    font-size: 17px;
-    font-weight: 750;
-}
-
-.header-actions {
-    display: flex;
-    gap: 8px;
-}
-
-.small-btn {
-    background: #f1f3f5;
-    color: #1683e8;
-    padding: 10px 14px;
-    border-radius: 10px;
-    font-weight: 650;
-}
-
-/* =========================================================
-   TABS
-========================================================= */
-
-.tabs {
-    height: 58px;
-    min-height: 58px;
-    background: #fff;
-    display: flex;
-    border-bottom: 1px solid #ddd;
-    z-index: 20;
-}
-
-.tab {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: 700;
-    color: #777;
-    position: relative;
-}
-
-.tab.active {
-    color: #111;
-}
-
-.tab.active::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 8%;
-    right: 8%;
-    height: 3px;
-    background: #2587ef;
-    border-radius: 3px 3px 0 0;
-}
-
-/* =========================================================
-   MAIN
-========================================================= */
-
-.main {
-    flex: 1;
-    min-height: 0;
-    position: relative;
-}
-
-/* =========================================================
-   360 VIEWER
-========================================================= */
-
-.viewer {
-    position: absolute;
-    inset: 0;
-    background: #000;
-    overflow: hidden;
-}
-
-#viewer3d {
-    position: absolute;
-    inset: 0;
-}
-
-.viewer-top {
-    position: absolute;
-    top: 14px;
-    left: 14px;
-    right: 14px;
-    display: flex;
-    justify-content: space-between;
-    z-index: 10;
-    pointer-events: none;
-}
-
-.viewer-top button {
-    pointer-events: auto;
-}
-
-.viewer-btn {
-    background: rgba(255,255,255,.95);
-    color: #1683e8;
-    border-radius: 12px;
-    padding: 10px 13px;
-    font-weight: 700;
-}
-
-/* =========================================================
-   SCENES BUTTON
-========================================================= */
-
-.scenes-button {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(20,20,20,.92);
-    color: white;
-    padding: 12px 20px;
-    border-radius: 25px;
-    z-index: 10;
-    font-weight: 700;
-}
-
-/* =========================================================
-   2D
-========================================================= */
-
-.two-d {
-    position: absolute;
-    inset: 0;
-    background: white;
-    overflow: auto;
-    padding: 25px;
-    display: none;
-}
-
-.two-d.active {
-    display: block;
-}
-
-.upload-zone {
-    border: 2px dashed #bbb;
-    border-radius: 18px;
-    padding: 50px 25px;
-    text-align: center;
-    color: #666;
-    max-width: 650px;
-    margin: 30px auto;
-}
-
-.upload-zone h2 {
-    color: #111;
-    margin-bottom: 10px;
-}
-
-.upload-zone input {
-    margin-top: 20px;
-}
-
-/* =========================================================
-   CAPTURE MODAL
-========================================================= */
-
-.capture {
-    position: fixed;
-    inset: 0;
-    background: #000;
-    z-index: 100;
-    display: none;
-    color: white;
-}
-
-.capture.open {
-    display: flex;
-    flex-direction: column;
-}
-
-/*
-    Vidéo utilisée UNIQUEMENT comme flux caméra interne.
-    Elle n'est jamais affichée au client.
-*/
-#cameraVideo {
-    position: fixed;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
-    pointer-events: none;
-    left: -100px;
-    top: -100px;
-}
-
-#captureCanvas {
-    display: none;
-}
-
-/* =========================================================
-   CAPTURE HEADER
-========================================================= */
-
-.capture-header {
-    height: 88px;
-    min-height: 88px;
-    padding: 18px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-}
-
-.capture-title {
-    font-size: 20px;
-    font-weight: 800;
-}
-
-.capture-position {
-    margin-top: 5px;
-    color: #aaa;
-    font-size: 14px;
-}
-
-.close-capture {
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    background: #181818;
-    border: 1px solid #444;
-    color: white;
-    font-size: 23px;
-}
-
-/* =========================================================
-   CAPTURE BODY
-========================================================= */
-
-.capture-body {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    padding: 10px 20px 25px;
-}
-
-/* =========================================================
-   PREVIEW PHOTO
-========================================================= */
-
-.previous-photo {
-    width: min(85vw, 520px);
-    max-height: 28vh;
-    object-fit: cover;
-    border-radius: 14px;
-    opacity: .48;
-    display: none;
-    margin-bottom: 15px;
-    border: 1px solid #333;
-}
-
-/* =========================================================
-   GUIDANCE
-========================================================= */
-
-.guidance {
-    width: min(92vw, 520px);
-    text-align: center;
-    margin-bottom: 16px;
-}
-
-.guidance-main {
-    font-size: 20px;
-    font-weight: 800;
-}
-
-.guidance-sub {
-    color: #aaa;
-    margin-top: 6px;
-    font-size: 14px;
-}
-
-/* =========================================================
-   DIRECTION INDICATOR
-========================================================= */
-
-.compass-wrapper {
-    width: min(76vw, 390px);
-    height: min(76vw, 390px);
-    max-height: 43vh;
-    max-width: 390px;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.compass {
-    width: 100%;
-    height: 100%;
-    border: 2px solid #333;
-    border-radius: 50%;
-    position: relative;
-}
-
-.compass::before {
-    content: "";
-    position: absolute;
-    left: 50%;
-    top: 0;
-    bottom: 0;
-    width: 1px;
-    background: #222;
-    transform: translateX(-50%);
-}
-
-.compass::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: #222;
-    transform: translateY(-50%);
-}
-
-.compass-letter {
-    position: absolute;
-    font-weight: 800;
-    font-size: 14px;
-    color: #777;
-}
-
-.north {
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.south {
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.east {
-    right: 11px;
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-.west {
-    left: 11px;
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-/* target */
-.target-ring {
-    width: 42px;
-    height: 42px;
-    border: 3px solid #ff9d00;
-    border-radius: 50%;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 3;
-}
-
-.target-ring::before,
-.target-ring::after {
-    content: "";
-    position: absolute;
-    background: #ff9d00;
-}
-
-.target-ring::before {
-    width: 75px;
-    height: 3px;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-}
-
-.target-ring::after {
-    width: 3px;
-    height: 75px;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-}
-
-/* user direction */
-.user-dot {
-    width: 20px;
-    height: 20px;
-    background: white;
-    border: 3px solid #111;
-    border-radius: 50%;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 5;
-    transition: left .15s linear, top .15s linear;
-}
-
-/* =========================================================
-   PITCH INDICATOR
-========================================================= */
-
-.pitch-indicator {
-    width: min(92vw, 520px);
-    margin-top: 15px;
-}
-
-.pitch-line {
-    height: 5px;
-    background: #292929;
-    border-radius: 10px;
-    position: relative;
-}
-
-.pitch-center {
-    position: absolute;
-    left: 50%;
-    top: -8px;
-    width: 2px;
-    height: 21px;
-    background: #666;
-}
-
-.pitch-target {
-    position: absolute;
-    top: -7px;
-    width: 18px;
-    height: 18px;
-    border: 2px solid #ff9d00;
-    border-radius: 50%;
-    transform: translateX(-50%);
-    transition: left .15s linear;
-}
-
-.pitch-text {
-    text-align: center;
-    color: #aaa;
-    margin-top: 8px;
-    font-size: 13px;
-}
-
-/* =========================================================
-   STATUS
-========================================================= */
-
-.status-pill {
-    margin-top: 12px;
-    padding: 9px 16px;
-    border: 1px solid #444;
-    border-radius: 22px;
-    font-size: 13px;
-    color: #ddd;
-    text-align: center;
-}
-
-.status-pill.ready {
-    border-color: #238636;
-    color: #6ee787;
-}
-
-.status-pill.warning {
-    border-color: #9d6f00;
-    color: #ffc94d;
-}
-
-/* =========================================================
-   PROGRESS
-========================================================= */
-
-.capture-bottom {
-    padding: 0 38px 22px;
-}
-
-.progress-info {
-    display: flex;
-    justify-content: space-between;
-    color: #aaa;
-    font-size: 13px;
-    margin-bottom: 8px;
-}
-
-.progress-bar {
-    height: 5px;
-    background: #292929;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.progress-fill {
-    height: 100%;
-    width: 0;
-    background: white;
-    transition: width .3s ease;
-}
-
-/* =========================================================
-   CAMERA CONTROLS
-========================================================= */
-
-.camera-controls {
-    margin-top: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 25px;
-}
-
-.cancel-photo {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background: #181818;
-    color: white;
-    border: 1px solid #444;
-    font-size: 20px;
-}
-
-.shutter {
-    width: 76px;
-    height: 76px;
-    border-radius: 50%;
-    background: white;
-    border: 5px solid #555;
-    box-shadow: 0 0 0 3px #222;
-}
-
-.shutter:active {
-    transform: scale(.94);
-}
-
-/* =========================================================
-   START SCREEN
-========================================================= */
-
-.start-screen {
-    position: absolute;
-    inset: 0;
-    background: #000;
-    z-index: 30;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 25px;
-}
-
-.start-card {
-    width: min(92vw, 500px);
-    text-align: center;
-}
-
-.start-card h1 {
-    font-size: 26px;
-    margin-bottom: 12px;
-}
-
-.start-card p {
-    color: #999;
-    line-height: 1.5;
-}
-
-.start-button {
-    margin-top: 28px;
-    width: 100%;
-    background: white;
-    color: #111;
-    padding: 16px;
-    border-radius: 14px;
-    font-size: 16px;
-    font-weight: 800;
-}
-
-.permission-info {
-    margin-top: 15px;
-    color: #777;
-    font-size: 12px;
-}
-
-/* =========================================================
-   PHOTO CONFIRM
-========================================================= */
-
-.photo-confirm {
-    position: absolute;
-    inset: 0;
-    background: #000;
-    z-index: 50;
-    display: none;
-    flex-direction: column;
-}
-
-.photo-confirm.open {
-    display: flex;
-}
-
-.confirm-image-wrap {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 25px;
-}
-
-#confirmImage {
-    max-width: 94%;
-    max-height: 65vh;
-    object-fit: contain;
-    border-radius: 12px;
-}
-
-.confirm-bottom {
-    padding: 15px 20px 35px;
-    text-align: center;
-}
-
-.confirm-title {
-    font-size: 20px;
-    font-weight: 800;
-    margin-bottom: 7px;
-}
-
-.confirm-sub {
-    color: #999;
-    margin-bottom: 18px;
-}
-
-.confirm-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-}
-
-.confirm-btn {
-    padding: 14px 20px;
-    border-radius: 12px;
-    font-weight: 800;
-}
-
-.confirm-retake {
-    background: #222;
-    color: white;
-}
-
-.confirm-ok {
-    background: white;
-    color: black;
-}
-
-/* =========================================================
-   SCENES PANEL
-========================================================= */
-
-.scenes-panel {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.5);
-    z-index: 80;
-    display: none;
-}
-
-.scenes-panel.open {
-    display: block;
-}
-
-.scenes-sheet {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: white;
-    border-radius: 24px 24px 0 0;
-    max-height: 82vh;
-    overflow: auto;
-    padding: 22px;
-}
-
-.scenes-title {
-    font-size: 20px;
-    font-weight: 800;
-    margin-bottom: 16px;
-}
-
-.scene-card {
-    border: 1px solid #ddd;
-    border-radius: 16px;
-    overflow: hidden;
-    margin-bottom: 15px;
-    background: white;
-}
-
-.scene-thumb {
-    height: 130px;
-    background: #111;
-    overflow: hidden;
-}
-
-.scene-thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.scene-info {
-    padding: 13px;
-}
-
-.scene-name {
-    font-weight: 800;
-    margin-bottom: 10px;
-}
-
-.scene-actions {
-    display: flex;
-    gap: 7px;
-}
-
-.scene-actions button {
-    flex: 1;
-    padding: 10px 6px;
-    border-radius: 9px;
-    background: #f0f1f3;
-    color: #1683e8;
-}
-
-/* =========================================================
-   DESKTOP
-========================================================= */
-
-@media (min-width: 900px) {
-    .capture-body {
-        padding-bottom: 15px;
-    }
-
-    .compass-wrapper {
-        width: 340px;
-        height: 340px;
-    }
-
-    .previous-photo {
-        max-height: 22vh;
-    }
-}
-
-/* =========================================================
-   SMALL MOBILE
-========================================================= */
-
-@media (max-height: 700px) {
-    .capture-header {
-        height: 70px;
-        min-height: 70px;
-    }
-
-    .compass-wrapper {
-        width: min(68vw, 300px);
-        height: min(68vw, 300px);
-        max-height: 35vh;
-    }
-
-    .guidance-main {
-        font-size: 17px;
-    }
-
-    .previous-photo {
-        max-height: 16vh;
-        margin-bottom: 7px;
-    }
-
-    .pitch-indicator {
-        margin-top: 8px;
-    }
-
-    .camera-controls {
-        margin-top: 10px;
-    }
-
-    .capture-bottom {
-        padding-bottom: 12px;
-    }
-}
+:root{
+  --black:#000;--bg:#070707;--panel:#101010;--panel2:#171717;--line:#292929;
+  --text:#f5f5f5;--muted:#929292;--red:#ff3045;--green:#38dc7c;--yellow:#ffc14a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;background:#000;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{overflow:hidden}
+button,input{font:inherit}
+button{cursor:pointer}
+button:disabled{cursor:not-allowed}
+.hidden{display:none!important}
+.app{height:100dvh;display:grid;grid-template-rows:60px 1fr;background:var(--bg)}
+.topbar{display:flex;align-items:center;gap:18px;padding:0 18px;background:#0c0c0c;border-bottom:1px solid var(--line);z-index:30}
+.brand{font-weight:850;letter-spacing:-.5px;white-space:nowrap}.brand span{color:var(--red)}
+.tabs{display:flex;gap:4px}.tab{border:0;background:transparent;color:#8f8f8f;padding:9px 14px;border-radius:9px;font-weight:750}.tab.active{background:#202020;color:#fff}
+.top-actions{margin-left:auto;display:flex;gap:8px}.icon-btn,.small-btn{border:1px solid var(--line);background:#151515;color:#eee;border-radius:9px;padding:9px 12px}
+.workspace{min-height:0;display:grid;grid-template-columns:320px 1fr}
+.sidebar{background:#0d0d0d;border-right:1px solid var(--line);padding:16px;overflow:auto}
+.section-title{font-size:11px;color:#777;text-transform:uppercase;letter-spacing:1px;font-weight:850;margin:6px 0 10px}
+.project-name{font-size:20px;font-weight:850;margin-bottom:13px;word-break:break-word}
+.primary{width:100%;border:0;background:#fff;color:#050505;padding:12px;border-radius:10px;font-weight:850}
+.scene-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.scene{border:1px solid var(--line);background:#151515;border-radius:11px;padding:11px}
+.scene.active{border-color:#575757}.scene-name{font-weight:750}.scene-meta{font-size:11px;color:#777;margin-top:4px}
+.scene-actions{display:flex;gap:6px;margin-top:9px}.scene-actions button{border:1px solid #303030;background:#1c1c1c;color:#ddd;border-radius:7px;padding:6px 8px;font-size:11px}
+.main{position:relative;min-width:0;min-height:0;background:#000}
+.mode{height:100%;width:100%}
+.mode-2d{padding:28px;overflow:auto;background:#0a0a0a}
+.empty-2d{min-height:100%;border:1px dashed #353535;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px}
+.empty-2d h2{margin:0 0 8px}.empty-2d p{max-width:580px;color:var(--muted);line-height:1.55}
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}.photo-card{background:#121212;border:1px solid var(--line);border-radius:12px;overflow:hidden}.photo-card img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}.photo-card div{padding:8px;font-size:12px;color:#bbb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* 360 CAPTURE — intentionally minimal and black, matching a panorama capture app */
+.capture{position:relative;height:100%;width:100%;overflow:hidden;background:#000}
+.capture-ui{position:absolute;inset:0;z-index:5;pointer-events:none}
+.capture-top{position:absolute;left:0;right:0;top:max(16px,env(safe-area-inset-top));display:flex;align-items:flex-start;justify-content:space-between;padding:0 18px}
+.capture-title{font-size:15px;font-weight:800}.capture-sub{font-size:11px;color:#8d8d8d;margin-top:3px}
+.capture-tools{display:flex;gap:7px;pointer-events:auto}.capture-tools button{border:1px solid #303030;background:#111c;color:#fff;border-radius:8px;padding:8px 10px}
+
+/* The panorama is the visual focus: 2:1, centered, black outside it. */
+.panorama-stage{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(92vw,1080px);aspect-ratio:2/1;background:#020202;border:1px solid #1c1c1c;overflow:hidden;box-shadow:0 0 90px rgba(0,0,0,.9)}
+#panoCanvas{display:block;width:100%;height:100%}
+.pano-vignette{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(0,0,0,.45),transparent 11%,transparent 89%,rgba(0,0,0,.45)),linear-gradient(0deg,rgba(0,0,0,.16),transparent 18%,transparent 82%,rgba(0,0,0,.16));}
+
+/* Target / guidance lives over the panorama, not in a camera preview. */
+.target{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(25vw,190px);height:min(25vw,190px);border:2px solid rgba(255,255,255,.9);border-radius:50%;pointer-events:none;transition:border-color .15s,box-shadow .15s}
+.target::before,.target::after{content:"";position:absolute;left:50%;top:50%;background:#fff;transform:translate(-50%,-50%)}
+.target::before{width:2px;height:34px}.target::after{height:2px;width:34px}
+.target.ready{border-color:var(--green);box-shadow:0 0 30px rgba(56,220,124,.16)}
+.guidance{position:absolute;left:50%;top:calc(50% + min(15vw,116px));transform:translateX(-50%);background:#050505d9;border:1px solid #242424;padding:7px 12px;border-radius:999px;font-size:12px;font-weight:800;white-space:nowrap}
+.guidance.ready{color:#7df2ac;border-color:#235d3c}
+
+.capture-bottom{position:absolute;left:0;right:0;bottom:max(14px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:10px}
+.status-row{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap}.pill{background:#0c0cd9;border:1px solid #282828;padding:6px 9px;border-radius:999px;font-size:11px;color:#ddd}.pill.ok{color:#7df2ac;border-color:#245d3d;background:#08150e}.pill.bad{color:#ff8b96;border-color:#5e242b;background:#17090b}
+.progress-wrap{width:min(430px,72vw);height:4px;background:#242424;border-radius:99px;overflow:hidden}.progress{height:100%;width:0;background:#fff;transition:width .2s}
+.shutter{width:76px;height:76px;border-radius:50%;border:6px solid #fff;background:var(--red);box-shadow:0 4px 32px #000;pointer-events:auto;transition:transform .12s,opacity .12s,background .12s}.shutter:not(:disabled):active{transform:scale(.94)}.shutter:disabled{background:#373737;border-color:#777;opacity:.6}
+
+.orientation-data{position:absolute;right:18px;top:70px;min-width:155px;padding:9px 11px;background:#050505c9;border:1px solid #242424;border-radius:10px;font-size:11px;line-height:1.75;color:#bcbcbc}.orientation-data b{color:#fff}
+
+.permission{position:absolute;inset:0;z-index:20;background:#000;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px}.permission-card{width:min(560px,100%)}.permission-card .big-icon{font-size:44px;margin-bottom:12px}.permission-card h1{font-size:27px;margin:0 0 9px}.permission-card p{margin:0 auto;max-width:520px;color:#8f8f8f;line-height:1.6}.permission-card button{margin-top:18px;max-width:310px}
+
+/* Finished 360 viewer */
+.viewer{position:absolute;inset:0;background:#000}.viewer canvas{display:block;width:100%;height:100%}.viewer-ui{position:absolute;left:18px;top:max(16px,env(safe-area-inset-top));z-index:4;pointer-events:none}.viewer-ui h2{margin:0;font-size:16px}.viewer-ui p{margin:5px 0;color:#999;font-size:11px}.viewer-close{position:absolute;right:18px;top:max(16px,env(safe-area-inset-top));z-index:4;border:1px solid #303030;background:#101010dd;color:#fff;border-radius:8px;padding:8px 10px}
+
+.modal{position:fixed;inset:0;background:#000c;z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}.modal-card{width:min(520px,100%);background:#151515;border:1px solid #303030;border-radius:15px;padding:20px}.modal-card h2{margin:0 0 8px}.modal-card p{color:#aaa;line-height:1.5}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.modal-actions .primary{width:auto;padding:10px 14px}
+
+@media(max-width:800px){
+  .app{grid-template-rows:56px 1fr}.workspace{grid-template-columns:1fr}.sidebar{display:none}.topbar{padding:0 10px;gap:8px}.brand{font-size:14px}.tabs{margin-left:auto}.tab{padding:8px 9px;font-size:12px}.top-actions{display:none}
+  .mode-2d{padding:14px}.panorama-stage{width:96vw}.capture-top{padding:0 10px}.orientation-data{right:10px;top:auto;bottom:145px;min-width:142px}.target{width:29vw;height:29vw}.guidance{top:calc(50% + 18vw)}.capture-bottom{bottom:max(8px,env(safe-area-inset-bottom))}.shutter{width:70px;height:70px}
+}
+@media(max-height:620px) and (orientation:landscape){.panorama-stage{height:70vh;width:auto}.target{width:24vh;height:24vh}.guidance{top:calc(50% + 14vh)}.orientation-data{top:62px;bottom:auto}.capture-bottom{gap:6px}.shutter{width:62px;height:62px}.status-row{display:none}}
 </style>
 </head>
-
 <body>
-
-<div id="app">
-
-    <!-- =====================================================
-         HEADER
-    ====================================================== -->
-
-    <header class="header">
-
-        <div class="brand">
-            Studio Visite Pro 360
-        </div>
-
-        <div class="header-actions">
-
-            <button class="small-btn" id="fullscreenBtn">
-                ⛶ Plein écran
-            </button>
-
-            <button class="small-btn" id="resetBtn">
-                ↻ Réinitialiser
-            </button>
-
-        </div>
-
-    </header>
-
-
-    <!-- =====================================================
-         TABS
-    ====================================================== -->
-
-    <div class="tabs">
-
-        <div class="tab active" id="tab360">
-            360°
-        </div>
-
-        <div class="tab" id="tab2d">
-            2D
-        </div>
-
+<div class="app" id="app">
+  <header class="topbar">
+    <div class="brand">Studio Visite <span>Pro 360</span></div>
+    <nav class="tabs" aria-label="Modes">
+      <button class="tab active" data-mode="2d">2D</button>
+      <button class="tab" data-mode="360">360° Spatial</button>
+    </nav>
+    <div class="top-actions">
+      <button class="icon-btn" id="fullscreenBtn" title="Plein écran">⛶</button>
+      <button class="icon-btn" id="resetBtn" title="Réinitialiser">↻</button>
     </div>
+  </header>
 
-
-    <!-- =====================================================
-         MAIN
-    ====================================================== -->
+  <div class="workspace">
+    <aside class="sidebar">
+      <div class="section-title">Projet</div>
+      <div class="project-name" id="projectName">Visite immobilière</div>
+      <button class="primary" id="renameBtn">Renommer le projet</button>
+      <div class="section-title" style="margin-top:24px">Scènes</div>
+      <div class="scene-list" id="sceneList"></div>
+    </aside>
 
     <main class="main">
+      <!-- 2D = importation d'images uniquement -->
+      <section class="mode mode-2d" id="mode2d">
+        <div class="empty-2d" id="empty2d">
+          <div style="font-size:44px">▧</div>
+          <h2>Importer des photos 2D</h2>
+          <p>Le mode 2D sert uniquement à importer des photos normales de tes pièces. Il n'utilise pas la caméra du mode 360°.</p>
+          <button class="primary" id="import2d" style="max-width:280px">Importer des photos</button>
+          <input id="photoInput" type="file" accept="image/*" multiple class="hidden">
+        </div>
+        <div id="photoGrid" class="photo-grid hidden"></div>
+      </section>
 
-        <!-- ================= 360 ================= -->
+      <!-- 360 = caméra directe + photos fixes, aucun flux vidéo visible -->
+      <section class="mode hidden" id="mode360">
+        <div class="capture" id="captureScreen">
+          <div class="permission" id="permission">
+            <div class="permission-card">
+              <div class="big-icon">◎</div>
+              <h1>Créer un panorama 360°</h1>
+              <p>Tourne progressivement autour de toi. Le téléphone te guide en degrés et autorise chaque photo seulement lorsque la position est correcte. Le panorama se construit au centre de l'écran.</p>
+              <button class="primary" id="start360">Activer la caméra et le guidage</button>
+            </div>
+          </div>
 
-        <section class="viewer" id="viewerSection">
+          <!-- Flux caméra uniquement interne : jamais affiché à l'utilisateur -->
+          <video id="camera" autoplay playsinline muted class="hidden"></video>
+          <canvas id="captureCanvas" class="hidden"></canvas>
 
-            <div id="viewer3d"></div>
-
-            <div class="viewer-top">
-
-                <button class="viewer-btn" id="newPanoramaBtn">
-                    📷 Nouveau panorama
-                </button>
-
-                <button class="viewer-btn" id="viewerFullscreenBtn">
-                    ⛶ Plein écran
-                </button>
-
+          <div class="capture-ui">
+            <div class="capture-top">
+              <div>
+                <div class="capture-title">Création du panorama</div>
+                <div class="capture-sub" id="positionLabel">Point de départ</div>
+              </div>
+              <div class="capture-tools">
+                <button id="restart360">Recommencer</button>
+                <button id="exit360">Quitter</button>
+              </div>
             </div>
 
-            <button class="scenes-button" id="scenesBtn">
-                ☰ Mes scènes
-            </button>
-
-        </section>
-
-
-        <!-- ================= 2D ================= -->
-
-        <section class="two-d" id="twoDSection">
-
-            <div class="upload-zone">
-
-                <h2>Créer une visite 2D</h2>
-
-                <p>
-                    Ajoute une image pour créer une scène 2D.
-                </p>
-
-                <input
-                    type="file"
-                    id="imageInput"
-                    accept="image/*"
-                >
-
+            <div class="panorama-stage" aria-label="Panorama en construction">
+              <canvas id="panoCanvas" width="1600" height="800"></canvas>
+              <div class="pano-vignette"></div>
             </div>
 
-        </section>
+            <div class="target" id="targetRing" aria-hidden="true"></div>
+            <div class="guidance" id="guidance">Active le guidage</div>
 
+            <div class="orientation-data">
+              <div>Orientation : <b id="currentYaw">—</b>°</div>
+              <div>Cible : <b id="targetYaw">—</b>°</div>
+              <div>Écart : <b id="deltaYaw">—</b>°</div>
+              <div>Inclinaison : <b id="currentPitch">—</b>°</div>
+            </div>
+
+            <div class="capture-bottom">
+              <div class="status-row">
+                <span class="pill" id="counter">Photo 0 / 20</span>
+                <span class="pill" id="phasePill">En attente</span>
+                <span class="pill bad" id="qualityPill">Alignement requis</span>
+              </div>
+              <div class="progress-wrap"><div class="progress" id="progress"></div></div>
+              <button class="shutter" id="shutter" disabled aria-label="Prendre une photo"></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="viewer hidden" id="viewer">
+          <canvas id="viewerCanvas"></canvas>
+          <div class="viewer-ui">
+            <h2>Panorama 360° terminé</h2>
+            <p>Glisse pour regarder autour de toi · molette ou pincement pour zoomer</p>
+          </div>
+          <button class="viewer-close" id="closeViewer">Fermer</button>
+        </div>
+      </section>
     </main>
-
+  </div>
 </div>
 
-
-<!-- =========================================================
-     CAPTURE
-========================================================== -->
-
-<div class="capture" id="capture">
-
-    <!-- caméra interne invisible -->
-    <video
-        id="cameraVideo"
-        autoplay
-        muted
-        playsinline
-    ></video>
-
-    <canvas id="captureCanvas"></canvas>
-
-
-    <!-- HEADER -->
-
-    <div class="capture-header">
-
-        <div>
-
-            <div class="capture-title">
-                Création du panorama
-            </div>
-
-            <div
-                class="capture-position"
-                id="capturePosition"
-            >
-                Préparation...
-            </div>
-
-        </div>
-
-        <button
-            class="close-capture"
-            id="closeCaptureBtn"
-        >
-            ×
-        </button>
-
+<div class="modal hidden" id="modal">
+  <div class="modal-card">
+    <h2 id="modalTitle"></h2>
+    <p id="modalText"></p>
+    <div class="modal-actions">
+      <button class="small-btn" id="modalCancel">Annuler</button>
+      <button class="primary" id="modalOk">Valider</button>
     </div>
-
-
-    <!-- BODY -->
-
-    <div class="capture-body">
-
-        <!-- dernière photo -->
-        <img
-            id="previousPhoto"
-            class="previous-photo"
-            alt=""
-        >
-
-
-        <!-- guidage -->
-
-        <div class="guidance">
-
-            <div
-                class="guidance-main"
-                id="guidanceMain"
-            >
-                Préparation
-            </div>
-
-            <div
-                class="guidance-sub"
-                id="guidanceSub"
-            >
-                Oriente ton téléphone.
-            </div>
-
-        </div>
-
-
-        <!-- COMPASS -->
-
-        <div class="compass-wrapper">
-
-            <div class="compass">
-
-                <span class="compass-letter north">N</span>
-                <span class="compass-letter east">E</span>
-                <span class="compass-letter south">S</span>
-                <span class="compass-letter west">O</span>
-
-                <div
-                    class="target-ring"
-                    id="targetRing"
-                ></div>
-
-                <div
-                    class="user-dot"
-                    id="userDot"
-                ></div>
-
-            </div>
-
-        </div>
-
-
-        <!-- PITCH -->
-
-        <div class="pitch-indicator">
-
-            <div class="pitch-line">
-
-                <div class="pitch-center"></div>
-
-                <div
-                    class="pitch-target"
-                    id="pitchTarget"
-                ></div>
-
-            </div>
-
-            <div
-                class="pitch-text"
-                id="pitchText"
-            >
-                Inclinaison : 0°
-            </div>
-
-        </div>
-
-
-        <!-- STATUS -->
-
-        <div
-            class="status-pill warning"
-            id="statusPill"
-        >
-            Oriente ton téléphone
-        </div>
-
-
-        <!-- CONTROLS -->
-
-        <div class="camera-controls">
-
-            <button
-                class="cancel-photo"
-                id="cancelPhotoBtn"
-            >
-                ×
-            </button>
-
-            <button
-                class="shutter"
-                id="shutterBtn"
-                aria-label="Prendre la photo"
-            ></button>
-
-        </div>
-
-    </div>
-
-
-    <!-- PROGRESS -->
-
-    <div class="capture-bottom">
-
-        <div class="progress-info">
-
-            <span id="progressText">
-                Photo 1 / 20
-            </span>
-
-            <span id="progressPercent">
-                0%
-            </span>
-
-        </div>
-
-        <div class="progress-bar">
-
-            <div
-                class="progress-fill"
-                id="progressFill"
-            ></div>
-
-        </div>
-
-    </div>
-
+  </div>
 </div>
-
-
-<!-- =========================================================
-     START SCREEN
-========================================================== -->
-
-<div class="start-screen" id="startScreen">
-
-    <div class="start-card">
-
-        <h1>Création du panorama 360°</h1>
-
-        <p>
-            Le téléphone va te guider photo par photo.
-            Tu n'as pas besoin de tourner au hasard.
-        </p>
-
-        <button
-            class="start-button"
-            id="startCaptureBtn"
-        >
-            📷 Démarrer la capture
-        </button>
-
-        <div class="permission-info">
-            L'application demande l'accès à la caméra
-            et aux capteurs d'orientation.
-        </div>
-
-    </div>
-
-</div>
-
-
-<!-- =========================================================
-     CONFIRMATION
-========================================================== -->
-
-<div class="photo-confirm" id="photoConfirm">
-
-    <div class="confirm-image-wrap">
-
-        <img
-            id="confirmImage"
-            alt="Photo capturée"
-        >
-
-    </div>
-
-    <div class="confirm-bottom">
-
-        <div class="confirm-title">
-            Photo capturée
-        </div>
-
-        <div class="confirm-sub">
-            Vérifie rapidement l'image puis continue.
-        </div>
-
-        <div class="confirm-actions">
-
-            <button
-                class="confirm-btn confirm-retake"
-                id="retakeBtn"
-            >
-                Reprendre
-            </button>
-
-            <button
-                class="confirm-btn confirm-ok"
-                id="confirmBtn"
-            >
-                Parfait →
-            </button>
-
-        </div>
-
-    </div>
-
-</div>
-
-
-<!-- =========================================================
-     SCENES PANEL
-========================================================== -->
-
-<div
-    class="scenes-panel"
-    id="scenesPanel"
->
-
-    <div class="scenes-sheet">
-
-        <div class="scenes-title">
-            Mes scènes
-        </div>
-
-        <div id="scenesList"></div>
-
-    </div>
-
-</div>
-
-
-<!-- =========================================================
-     THREE.JS
-========================================================== -->
-
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-
 
 <script>
+"use strict";
+
 /* =========================================================
    STUDIO VISITE PRO 360
-========================================================== */
+   Un seul fichier HTML / CSS / JavaScript.
+   2D = importation uniquement.
+   360 = caméra + photos fixes uniquement.
+   ========================================================= */
 
-
-/* =========================================================
-   CONFIGURATION
-========================================================== */
-
-const CONFIG = {
-
-    /*
-     * 12 photos horizontales.
-     *
-     * Chaque photo est prise tous les 30 degrés.
-     */
-    horizontalCount: 12,
-
-    horizontalStep: 30,
-
-    /*
-     * Pour le haut et le bas.
-     */
-    verticalAngle: 35,
-
-    verticalCount: 4,
-
-    /*
-     * Une photo n'est pas utilisée à 100%.
-     *
-     * On conserve principalement la partie centrale
-     * afin de limiter les répétitions entre deux images.
-     */
-    cropRatio: 0.72,
-
-    /*
-     * Tolérance pour considérer que le téléphone
-     * est correctement positionné.
-     */
-    headingTolerance: 8,
-
-    pitchTolerance: 8,
-
-    /*
-     * Largeur de la projection finale.
-     */
-    panoramaWidth: 2400,
-
-    panoramaHeight: 1200
-};
-
-
-/* =========================================================
-   ÉTAT
-========================================================== */
+const TOTAL_PHOTOS = 20;
+const HORIZONTAL_COUNT = 12;
+const YAW_TOLERANCE = 5;
+const PITCH_TOLERANCE = 8;
+const PANO_WIDTH = 2400;
+const PANO_HEIGHT = 1200;
+const JPEG_QUALITY = 0.88;
 
 const state = {
-
-    cameraStream: null,
-
-    orientationEnabled: false,
-
-    heading: null,
-
-    pitch: 0,
-
-    calibratedHeading: 0,
-
-    currentStep: 0,
-
-    capturedPhotos: [],
-
-    pendingPhoto: null,
-
-    scenes: [],
-
-    renderer: null,
-
-    scene3D: null,
-
-    camera3D: null,
-
-    sphere: null,
-
-    panoramaTexture: null,
-
-    panoramaCanvas: null,
-
-    panoramaCtx: null,
-
-    dragging: false,
-
-    lastX: 0,
-
-    lastY: 0,
-
-    longitude: 0,
-
-    latitude: 0
-
+  mode: "2d",
+  running: false,
+  stream: null,
+  sensorListening: false,
+  yaw: null,
+  pitch: null,
+  roll: null,
+  startYaw: null,
+  step: 0,
+  targets: [],
+  photos: [],
+  pano: null,
+  viewer: null,
+  projectName: "Visite immobilière",
+  scenes: [],
+  captureBusy: false
 };
 
+const $ = (selector) => document.querySelector(selector);
+const camera = $("#camera");
+const captureCanvas = $("#captureCanvas");
+const panoCanvas = $("#panoCanvas");
+const panoCtx = panoCanvas.getContext("2d");
 
-/* =========================================================
-   ÉTAPES
-========================================================== */
-
-function buildSteps() {
-
-    const steps = [];
-
-    /*
-     * ============================================
-     * HORIZON
-     * ============================================
-     */
-
-    for (let i = 0; i < 12; i++) {
-
-        steps.push({
-
-            type: "horizon",
-
-            heading: i * 30,
-
-            pitch: 0,
-
-            label: "Horizon"
-
-        });
-
-    }
-
-
-    /*
-     * ============================================
-     * HAUT
-     * ============================================
-     */
-
-    for (let i = 0; i < 4; i++) {
-
-        steps.push({
-
-            type: "upper",
-
-            heading: i * 90,
-
-            pitch: CONFIG.verticalAngle,
-
-            label: "Haut"
-
-        });
-
-    }
-
-
-    /*
-     * ============================================
-     * BAS
-     * ============================================
-     */
-
-    for (let i = 0; i < 4; i++) {
-
-        steps.push({
-
-            type: "lower",
-
-            heading: i * 90,
-
-            pitch: -CONFIG.verticalAngle,
-
-            label: "Bas"
-
-        });
-
-    }
-
-    return steps;
+function clamp(value, min, max){ return Math.max(min, Math.min(max, value)); }
+function normalizeAngle(value){ return ((value % 360) + 360) % 360; }
+function signedAngle(target, current){ return ((target - current + 540) % 360) - 180; }
+function sleep(ms){ return new Promise(resolve => setTimeout(resolve, ms)); }
+function escapeHtml(value){
+  return String(value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 }
 
-const STEPS = buildSteps();
-
-
-/* =========================================================
-   DOM
-========================================================== */
-
-const capture = document.getElementById("capture");
-
-const startScreen =
-    document.getElementById("startScreen");
-
-const startCaptureBtn =
-    document.getElementById("startCaptureBtn");
-
-const closeCaptureBtn =
-    document.getElementById("closeCaptureBtn");
-
-const cameraVideo =
-    document.getElementById("cameraVideo");
-
-const captureCanvas =
-    document.getElementById("captureCanvas");
-
-const previousPhoto =
-    document.getElementById("previousPhoto");
-
-const guidanceMain =
-    document.getElementById("guidanceMain");
-
-const guidanceSub =
-    document.getElementById("guidanceSub");
-
-const capturePosition =
-    document.getElementById("capturePosition");
-
-const statusPill =
-    document.getElementById("statusPill");
-
-const progressText =
-    document.getElementById("progressText");
-
-const progressPercent =
-    document.getElementById("progressPercent");
-
-const progressFill =
-    document.getElementById("progressFill");
-
-const shutterBtn =
-    document.getElementById("shutterBtn");
-
-const cancelPhotoBtn =
-    document.getElementById("cancelPhotoBtn");
-
-const previousPhotoEl =
-    document.getElementById("previousPhoto");
-
-const photoConfirm =
-    document.getElementById("photoConfirm");
-
-const confirmImage =
-    document.getElementById("confirmImage");
-
-const confirmBtn =
-    document.getElementById("confirmBtn");
-
-const retakeBtn =
-    document.getElementById("retakeBtn");
-
-const targetRing =
-    document.getElementById("targetRing");
-
-const userDot =
-    document.getElementById("userDot");
-
-const pitchTarget =
-    document.getElementById("pitchTarget");
-
-const pitchText =
-    document.getElementById("pitchText");
-
-
-/* =========================================================
-   TABS
-========================================================== */
-
-const tab360 =
-    document.getElementById("tab360");
-
-const tab2d =
-    document.getElementById("tab2d");
-
-const viewerSection =
-    document.getElementById("viewerSection");
-
-const twoDSection =
-    document.getElementById("twoDSection");
-
-
-tab360.addEventListener("click", () => {
-
-    tab360.classList.add("active");
-    tab2d.classList.remove("active");
-
-    viewerSection.style.display = "block";
-    twoDSection.classList.remove("active");
-
-});
-
-
-tab2d.addEventListener("click", () => {
-
-    tab2d.classList.add("active");
-    tab360.classList.remove("active");
-
-    viewerSection.style.display = "none";
-    twoDSection.classList.add("active");
-
-});
-
-
-/* =========================================================
-   FULLSCREEN
-========================================================== */
-
-async function enterFullscreen(element) {
-
-    try {
-
-        if (!document.fullscreenElement) {
-
-            await element.requestFullscreen();
-
-        } else {
-
-            await document.exitFullscreen();
-
-        }
-
-    } catch (error) {
-
-        console.warn("Fullscreen non disponible", error);
-
-    }
-
+/* -----------------------------
+   MODE 2D / 360
+----------------------------- */
+function setMode(mode){
+  state.mode = mode;
+  document.querySelectorAll(".tab").forEach(btn => btn.classList.toggle("active", btn.dataset.mode === mode));
+  $("#mode2d").classList.toggle("hidden", mode !== "2d");
+  $("#mode360").classList.toggle("hidden", mode !== "360");
+  if(mode !== "360") stopCamera();
 }
 
+/* -----------------------------
+   SCÈNES / PROJET
+----------------------------- */
+function renderSceneList(){
+  const list = $("#sceneList");
+  list.innerHTML = "";
+  if(!state.scenes.length){
+    list.innerHTML = '<div class="scene"><div class="scene-name">Aucune scène</div><div class="scene-meta">Crée un panorama 360° pour commencer</div></div>';
+    return;
+  }
 
-document
-    .getElementById("fullscreenBtn")
-    .addEventListener("click", () => {
+  state.scenes.forEach((scene, index) => {
+    const item = document.createElement("div");
+    item.className = "scene" + (index === state.scenes.length - 1 ? " active" : "");
+    item.innerHTML = `
+      <div class="scene-name">${escapeHtml(scene.name)}</div>
+      <div class="scene-meta">${scene.count} photos · ${escapeHtml(scene.date)}</div>
+      <div class="scene-actions">
+        <button data-action="open">Ouvrir</button>
+        <button data-action="rename">Renommer</button>
+        <button data-action="delete">Supprimer</button>
+      </div>`;
 
-        enterFullscreen(document.documentElement);
+    item.querySelector('[data-action="open"]').addEventListener("click", () => openScene(index));
+    item.querySelector('[data-action="rename"]').addEventListener("click", () => renameScene(index));
+    item.querySelector('[data-action="delete"]').addEventListener("click", () => deleteScene(index));
+    list.appendChild(item);
+  });
+}
 
+async function renameProject(){
+  const value = window.prompt("Nom du projet :", state.projectName);
+  if(value && value.trim()){
+    state.projectName = value.trim();
+    $("#projectName").textContent = state.projectName;
+  }
+}
+
+async function renameScene(index){
+  const scene = state.scenes[index];
+  if(!scene) return;
+  const value = window.prompt("Nom de la scène :", scene.name);
+  if(value && value.trim()){
+    scene.name = value.trim();
+    renderSceneList();
+  }
+}
+
+async function deleteScene(index){
+  const scene = state.scenes[index];
+  if(!scene) return;
+  const ok = await showModal("Supprimer la scène", `Supprimer « ${scene.name} » ?`, "Supprimer");
+  if(!ok) return;
+  state.scenes.splice(index, 1);
+  renderSceneList();
+}
+
+function openScene(index){
+  const scene = state.scenes[index];
+  if(!scene) return;
+  const image = new Image();
+  image.onload = () => {
+    setMode("360");
+    $("#captureScreen").classList.add("hidden");
+    $("#viewer").classList.remove("hidden");
+    if(state.viewer) state.viewer.destroy();
+    state.viewer = new PanoViewer($("#viewerCanvas"), image);
+  };
+  image.src = scene.panoDataUrl;
+}
+
+/* -----------------------------
+   MODAL
+----------------------------- */
+function showModal(title, text, confirmLabel = "Valider"){
+  return new Promise(resolve => {
+    $("#modalTitle").textContent = title;
+    $("#modalText").textContent = text;
+    $("#modalOk").textContent = confirmLabel;
+    $("#modal").classList.remove("hidden");
+
+    const finish = (result) => {
+      $("#modal").classList.add("hidden");
+      $("#modalOk").onclick = null;
+      $("#modalCancel").onclick = null;
+      resolve(result);
+    };
+    $("#modalOk").onclick = () => finish(true);
+    $("#modalCancel").onclick = () => finish(false);
+  });
+}
+
+/* -----------------------------
+   CIBLES 360°
+   12 horizontales à 30°.
+   Puis 4 vers le haut et 4 vers le bas.
+   Le premier cap mesuré devient le 0° du panorama.
+----------------------------- */
+function buildTargets(startYaw){
+  const targets = [];
+  const base = normalizeAngle(startYaw);
+
+  for(let i = 0; i < 12; i++){
+    targets.push({
+      yaw: normalizeAngle(base + i * 30),
+      pitch: 0,
+      phase: "horizontal",
+      label: [
+        "Avant","Avant-droite","Droite","Arrière-droite","Arrière","Arrière-gauche",
+        "Gauche","Avant-gauche","Avant","Avant-droite","Droite","Arrière-droite"
+      ][i]
+    });
+  }
+
+  [0, 90, 180, 270].forEach((offset, i) => {
+    targets.push({
+      yaw: normalizeAngle(base + offset),
+      pitch: 35,
+      phase: "up",
+      label: ["Haut · avant","Haut · droite","Haut · arrière","Haut · gauche"][i]
+    });
+  });
+
+  [0, 90, 180, 270].forEach((offset, i) => {
+    targets.push({
+      yaw: normalizeAngle(base + offset),
+      pitch: -35,
+      phase: "down",
+      label: ["Bas · avant","Bas · droite","Bas · arrière","Bas · gauche"][i]
+    });
+  });
+
+  return targets;
+}
+
+/* -----------------------------
+   CAMÉRA / CAPTEURS
+----------------------------- */
+async function start360(){
+  try{
+    if(!window.isSecureContext){
+      throw new Error("La caméra et les capteurs nécessitent HTTPS ou localhost. Ouvre le site depuis un serveur local ou HTTPS.");
+    }
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      throw new Error("La caméra n'est pas disponible dans ce navigateur.");
+    }
+
+    // Remise à zéro d'une éventuelle ancienne capture.
+    resetCaptureState();
+
+    // Caméra arrière. Le flux est utilisé en interne pour prendre des photos fixes.
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: "environment" },
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
+        frameRate: { ideal: 30, max: 30 }
+      },
+      audio: false
     });
 
+    state.stream = stream;
+    camera.srcObject = stream;
+    await camera.play();
 
-document
-    .getElementById("viewerFullscreenBtn")
-    .addEventListener("click", () => {
+    await requestOrientationPermission();
 
-        enterFullscreen(document.getElementById("viewerSection"));
+    state.running = true;
+    $("#permission").classList.add("hidden");
+    $("#captureScreen").classList.remove("hidden");
+    $("#viewer").classList.add("hidden");
 
-    });
-
-
-/* =========================================================
-   START
-========================================================== */
-
-document
-    .getElementById("newPanoramaBtn")
-    .addEventListener("click", () => {
-
-        startScreen.style.display = "flex";
-
-    });
-
-
-startCaptureBtn.addEventListener(
-    "click",
-    startCapture
-);
-
-
-/* =========================================================
-   CAMERA
-========================================================== */
-
-async function startCamera() {
-
-    if (!navigator.mediaDevices ||
-        !navigator.mediaDevices.getUserMedia) {
-
-        throw new Error(
-            "La caméra n'est pas disponible dans ce navigateur."
-        );
-
+    // On attend une vraie lecture de capteur avant de définir le 0°.
+    const initialYaw = await waitForYaw(2500);
+    if(initialYaw == null){
+      throw new Error("Aucune orientation fiable n'a été reçue. Vérifie l'autorisation des capteurs et réessaie.");
     }
 
+    state.startYaw = initialYaw;
+    state.targets = buildTargets(initialYaw);
+    state.step = 0;
+    state.photos = [];
+    state.pano = createPanoramaCanvas();
 
-    /*
-     * On demande la caméra arrière.
-     *
-     * Le flux est complètement caché.
-     * L'utilisateur ne voit pas une vidéo.
-     */
-    const stream =
-        await navigator.mediaDevices.getUserMedia({
-
-            video: {
-
-                facingMode: {
-                    ideal: "environment"
-                },
-
-                width: {
-                    ideal: 1920
-                },
-
-                height: {
-                    ideal: 1080
-                }
-
-            },
-
-            audio: false
-
-        });
-
-
-    state.cameraStream = stream;
-
-    cameraVideo.srcObject = stream;
-
-    await cameraVideo.play();
-
+    setStep(0);
+    drawPanoramaPreview();
+  }catch(error){
+    stopCamera();
+    $("#permission").classList.remove("hidden");
+    alert("Impossible de démarrer le mode 360°.\n\n" + (error?.message || error) + "\n\nSur iPhone, autorise les capteurs lorsqu'ils sont demandés et utilise HTTPS ou localhost.");
+  }
 }
 
+async function requestOrientationPermission(){
+  const DeviceOrientation = window.DeviceOrientationEvent;
+  if(!DeviceOrientation){
+    throw new Error("Ce navigateur ne fournit pas DeviceOrientationEvent.");
+  }
 
-/* =========================================================
-   ORIENTATION
-========================================================== */
+  if(typeof DeviceOrientation.requestPermission === "function"){
+    const result = await DeviceOrientation.requestPermission();
+    if(result !== "granted") throw new Error("Permission d'orientation refusée.");
+  }
 
-async function enableOrientation() {
-
-    /*
-     * iPhone / iPad nécessitent généralement
-     * une permission déclenchée par un clic utilisateur.
-     */
-
-    try {
-
-        if (
-            typeof DeviceOrientationEvent !== "undefined" &&
-            typeof DeviceOrientationEvent.requestPermission === "function"
-        ) {
-
-            const permission =
-                await DeviceOrientationEvent.requestPermission();
-
-            if (permission !== "granted") {
-
-                throw new Error(
-                    "Permission des capteurs refusée."
-                );
-
-            }
-
-        }
-
-
-        window.addEventListener(
-            "deviceorientation",
-            handleOrientation,
-            true
-        );
-
-
-        state.orientationEnabled = true;
-
-    } catch (error) {
-
-        console.warn(
-            "Orientation indisponible :",
-            error
-        );
-
-        guidanceSub.textContent =
-            "Capteur indisponible : utilise l'indicateur manuel.";
-
-        state.orientationEnabled = false;
-
-    }
-
+  if(!state.sensorListening){
+    window.addEventListener("deviceorientation", handleOrientation, true);
+    window.addEventListener("deviceorientationabsolute", handleOrientation, true);
+    state.sensorListening = true;
+  }
 }
 
-
-/* =========================================================
-   ORIENTATION HANDLER
-========================================================== */
-
-function normalize360(value) {
-
-    value = value % 360;
-
-    if (value < 0) {
-        value += 360;
-    }
-
-    return value;
+function waitForYaw(timeout){
+  return new Promise(resolve => {
+    const start = performance.now();
+    const tick = () => {
+      if(state.yaw != null){ resolve(state.yaw); return; }
+      if(performance.now() - start >= timeout){ resolve(null); return; }
+      requestAnimationFrame(tick);
+    };
+    tick();
+  });
 }
 
+function handleOrientation(event){
+  let yaw = null;
 
-function shortestAngle(a, b) {
+  // iOS Safari expose une boussole absolue via webkitCompassHeading.
+  if(typeof event.webkitCompassHeading === "number" && Number.isFinite(event.webkitCompassHeading)){
+    yaw = normalizeAngle(event.webkitCompassHeading);
+  } else if(typeof event.alpha === "number" && Number.isFinite(event.alpha)){
+    // Convention pratique pour un téléphone tenu droit en portrait.
+    yaw = normalizeAngle(360 - event.alpha);
+  }
 
-    let difference =
-        normalize360(a) - normalize360(b);
+  let pitch = null;
+  if(typeof event.beta === "number" && Number.isFinite(event.beta)){
+    // Téléphone vertical ≈ 90°. On ramène cela à 0°.
+    pitch = clamp(event.beta - 90, -90, 90);
+  }
 
-    if (difference > 180) {
-        difference -= 360;
-    }
-
-    if (difference < -180) {
-        difference += 360;
-    }
-
-    return difference;
+  state.yaw = yaw;
+  state.pitch = pitch;
+  state.roll = typeof event.gamma === "number" ? event.gamma : null;
+  updateGuidance();
 }
 
-
-function handleOrientation(event) {
-
-    /*
-     * Sur iPhone Safari :
-     *
-     * webkitCompassHeading
-     *
-     * est généralement préférable à alpha.
-     */
-
-    let heading = null;
-
-
-    if (
-        typeof event.webkitCompassHeading === "number" &&
-        !Number.isNaN(event.webkitCompassHeading)
-    ) {
-
-        heading =
-            normalize360(event.webkitCompassHeading);
-
-    } else if (
-        typeof event.alpha === "number"
-    ) {
-
-        /*
-         * Fallback Android.
-         */
-        heading =
-            normalize360(360 - event.alpha);
-
-    }
-
-
-    if (heading !== null) {
-
-        state.heading = heading;
-
-    }
-
-
-    /*
-     * Beta représente l'inclinaison avant/arrière.
-     *
-     * On le convertit approximativement en angle utile
-     * pour le guidage vertical.
-     */
-
-    if (typeof event.beta === "number") {
-
-        state.pitch =
-            Math.max(
-                -90,
-                Math.min(
-                    90,
-                    event.beta - 90
-                )
-            );
-
-    }
-
-
-    updateGuidance();
-
+function stopCamera(){
+  if(state.stream){
+    state.stream.getTracks().forEach(track => track.stop());
+    state.stream = null;
+  }
+  camera.srcObject = null;
+  state.running = false;
+  state.captureBusy = false;
+  $("#shutter").disabled = true;
 }
 
-
-/* =========================================================
-   CALIBRATION
-========================================================== */
-
-function calibrateDirection() {
-
-    if (state.heading === null) {
-
-        state.calibratedHeading = 0;
-
-        return;
-
-    }
-
-    state.calibratedHeading =
-        state.heading;
-
+/* -----------------------------
+   ÉTAT DE CAPTURE
+----------------------------- */
+function resetCaptureState(){
+  state.running = false;
+  state.step = 0;
+  state.photos = [];
+  state.pano = null;
+  state.startYaw = null;
+  state.targets = [];
+  state.captureBusy = false;
+  $("#counter").textContent = "Photo 0 / 20";
+  $("#progress").style.width = "0%";
+  $("#qualityPill").textContent = "Alignement requis";
+  $("#qualityPill").className = "pill bad";
+  $("#phasePill").textContent = "En attente";
+  $("#guidance").textContent = "Active le guidage";
+  $("#guidance").classList.remove("ready");
+  $("#targetRing").classList.remove("ready");
 }
 
+function setStep(step){
+  state.step = step;
+  if(step >= TOTAL_PHOTOS){
+    finishCapture();
+    return;
+  }
 
-/* =========================================================
-   CURRENT STEP
-========================================================== */
+  const target = state.targets[step];
+  if(!target) return;
 
-function getCurrentStep() {
-
-    return STEPS[state.currentStep];
-
+  $("#counter").textContent = `Photo ${step} / ${TOTAL_PHOTOS}`;
+  $("#progress").style.width = `${(step / TOTAL_PHOTOS) * 100}%`;
+  $("#targetYaw").textContent = Math.round(target.yaw);
+  $("#positionLabel").textContent = target.label;
+  $("#phasePill").textContent = target.phase === "horizontal" ? "Tour horizontal" : target.phase === "up" ? "Vers le haut" : "Vers le bas";
+  updateGuidance();
 }
 
-
-/* =========================================================
-   GUIDANCE
-========================================================== */
-
-function updateGuidance() {
-
-    if (!capture.classList.contains("open")) {
-        return;
-    }
-
-
-    const step =
-        getCurrentStep();
-
-    if (!step) {
-        return;
-    }
-
-
-    progressText.textContent =
-        `Photo ${state.currentStep + 1} / ${STEPS.length}`;
-
-
-    const percent =
-        Math.round(
-            state.currentStep /
-            STEPS.length *
-            100
-        );
-
-
-    progressPercent.textContent =
-        `${percent}%`;
-
-    progressFill.style.width =
-        `${percent}%`;
-
-
-    /*
-     * POSITION
-     */
-
-    const targetHeading =
-        step.heading;
-
-
-    capturePosition.textContent =
-        `${step.label} · Direction ${Math.round(targetHeading)}°`;
-
-
-    /*
-     * GUIDAGE HORIZONTAL
-     */
-
-    let headingGood = false;
-
-    if (state.heading !== null) {
-
-        const difference =
-            shortestAngle(
-                state.heading,
-                targetHeading
-            );
-
-        headingGood =
-            Math.abs(difference) <=
-            CONFIG.headingTolerance;
-
-
-        /*
-         * Position du point utilisateur
-         */
-
-        const radius = 37;
-
-        const angle =
-            difference *
-            Math.PI /
-            180;
-
-        const x =
-            50 +
-            Math.sin(angle) * radius;
-
-        const y =
-            50 -
-            Math.cos(angle) * radius;
-
-        userDot.style.left =
-            `${Math.max(5, Math.min(95, x))}%`;
-
-        userDot.style.top =
-            `${Math.max(5, Math.min(95, y))}`;
-
-
-        if (Math.abs(difference) > 90) {
-
-            guidanceMain.textContent =
-                "Tourne-toi dans la bonne direction";
-
-        } else if (difference > 0) {
-
-            guidanceMain.textContent =
-                `Tourne vers la gauche ${Math.abs(Math.round(difference))}°`;
-
-        } else if (difference < 0) {
-
-            guidanceMain.textContent =
-                `Tourne vers la droite ${Math.abs(Math.round(difference))}°`;
-
-        } else {
-
-            guidanceMain.textContent =
-                "Direction correcte";
-
-        }
-
-    } else {
-
-        guidanceMain.textContent =
-            `Direction cible : ${targetHeading}°`;
-
-    }
-
-
-    /*
-     * GUIDAGE VERTICAL
-     */
-
-    const targetPitch =
-        step.pitch;
-
-    const pitchDifference =
-        state.pitch -
-        targetPitch;
-
-
-    const pitchGood =
-        Math.abs(pitchDifference) <=
-        CONFIG.pitchTolerance;
-
-
-    /*
-     * position de l'indicateur pitch
-     */
-
-    const pitchPosition =
-        50 +
-        (state.pitch / 90) * 45;
-
-    const targetPosition =
-        50 +
-        (targetPitch / 90) * 45;
-
-
-    pitchTarget.style.left =
-        `${Math.max(2, Math.min(98, targetPosition))}%`;
-
-
-    pitchText.textContent =
-        `Inclinaison : ${Math.round(state.pitch)}° · cible ${targetPitch}°`;
-
-
-    /*
-     * TEXTE
-     */
-
-    if (step.type === "upper") {
-
-        if (pitchDifference < -CONFIG.pitchTolerance) {
-
-            guidanceSub.textContent =
-                "Incline doucement le téléphone vers le haut.";
-
-        } else if (
-            pitchDifference >
-            CONFIG.pitchTolerance
-        ) {
-
-            guidanceSub.textContent =
-                "Redescends légèrement le téléphone.";
-
-        } else {
-
-            guidanceSub.textContent =
-                "Hauteur correcte. Oriente-toi vers la direction cible.";
-
-        }
-
-    } else if (step.type === "lower") {
-
-        if (pitchDifference > CONFIG.pitchTolerance) {
-
-            guidanceSub.textContent =
-                "Incline doucement le téléphone vers le bas.";
-
-        } else if (
-            pitchDifference <
-            -CONFIG.pitchTolerance
-        ) {
-
-            guidanceSub.textContent =
-                "Remonte légèrement le téléphone.";
-
-        } else {
-
-            guidanceSub.textContent =
-                "Hauteur correcte. Oriente-toi vers la direction cible.";
-
-        }
-
-    } else {
-
-        guidanceSub.textContent =
-            "Garde le téléphone à l'horizon.";
-
-    }
-
-
-    /*
-     * STATUS
-     */
-
-    if (
-        state.orientationEnabled &&
-        headingGood &&
-        pitchGood
-    ) {
-
-        statusPill.className =
-            "status-pill ready";
-
-        statusPill.textContent =
-            "✓ Position correcte — tu peux prendre la photo";
-
-        shutterBtn.disabled = false;
-
-    } else if (!state.orientationEnabled) {
-
-        statusPill.className =
-            "status-pill warning";
-
-        statusPill.textContent =
-            "Vérifie visuellement la position";
-
-        shutterBtn.disabled = false;
-
-    } else {
-
-        statusPill.className =
-            "status-pill warning";
-
-        statusPill.textContent =
-            "Continue à orienter le téléphone";
-
-        shutterBtn.disabled = true;
-
-    }
-
+function updateGuidance(){
+  const target = state.targets[state.step];
+  if(!target){
+    $("#shutter").disabled = true;
+    return;
+  }
+
+  if(state.yaw == null){
+    $("#currentYaw").textContent = "—";
+    $("#deltaYaw").textContent = "—";
+    $("#currentPitch").textContent = "—";
+    $("#guidance").textContent = "Recherche de l'orientation…";
+    $("#guidance").classList.remove("ready");
+    $("#targetRing").classList.remove("ready");
+    $("#qualityPill").textContent = "Capteur en attente";
+    $("#qualityPill").className = "pill bad";
+    $("#shutter").disabled = true;
+    return;
+  }
+
+  const yawDelta = signedAngle(target.yaw, state.yaw);
+  const pitchDelta = target.pitch - (state.pitch ?? 0);
+  const yawOK = Math.abs(yawDelta) <= YAW_TOLERANCE;
+  const pitchOK = Math.abs(pitchDelta) <= PITCH_TOLERANCE;
+  const ready = yawOK && pitchOK && state.running && !state.captureBusy;
+
+  $("#currentYaw").textContent = Math.round(state.yaw);
+  $("#deltaYaw").textContent = Math.round(Math.abs(yawDelta));
+  $("#currentPitch").textContent = Math.round(state.pitch ?? 0);
+  $("#qualityPill").textContent = ready ? "Position correcte" : "Alignement requis";
+  $("#qualityPill").className = "pill " + (ready ? "ok" : "bad");
+  $("#targetRing").classList.toggle("ready", ready);
+  $("#guidance").classList.toggle("ready", ready);
+  $("#shutter").disabled = !ready;
+
+  if(ready){
+    $("#guidance").textContent = "✓ POSITION CORRECTE — PHOTO POSSIBLE";
+    return;
+  }
+
+  if(!pitchOK){
+    $("#guidance").textContent = pitchDelta > 0 ? "↑ Inclinez légèrement vers le haut" : "↓ Inclinez légèrement vers le bas";
+  } else if(Math.abs(yawDelta) > YAW_TOLERANCE){
+    $("#guidance").textContent = yawDelta > 0 ? "← Tournez légèrement à gauche" : "→ Tournez légèrement à droite";
+  } else {
+    $("#guidance").textContent = "Stabilisez le téléphone…";
+  }
 }
 
-
-/* =========================================================
-   START CAPTURE
-========================================================== */
-
-async function startCapture() {
-
-    try {
-
-        startCaptureBtn.disabled = true;
-
-        startCaptureBtn.textContent =
-            "Activation de la caméra...";
-
-
-        state.currentStep = 0;
-
-        state.capturedPhotos = [];
-
-        state.pendingPhoto = null;
-
-
-        await startCamera();
-
-
-        await enableOrientation();
-
-
-        /*
-         * On prend la direction actuelle comme référence.
-         *
-         * Cela permet au premier cliché de correspondre
-         * exactement à la direction où regarde le client.
-         */
-
-        if (state.heading !== null) {
-
-            state.calibratedHeading =
-                state.heading;
-
-        }
-
-
-        startScreen.style.display =
-            "none";
-
-        capture.classList.add("open");
-
-
-        updateGuidance();
-
-
-    } catch (error) {
-
-        console.error(error);
-
-        alert(
-            "Impossible d'activer la caméra ou les capteurs.\n\n" +
-            error.message
-        );
-
-    } finally {
-
-        startCaptureBtn.disabled = false;
-
-        startCaptureBtn.textContent =
-            "📷 Démarrer la capture";
-
-    }
-
+/* -----------------------------
+   PANORAMA EN CONSTRUCTION
+   Le but est d'avoir une vraie zone panoramique 2:1 qui reste
+   visible après chaque photo. Les photos sont projetées selon
+   leur orientation mesurée et fondent progressivement dans
+   une toile équirectangulaire.
+----------------------------- */
+function createPanoramaCanvas(){
+  const canvas = document.createElement("canvas");
+  canvas.width = PANO_WIDTH;
+  canvas.height = PANO_HEIGHT;
+  const ctx = canvas.getContext("2d", { willReadFrequently: false });
+  ctx.fillStyle = "#050505";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  return { canvas, ctx };
 }
 
+function drawPanoramaPreview(){
+  panoCtx.clearRect(0,0,panoCanvas.width,panoCanvas.height);
+  panoCtx.fillStyle = "#030303";
+  panoCtx.fillRect(0,0,panoCanvas.width,panoCanvas.height);
 
-/* =========================================================
-   CAPTURE PHOTO
-========================================================== */
+  if(state.pano){
+    panoCtx.drawImage(state.pano.canvas,0,0,panoCanvas.width,panoCanvas.height);
+  }
 
-shutterBtn.addEventListener(
-    "click",
-    takePhoto
-);
+  if(!state.photos.length){
+    panoCtx.save();
+    panoCtx.fillStyle = "rgba(255,255,255,.36)";
+    panoCtx.font = "600 18px system-ui";
+    panoCtx.textAlign = "center";
+    panoCtx.fillText("Le panorama se construira ici", panoCanvas.width/2, panoCanvas.height/2);
+    panoCtx.restore();
+  }
+}
 
+function capturePhoto(){
+  if(!state.running || state.captureBusy || $("#shutter").disabled) return;
+  if(!camera.videoWidth || !camera.videoHeight) return;
 
-async function takePhoto() {
+  state.captureBusy = true;
+  updateGuidance();
 
-    if (shutterBtn.disabled) {
-        return;
-    }
+  try{
+    const sourceW = camera.videoWidth;
+    const sourceH = camera.videoHeight;
+    const maxWidth = 1800;
+    const scale = Math.min(1, maxWidth / sourceW);
+    const width = Math.max(1, Math.round(sourceW * scale));
+    const height = Math.max(1, Math.round(sourceH * scale));
 
+    captureCanvas.width = width;
+    captureCanvas.height = height;
+    const ctx = captureCanvas.getContext("2d");
+    ctx.drawImage(camera,0,0,width,height);
 
-    if (
-        !cameraVideo.videoWidth ||
-        !cameraVideo.videoHeight
-    ) {
-
-        alert(
-            "La caméra n'est pas encore prête."
-        );
-
-        return;
-
-    }
-
-
-    const step =
-        getCurrentStep();
-
-
-    /*
-     * Capture dans un canvas.
-     *
-     * Il n'y a aucune vidéo visible.
-     */
-
-    const width =
-        cameraVideo.videoWidth;
-
-    const height =
-        cameraVideo.videoHeight;
-
-
-    captureCanvas.width =
-        width;
-
-    captureCanvas.height =
-        height;
-
-
-    const ctx =
-        captureCanvas.getContext("2d", {
-            alpha: false
-        });
-
-
-    /*
-     * Image miroir désactivée :
-     * caméra arrière.
-     */
-
-    ctx.drawImage(
-        cameraVideo,
-        0,
-        0,
-        width,
-        height
-    );
-
-
-    const blob =
-        await new Promise(resolve => {
-
-            captureCanvas.toBlob(
-                resolve,
-                "image/jpeg",
-                .88
-            );
-
-        });
-
-
-    if (!blob) {
-
-        alert(
-            "Impossible de créer la photo."
-        );
-
-        return;
-
-    }
-
-
-    const url =
-        URL.createObjectURL(blob);
-
-
-    state.pendingPhoto = {
-
-        blob,
-
-        url,
-
-        heading:
-            state.heading !== null
-                ? state.heading
-                : step.heading,
-
-        targetHeading:
-            step.heading,
-
-        pitch:
-            state.pitch,
-
-        targetPitch:
-            step.pitch,
-
-        type:
-            step.type,
-
-        index:
-            state.currentStep
-
+    const target = state.targets[state.step];
+    const photo = {
+      index: state.step,
+      yaw: state.yaw,
+      pitch: state.pitch ?? 0,
+      targetYaw: target.yaw,
+      targetPitch: target.pitch,
+      width,
+      height
     };
 
+    // Le cliché est utilisé immédiatement puis n'est pas conservé comme
+    // un gros DataURL individuel : cela limite la consommation mémoire.
+    stitchPhotoIntoPanorama(captureCanvas, photo);
+    state.photos.push(photo);
 
-    /*
-     * Affiche la photo pour confirmation.
-     *
-     * Elle ne disparaît PAS directement.
-     */
-
-    confirmImage.src =
-        url;
-
-    photoConfirm.classList.add("open");
-
-}
-
-
-/* =========================================================
-   CONFIRM PHOTO
-========================================================== */
-
-confirmBtn.addEventListener(
-    "click",
-    confirmPhoto
-);
-
-
-function confirmPhoto() {
-
-    if (!state.pendingPhoto) {
-        return;
-    }
-
-
-    state.capturedPhotos.push(
-        state.pendingPhoto
-    );
-
-
-    /*
-     * La photo précédente reste visible
-     * pendant la préparation de la suivante.
-     */
-
-    previousPhoto.src =
-        state.pendingPhoto.url;
-
-    previousPhoto.style.display =
-        "block";
-
-
-    state.pendingPhoto = null;
-
-    photoConfirm.classList.remove("open");
-
-
-    /*
-     * PROCHAINE ÉTAPE
-     */
-
-    state.currentStep++;
-
-
-    if (
-        state.currentStep >=
-        STEPS.length
-    ) {
-
-        finishCapture();
-
-        return;
-
-    }
-
-
+    const capturedStep = state.step;
+    state.captureBusy = false;
+    setStep(capturedStep + 1);
+    drawPanoramaPreview();
+  }catch(error){
+    state.captureBusy = false;
     updateGuidance();
-
+    console.error(error);
+    alert("La photo n'a pas pu être ajoutée au panorama : " + error.message);
+  }
 }
 
+function stitchPhotoIntoPanorama(sourceCanvas, photo){
+  if(!state.pano) state.pano = createPanoramaCanvas();
 
-/* =========================================================
-   RETAKE
-========================================================== */
+  const ctx = state.pano.ctx;
+  const srcW = sourceCanvas.width;
+  const srcH = sourceCanvas.height;
 
-retakeBtn.addEventListener(
-    "click",
-    () => {
+  /*
+    Pour un téléphone classique, on exploite une portion centrale du cliché.
+    On la place sur une toile équirectangulaire en fonction du cap et de
+    l'inclinaison. Les bords sont adoucis afin de réduire les coutures.
 
-        if (state.pendingPhoto) {
+    Ce n'est volontairement pas présenté comme du stitching professionnel :
+    sans moteur de vision (features/homographies/warping), un navigateur ne
+    peut pas garantir la fusion parfaite de deux pièces photographiées.
+  */
+  const horizontalFov = 72;
+  const verticalFov = 52;
+  const stripWidth = Math.round(PANO_WIDTH * (horizontalFov / 360) * 0.72);
+  const stripHeight = Math.round(PANO_HEIGHT * (verticalFov / 180) * 0.78);
 
-            URL.revokeObjectURL(
-                state.pendingPhoto.url
-            );
+  const centerX = normalizeAngle(photo.yaw - (state.startYaw ?? 0)) / 360 * PANO_WIDTH;
+  const centerY = PANO_HEIGHT / 2 - (photo.pitch / 90) * (PANO_HEIGHT / 2) * 0.82;
 
+  const sourceCropW = srcW * 0.76;
+  const sourceCropH = srcH * 0.80;
+  const sourceX = (srcW - sourceCropW) / 2;
+  const sourceY = (srcH - sourceCropH) / 2;
+
+  const tile = document.createElement("canvas");
+  tile.width = stripWidth;
+  tile.height = stripHeight;
+  const tileCtx = tile.getContext("2d");
+  tileCtx.drawImage(sourceCanvas, sourceX, sourceY, sourceCropW, sourceCropH, 0, 0, stripWidth, stripHeight);
+
+  // Masque de fondu horizontal et vertical pour créer une continuité visuelle.
+  const image = tileCtx.getImageData(0,0,stripWidth,stripHeight);
+  const data = image.data;
+  for(let y=0;y<stripHeight;y++){
+    const vy = Math.min(1, y / Math.max(1,stripHeight * 0.12), (stripHeight-y) / Math.max(1,stripHeight * 0.12));
+    for(let x=0;x<stripWidth;x++){
+      const vx = Math.min(1, x / Math.max(1,stripWidth * 0.16), (stripWidth-x) / Math.max(1,stripWidth * 0.16));
+      const alpha = clamp(Math.min(vx,vy),0,1);
+      data[(y*stripWidth+x)*4+3] = Math.round(data[(y*stripWidth+x)*4+3] * alpha);
+    }
+  }
+  tileCtx.putImageData(image,0,0);
+
+  ctx.save();
+  ctx.globalAlpha = 0.98;
+  ctx.globalCompositeOperation = "source-over";
+  drawWrapped(ctx,tile,centerX-stripWidth/2,centerY-stripHeight/2);
+  ctx.restore();
+
+  // Pour les vues haut/bas, un léger remplissage central réduit les zones
+  // noires entre les bandes capturées sans fabriquer de détails artificiels.
+  if(photo.pitch !== 0){
+    ctx.save();
+    ctx.globalAlpha = 0.22;
+    drawWrapped(ctx,tile,centerX-stripWidth/2,centerY-stripHeight/2);
+    ctx.restore();
+  }
+}
+
+function drawWrapped(ctx, image, x, y){
+  const width = image.width;
+  const panoW = ctx.canvas.width;
+  ctx.drawImage(image,x,y);
+  if(x < 0) ctx.drawImage(image,x+panoW,y);
+  if(x+width > panoW) ctx.drawImage(image,x-panoW,y);
+}
+
+/* -----------------------------
+   FIN DE CAPTURE
+----------------------------- */
+function finishCapture(){
+  state.running = false;
+  state.captureBusy = false;
+  $("#progress").style.width = "100%";
+  $("#counter").textContent = `Photo ${TOTAL_PHOTOS} / ${TOTAL_PHOTOS}`;
+  $("#phasePill").textContent = "Terminé";
+  $("#qualityPill").textContent = "Panorama terminé";
+  $("#qualityPill").className = "pill ok";
+  $("#guidance").textContent = "✓ PANORAMA TERMINÉ";
+  $("#guidance").classList.add("ready");
+  $("#targetRing").classList.add("ready");
+  $("#shutter").disabled = true;
+
+  stopCamera();
+
+  if(!state.pano) return;
+
+  const panoDataUrl = state.pano.canvas.toDataURL("image/jpeg", JPEG_QUALITY);
+  const scene = {
+    name: `Panorama ${state.scenes.length + 1}`,
+    count: TOTAL_PHOTOS,
+    date: new Date().toLocaleDateString("fr-FR"),
+    panoDataUrl
+  };
+  state.scenes.push(scene);
+  renderSceneList();
+  openViewerWithCanvas(state.pano.canvas);
+}
+
+function openViewerWithCanvas(panoCanvasSource){
+  $("#captureScreen").classList.add("hidden");
+  $("#viewer").classList.remove("hidden");
+  if(state.viewer) state.viewer.destroy();
+  state.viewer = new PanoViewer($("#viewerCanvas"), panoCanvasSource);
+}
+
+function closeViewer(){
+  if(state.viewer){state.viewer.destroy();state.viewer=null;}
+  $("#viewer").classList.add("hidden");
+  $("#captureScreen").classList.remove("hidden");
+}
+
+async function restart360(){
+  const ok = await showModal("Recommencer", "Supprimer les 20 photos de la capture actuelle et recommencer ?", "Recommencer");
+  if(!ok) return;
+  stopCamera();
+  resetCaptureState();
+  $("#viewer").classList.add("hidden");
+  $("#captureScreen").classList.remove("hidden");
+  $("#permission").classList.remove("hidden");
+  drawPanoramaPreview();
+}
+
+/* -----------------------------
+   VISUALISEUR 360°
+   Projection équirectangulaire -> vue perspective.
+   Aucun framework nécessaire.
+----------------------------- */
+class PanoViewer{
+  constructor(canvas, source){
+    this.canvas = canvas;
+    this.ctx = canvas.getContext("2d");
+    this.source = source;
+    this.sourceCanvas = source instanceof HTMLCanvasElement ? source : null;
+    this.image = source instanceof HTMLImageElement ? source : null;
+    this.lon = 0;
+    this.lat = 0;
+    this.fov = 90;
+    this.dragging = false;
+    this.lastX = 0;
+    this.lastY = 0;
+    this.pointerId = null;
+    this.resize = this.resize.bind(this);
+    this.render = this.render.bind(this);
+    this.onPointerDown = this.onPointerDown.bind(this);
+    this.onPointerMove = this.onPointerMove.bind(this);
+    this.onPointerUp = this.onPointerUp.bind(this);
+    this.onWheel = this.onWheel.bind(this);
+
+    window.addEventListener("resize", this.resize);
+    canvas.addEventListener("pointerdown", this.onPointerDown);
+    canvas.addEventListener("pointermove", this.onPointerMove);
+    canvas.addEventListener("pointerup", this.onPointerUp);
+    canvas.addEventListener("pointercancel", this.onPointerUp);
+    canvas.addEventListener("wheel", this.onWheel, {passive:false});
+    this.resize();
+    this.raf = requestAnimationFrame(this.render);
+  }
+
+  getSourceCanvas(){
+    if(this.sourceCanvas) return this.sourceCanvas;
+    if(this.image){
+      if(!this.cachedImageCanvas){
+        const c=document.createElement("canvas");
+        c.width=this.image.naturalWidth || this.image.width;
+        c.height=this.image.naturalHeight || this.image.height;
+        c.getContext("2d").drawImage(this.image,0,0,c.width,c.height);
+        this.cachedImageCanvas=c;
+      }
+      return this.cachedImageCanvas;
+    }
+    return null;
+  }
+
+  resize(){
+    const rect=this.canvas.getBoundingClientRect();
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    this.canvas.width=Math.max(1,Math.round(rect.width*dpr));
+    this.canvas.height=Math.max(1,Math.round(rect.height*dpr));
+  }
+
+  onPointerDown(event){
+    this.dragging=true;
+    this.pointerId=event.pointerId;
+    this.lastX=event.clientX;
+    this.lastY=event.clientY;
+    this.canvas.setPointerCapture?.(event.pointerId);
+  }
+
+  onPointerMove(event){
+    if(!this.dragging || event.pointerId!==this.pointerId) return;
+    this.lon -= (event.clientX-this.lastX)*0.18;
+    this.lat += (event.clientY-this.lastY)*0.12;
+    this.lat=clamp(this.lat,-89,89);
+    this.lastX=event.clientX;
+    this.lastY=event.clientY;
+  }
+
+  onPointerUp(event){
+    if(this.pointerId!==null && event.pointerId!==this.pointerId) return;
+    this.dragging=false;
+    this.pointerId=null;
+  }
+
+  onWheel(event){
+    event.preventDefault();
+    this.fov=clamp(this.fov+event.deltaY*0.04,45,110);
+  }
+
+  render(){
+    const source=this.getSourceCanvas();
+    if(source){
+      const w=this.canvas.width;
+      const h=this.canvas.height;
+      const ctx=this.ctx;
+      ctx.fillStyle="#000";
+      ctx.fillRect(0,0,w,h);
+
+      // Renderisation à résolution réduite puis agrandissement : bien plus
+      // légère qu'un getImageData complet à chaque pixel en 4K.
+      const rw=Math.max(180,Math.floor(w/3));
+      const rh=Math.max(100,Math.floor(h/3));
+      if(!this.buffer || this.buffer.width!==rw || this.buffer.height!==rh){
+        this.buffer=document.createElement("canvas");
+        this.buffer.width=rw;this.buffer.height=rh;
+        this.bufferCtx=this.buffer.getContext("2d");
+      }
+
+      const srcCtx=source.getContext("2d");
+      const srcW=source.width,srcH=source.height;
+      const src=srcCtx.getImageData(0,0,srcW,srcH).data;
+      const out=this.bufferCtx.createImageData(rw,rh);
+      const data=out.data;
+
+      const f=Math.tan(this.fov*Math.PI/360);
+      const aspect=rw/rh;
+      const lon0=this.lon*Math.PI/180;
+      const lat0=this.lat*Math.PI/180;
+
+      const forward=[Math.cos(lat0)*Math.sin(lon0),Math.sin(lat0),Math.cos(lat0)*Math.cos(lon0)];
+      const right=[Math.cos(lon0),0,-Math.sin(lon0)];
+      const up=[-Math.sin(lat0)*Math.sin(lon0),Math.cos(lat0),-Math.sin(lat0)*Math.cos(lon0)];
+
+      for(let y=0;y<rh;y++){
+        const ny=(1-(y+0.5)/rh*2)*f;
+        for(let x=0;x<rw;x++){
+          const nx=((x+0.5)/rw*2-1)*aspect*f;
+          let vx=forward[0]+right[0]*nx+up[0]*ny;
+          let vy=forward[1]+right[1]*nx+up[1]*ny;
+          let vz=forward[2]+right[2]*nx+up[2]*ny;
+          const len=Math.hypot(vx,vy,vz)||1;
+          vx/=len;vy/=len;vz/=len;
+
+          const yaw=Math.atan2(vx,vz);
+          const pitch=Math.asin(clamp(vy,-1,1));
+          let u=(yaw/(2*Math.PI)+0.5);
+          u=((u%1)+1)%1;
+          const v=clamp(0.5-pitch/Math.PI,0,1);
+          const sx=Math.floor(u*(srcW-1));
+          const sy=Math.floor(v*(srcH-1));
+          const si=(sy*srcW+sx)*4;
+          const di=(y*rw+x)*4;
+          data[di]=src[si];
+          data[di+1]=src[si+1];
+          data[di+2]=src[si+2];
+          data[di+3]=255;
         }
+      }
 
-        state.pendingPhoto = null;
-
-        photoConfirm.classList.remove(
-            "open"
-        );
-
+      this.bufferCtx.putImageData(out,0,0);
+      ctx.imageSmoothingEnabled=true;
+      ctx.drawImage(this.buffer,0,0,w,h);
     }
-);
 
+    this.raf=requestAnimationFrame(this.render);
+  }
 
-/* =========================================================
-   CANCEL CURRENT PHOTO
-========================================================== */
-
-cancelPhotoBtn.addEventListener(
-    "click",
-    () => {
-
-        if (state.pendingPhoto) {
-
-            URL.revokeObjectURL(
-                state.pendingPhoto.url
-            );
-
-            state.pendingPhoto = null;
-
-        }
-
-        photoConfirm.classList.remove(
-            "open"
-        );
-
-    }
-);
-
-
-/* =========================================================
-   CLOSE CAPTURE
-========================================================== */
-
-closeCaptureBtn.addEventListener(
-    "click",
-    closeCapture
-);
-
-
-function closeCapture() {
-
-    stopCamera();
-
-    capture.classList.remove(
-        "open"
-    );
-
-    startScreen.style.display =
-        "none";
-
+  destroy(){
+    cancelAnimationFrame(this.raf);
+    window.removeEventListener("resize",this.resize);
+    this.canvas.removeEventListener("pointerdown",this.onPointerDown);
+    this.canvas.removeEventListener("pointermove",this.onPointerMove);
+    this.canvas.removeEventListener("pointerup",this.onPointerUp);
+    this.canvas.removeEventListener("pointercancel",this.onPointerUp);
+    this.canvas.removeEventListener("wheel",this.onWheel);
+  }
 }
 
-
-/* =========================================================
-   STOP CAMERA
-========================================================== */
-
-function stopCamera() {
-
-    if (state.cameraStream) {
-
-        state.cameraStream
-            .getTracks()
-            .forEach(track => {
-
-                track.stop();
-
-            });
-
-        state.cameraStream = null;
-
-    }
-
-    cameraVideo.srcObject =
-        null;
-
-}
-
-
-/* =========================================================
-   FINISH CAPTURE
-========================================================== */
-
-async function finishCapture() {
-
-    /*
-     * dernière photo
-     */
-
-    progressText.textContent =
-        `Photo ${STEPS.length} / ${STEPS.length}`;
-
-    progressPercent.textContent =
-        "100%";
-
-    progressFill.style.width =
-        "100%";
-
-
-    guidanceMain.textContent =
-        "Assemblage du panorama...";
-
-    guidanceSub.textContent =
-        "Les images sont en cours de fusion.";
-
-    statusPill.textContent =
-        "Assemblage...";
-
-    statusPill.className =
-        "status-pill";
-
-
-    /*
-     * Création du panorama.
-     */
-
-    try {
-
-        await createPanorama();
-
-        createSceneFromPanorama();
-
-        saveScene();
-
-    } catch (error) {
-
-        console.error(error);
-
-        alert(
-            "Le panorama n'a pas pu être assemblé.\n\n" +
-            error.message
-        );
-
-    }
-
-
-    stopCamera();
-
-
-    setTimeout(() => {
-
-        capture.classList.remove(
-            "open"
-        );
-
-        startScreen.style.display =
-            "none";
-
-    }, 500);
-
-}
-
-
-/* =========================================================
-   PANORAMA CANVAS
-========================================================== */
-
-async function createPanorama() {
-
-    const canvas =
-        document.createElement("canvas");
-
-
-    canvas.width =
-        CONFIG.panoramaWidth;
-
-    canvas.height =
-        CONFIG.panoramaHeight;
-
-
-    const ctx =
-        canvas.getContext("2d", {
-            alpha: false
-        });
-
-
-    /*
-     * Fond noir.
-     */
-
-    ctx.fillStyle =
-        "#000";
-
-    ctx.fillRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
-
-
-    /*
-     * Chaque photo est chargée puis placée
-     * selon son angle.
-     */
-
-    for (
-        let i = 0;
-        i < state.capturedPhotos.length;
-        i++
-    ) {
-
-        const photo =
-            state.capturedPhotos[i];
-
-
-        const img =
-            await loadImage(
-                photo.url
-            );
-
-
-        /*
-         * largeur utile.
-         *
-         * On enlève une partie des côtés
-         * pour réduire les répétitions.
-         */
-
-        const sourceWidth =
-            img.width *
-            CONFIG.cropRatio;
-
-
-        const sourceX =
-            (img.width -
-             sourceWidth) / 2;
-
-
-        /*
-         * FOV horizontal approximatif.
-         *
-         * 30° entre les photos.
-         *
-         * On utilise une zone correspondant
-         * approximativement à 30°.
-         */
-
-        const horizontalDegrees =
-            30;
-
-
-        const destinationWidth =
-            canvas.width *
-            horizontalDegrees /
-            360;
-
-
-        /*
-         * Position basée sur la direction
-         * réellement capturée.
-         */
-
-        const heading =
-            photo.targetHeading;
-
-
-        let x =
-            heading /
-            360 *
-            canvas.width;
-
-
-        /*
-         * Centre de la photo.
-         */
-
-        x -= destinationWidth / 2;
-
-
-        /*
-         * Ligne verticale selon le pitch.
-         */
-
-        const verticalCenter =
-            canvas.height / 2 -
-            (
-                photo.targetPitch /
-                90
-            ) *
-            (
-                canvas.height *
-                .35
-            );
-
-
-        /*
-         * Hauteur.
-         *
-         * On conserve le ratio de l'image
-         * mais on la limite.
-         */
-
-        const destinationHeight =
-            canvas.height *
-            .45;
-
-
-        const y =
-            verticalCenter -
-            destinationHeight / 2;
-
-
-        /*
-         * Gestion du bord 360°.
-         *
-         * Une image passant de 359° à 0°
-         * doit apparaître des deux côtés.
-         */
-
-        drawWrappedImage(
-            ctx,
-            img,
-            sourceX,
-            0,
-            sourceWidth,
-            img.height,
-            x,
-            y,
-            destinationWidth,
-            destinationHeight,
-            canvas.width
-        );
-
-    }
-
-
-    /*
-     * Lissage léger des zones de raccord.
-     */
-
-    state.panoramaCanvas =
-        canvas;
-
-    state.panoramaCtx =
-        ctx;
-
-
-    return canvas;
-
-}
-
-
-/* =========================================================
-   DRAW WRAPPED IMAGE
-========================================================== */
-
-function drawWrappedImage(
-    ctx,
-    img,
-    sx,
-    sy,
-    sw,
-    sh,
-    dx,
-    dy,
-    dw,
-    dh,
-    canvasWidth
-) {
-
-    /*
-     * Dessin principal.
-     */
-
-    ctx.globalAlpha = .92;
-
-    ctx.drawImage(
-        img,
-        sx,
-        sy,
-        sw,
-        sh,
-        dx,
-        dy,
-        dw,
-        dh
-    );
-
-
-    /*
-     * Si la photo dépasse à gauche.
-     */
-
-    if (dx < 0) {
-
-        ctx.drawImage(
-            img,
-            sx,
-            sy,
-            sw,
-            sh,
-            dx + canvasWidth,
-            dy,
-            dw,
-            dh
-        );
-
-    }
-
-
-    /*
-     * Si elle dépasse à droite.
-     */
-
-    if (
-        dx + dw >
-        canvasWidth
-    ) {
-
-        ctx.drawImage(
-            img,
-            sx,
-            sy,
-            sw,
-            sh,
-            dx - canvasWidth,
-            dy,
-            dw,
-            dh
-        );
-
-    }
-
-
-    ctx.globalAlpha = 1;
-
-}
-
-
-/* =========================================================
-   LOAD IMAGE
-========================================================== */
-
-function loadImage(url) {
-
-    return new Promise(
-        (resolve, reject) => {
-
-            const img =
-                new Image();
-
-            img.onload =
-                () => resolve(img);
-
-            img.onerror =
-                () => reject(
-                    new Error(
-                        "Impossible de charger une photo."
-                    )
-                );
-
-            img.src =
-                url;
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   THREE.JS 360 VIEWER
-========================================================== */
-
-function initThree() {
-
-    const container =
-        document.getElementById(
-            "viewer3d"
-        );
-
-
-    state.scene3D =
-        new THREE.Scene();
-
-
-    state.camera3D =
-        new THREE.PerspectiveCamera(
-            75,
-            container.clientWidth /
-            container.clientHeight,
-            .1,
-            100
-        );
-
-
-    state.camera3D.position.set(
-        0,
-        0,
-        0.01
-    );
-
-
-    state.renderer =
-        new THREE.WebGLRenderer({
-            antialias: true,
-            alpha: false
-        });
-
-
-    state.renderer.setPixelRatio(
-        Math.min(
-            window.devicePixelRatio,
-            2
-        )
-    );
-
-
-    state.renderer.setSize(
-        container.clientWidth,
-        container.clientHeight
-    );
-
-
-    container.appendChild(
-        state.renderer.domElement
-    );
-
-
-    /*
-     * Sphère autour du client.
-     *
-     * On regarde l'intérieur.
-     */
-
-    const geometry =
-        new THREE.SphereGeometry(
-            50,
-            64,
-            40
-        );
-
-
-    geometry.scale(
-        -1,
-        1,
-        1
-    );
-
-
-    const material =
-        new THREE.MeshBasicMaterial({
-            color: 0xffffff
-        });
-
-
-    state.sphere =
-        new THREE.Mesh(
-            geometry,
-            material
-        );
-
-
-    state.scene3D.add(
-        state.sphere
-    );
-
-
-    /*
-     * Souris / tactile.
-     */
-
-    container.addEventListener(
-        "pointerdown",
-        startDrag
-    );
-
-    window.addEventListener(
-        "pointermove",
-        drag
-    );
-
-    window.addEventListener(
-        "pointerup",
-        endDrag
-    );
-
-
-    window.addEventListener(
-        "resize",
-        resizeThree
-    );
-
-
-    animateThree();
-
-}
-
-
-/* =========================================================
-   THREE RESIZE
-========================================================== */
-
-function resizeThree() {
-
-    const container =
-        document.getElementById(
-            "viewer3d"
-        );
-
-
-    if (!state.renderer) {
-        return;
-    }
-
-
-    state.camera3D.aspect =
-        container.clientWidth /
-        container.clientHeight;
-
-
-    state.camera3D.updateProjectionMatrix();
-
-
-    state.renderer.setSize(
-        container.clientWidth,
-        container.clientHeight
-    );
-
-}
-
-
-/* =========================================================
-   THREE ANIMATION
-========================================================== */
-
-function animateThree() {
-
-    requestAnimationFrame(
-        animateThree
-    );
-
-
-    if (
-        state.camera3D &&
-        state.sphere
-    ) {
-
-        state.camera3D.rotation.order =
-            "YXZ";
-
-
-        state.camera3D.rotation.y =
-            THREE.MathUtils.degToRad(
-                state.longitude
-            );
-
-
-        state.camera3D.rotation.x =
-            THREE.MathUtils.degToRad(
-                state.latitude
-            );
-
-    }
-
-
-    if (state.renderer) {
-
-        state.renderer.render(
-            state.scene3D,
-            state.camera3D
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   DRAG 360
-========================================================== */
-
-function startDrag(event) {
-
-    state.dragging = true;
-
-    state.lastX =
-        event.clientX;
-
-    state.lastY =
-        event.clientY;
-
-}
-
-
-function drag(event) {
-
-    if (!state.dragging) {
-        return;
-    }
-
-
-    const dx =
-        event.clientX -
-        state.lastX;
-
-
-    const dy =
-        event.clientY -
-        state.lastY;
-
-
-    state.longitude -=
-        dx * .18;
-
-
-    state.latitude -=
-        dy * .18;
-
-
-    state.latitude =
-        Math.max(
-            -85,
-            Math.min(
-                85,
-                state.latitude
-            )
-        );
-
-
-    state.lastX =
-        event.clientX;
-
-    state.lastY =
-        event.clientY;
-
-}
-
-
-function endDrag() {
-
-    state.dragging = false;
-
-}
-
-
-/* =========================================================
-   TOUCH / WHEEL
-========================================================== */
-
-document
-    .getElementById("viewer3d")
-    .addEventListener(
-        "wheel",
-        event => {
-
-            state.camera3D.fov +=
-                event.deltaY * .03;
-
-
-            state.camera3D.fov =
-                Math.max(
-                    45,
-                    Math.min(
-                        100,
-                        state.camera3D.fov
-                    )
-                );
-
-
-            state.camera3D.updateProjectionMatrix();
-
-        },
-        {
-            passive: true
-        }
-    );
-
-
-/* =========================================================
-   APPLY PANORAMA TO 3D
-========================================================== */
-
-function createSceneFromPanorama() {
-
-    if (!state.panoramaCanvas) {
-        return;
-    }
-
-
-    if (state.panoramaTexture) {
-
-        state.panoramaTexture.dispose();
-
-    }
-
-
-    state.panoramaTexture =
-        new THREE.CanvasTexture(
-            state.panoramaCanvas
-        );
-
-
-    state.panoramaTexture.colorSpace =
-        THREE.SRGBColorSpace;
-
-
-    state.panoramaTexture.needsUpdate =
-        true;
-
-
-    state.sphere.material.map =
-        state.panoramaTexture;
-
-
-    state.sphere.material.needsUpdate =
-        true;
-
-
-    state.longitude = 0;
-
-    state.latitude = 0;
-
-}
-
-
-/* =========================================================
-   SAVE SCENE
-========================================================== */
-
-function saveScene() {
-
-    if (!state.panoramaCanvas) {
-        return;
-    }
-
-
-    const thumbnail =
-        state.panoramaCanvas
-            .toDataURL(
-                "image/jpeg",
-                .75
-            );
-
-
-    const scene = {
-
-        id:
-            Date.now(),
-
-        name:
-            `Scène 360° ${state.scenes.length + 1}`,
-
-        thumbnail,
-
-        panorama:
-            state.panoramaCanvas.toDataURL(
-                "image/jpeg",
-                .82
-            )
-
-    };
-
-
-    state.scenes.push(
-        scene
-    );
-
-
-    renderScenes();
-
-}
-
-
-/* =========================================================
-   SCENES
-========================================================== */
-
-const scenesPanel =
-    document.getElementById(
-        "scenesPanel"
-    );
-
-const scenesList =
-    document.getElementById(
-        "scenesList"
-    );
-
-
-document
-    .getElementById("scenesBtn")
-    .addEventListener(
-        "click",
-        () => {
-
-            scenesPanel.classList.add(
-                "open"
-            );
-
-        }
-    );
-
-
-scenesPanel.addEventListener(
-    "click",
-    event => {
-
-        if (
-            event.target ===
-            scenesPanel
-        ) {
-
-            scenesPanel.classList.remove(
-                "open"
-            );
-
-        }
-
-    }
-);
-
-
-/* =========================================================
-   RENDER SCENES
-========================================================== */
-
-function renderScenes() {
-
-    scenesList.innerHTML = "";
-
-
-    if (state.scenes.length === 0) {
-
-        scenesList.innerHTML = `
-            <p style="
-                color:#777;
-                padding:20px 0;
-            ">
-                Aucune scène pour le moment.
-            </p>
-        `;
-
-        return;
-
-    }
-
-
-    state.scenes.forEach(
-        (scene, index) => {
-
-            const card =
-                document.createElement(
-                    "div"
-                );
-
-            card.className =
-                "scene-card";
-
-
-            card.innerHTML = `
-
-                <div class="scene-thumb">
-                    <img src="${scene.thumbnail}">
-                </div>
-
-                <div class="scene-info">
-
-                    <div class="scene-name">
-                        ${escapeHTML(scene.name)}
-                    </div>
-
-                    <div class="scene-actions">
-
-                        <button data-open="${index}">
-                            Ouvrir
-                        </button>
-
-                        <button data-rename="${index}">
-                            Renommer
-                        </button>
-
-                        <button data-delete="${index}">
-                            Supprimer
-                        </button>
-
-                    </div>
-
-                </div>
-
-            `;
-
-
-            scenesList.appendChild(
-                card
-            );
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   SCENE ACTIONS
-========================================================== */
-
-scenesList.addEventListener(
-    "click",
-    event => {
-
-        const open =
-            event.target.dataset.open;
-
-        const rename =
-            event.target.dataset.rename;
-
-        const remove =
-            event.target.dataset.delete;
-
-
-        if (open !== undefined) {
-
-            openScene(
-                Number(open)
-            );
-
-        }
-
-
-        if (rename !== undefined) {
-
-            renameScene(
-                Number(rename)
-            );
-
-        }
-
-
-        if (remove !== undefined) {
-
-            deleteScene(
-                Number(remove)
-            );
-
-        }
-
-    }
-);
-
-
-/* =========================================================
-   OPEN SCENE
-========================================================== */
-
-async function openScene(index) {
-
-    const scene =
-        state.scenes[index];
-
-    if (!scene) {
-        return;
-    }
-
-
-    const img =
-        await loadImage(
-            scene.panorama
-        );
-
-
-    const canvas =
-        document.createElement(
-            "canvas"
-        );
-
-
-    canvas.width =
-        img.width;
-
-    canvas.height =
-        img.height;
-
-
-    const ctx =
-        canvas.getContext("2d");
-
-    ctx.drawImage(
-        img,
-        0,
-        0
-    );
-
-
-    state.panoramaCanvas =
-        canvas;
-
-
-    createSceneFromPanorama();
-
-
-    scenesPanel.classList.remove(
-        "open"
-    );
-
-}
-
-
-/* =========================================================
-   RENAME
-========================================================== */
-
-function renameScene(index) {
-
-    const scene =
-        state.scenes[index];
-
-    if (!scene) {
-        return;
-    }
-
-
-    const newName =
-        prompt(
-            "Nom de la scène :",
-            scene.name
-        );
-
-
-    if (
-        newName &&
-        newName.trim()
-    ) {
-
-        scene.name =
-            newName.trim();
-
-        renderScenes();
-
-    }
-
-}
-
-
-/* =========================================================
-   DELETE
-========================================================== */
-
-function deleteScene(index) {
-
-    if (
-        !confirm(
-            "Supprimer cette scène ?"
-        )
-    ) {
-
-        return;
-
-    }
-
-
-    state.scenes.splice(
-        index,
-        1
-    );
-
-
-    renderScenes();
-
-}
-
-
-/* =========================================================
-   ESCAPE HTML
-========================================================== */
-
-function escapeHTML(value) {
-
-    return String(value)
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-        .replace(
-            /</g,
-            "&lt;"
-        )
-        .replace(
-            />/g,
-            "&gt;"
-        )
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-        .replace(
-            /'/g,
-            "&#039;"
-        );
-
-}
-
-
-/* =========================================================
-   RESET
-========================================================== */
-
-document
-    .getElementById("resetBtn")
-    .addEventListener(
-        "click",
-        () => {
-
-            if (
-                !confirm(
-                    "Réinitialiser l'application ?"
-                )
-            ) {
-
-                return;
-
-            }
-
-
-            state.scenes = [];
-
-            state.capturedPhotos = [];
-
-            state.pendingPhoto = null;
-
-            state.currentStep = 0;
-
-
-            if (state.panoramaTexture) {
-
-                state.panoramaTexture.dispose();
-
-                state.panoramaTexture =
-                    null;
-
-            }
-
-
-            if (state.sphere) {
-
-                state.sphere.material.map =
-                    null;
-
-                state.sphere.material.needsUpdate =
-                    true;
-
-            }
-
-
-            renderScenes();
-
-        }
-    );
-
-
-/* =========================================================
-   2D IMAGE
-========================================================== */
-
-document
-    .getElementById("imageInput")
-    .addEventListener(
-        "change",
-        event => {
-
-            const file =
-                event.target.files[0];
-
-            if (!file) {
-                return;
-            }
-
-
-            const url =
-                URL.createObjectURL(
-                    file
-                );
-
-
-            const img =
-                document.createElement(
-                    "img"
-                );
-
-
-            img.src = url;
-
-            img.style.width =
-                "100%";
-
-            img.style.maxWidth =
-                "800px";
-
-            img.style.display =
-                "block";
-
-            img.style.margin =
-                "30px auto";
-
-
-            twoDSection.appendChild(
-                img
-            );
-
-        }
-    );
-
-
-/* =========================================================
-   INIT
-========================================================== */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    () => {
-
-        initThree();
-
-        renderScenes();
-
-    }
-);
-
+/* -----------------------------
+   IMPORT 2D : uniquement fichiers image
+----------------------------- */
+$("#import2d").addEventListener("click", () => $("#photoInput").click());
+$("#photoInput").addEventListener("change", event => {
+  const files=[...event.target.files].filter(file => file.type.startsWith("image/"));
+  const grid=$("#photoGrid");
+  grid.innerHTML="";
+  if(!files.length){
+    grid.classList.add("hidden");
+    $("#empty2d").classList.remove("hidden");
+    return;
+  }
+
+  grid.classList.remove("hidden");
+  $("#empty2d").classList.add("hidden");
+
+  files.forEach(file => {
+    const url=URL.createObjectURL(file);
+    const card=document.createElement("div");
+    card.className="photo-card";
+    card.innerHTML=`<img src="${url}" alt=""><div>${escapeHtml(file.name)}</div>`;
+    grid.appendChild(card);
+  });
+});
+
+/* -----------------------------
+   UI EVENTS
+----------------------------- */
+$("#start360").addEventListener("click", () => {
+  setMode("360");
+  start360();
+});
+
+$("#shutter").addEventListener("click", capturePhoto);
+$("#renameBtn").addEventListener("click", renameProject);
+$("#restart360").addEventListener("click", restart360);
+$("#closeViewer").addEventListener("click", closeViewer);
+$("#exit360").addEventListener("click", async () => {
+  const ok = await showModal("Quitter le mode 360°", "Quitter la capture actuelle ? Les photos non terminées seront perdues.", "Quitter");
+  if(!ok) return;
+  stopCamera();
+  closeViewer();
+  setMode("2d");
+  resetCaptureState();
+  $("#permission").classList.remove("hidden");
+  drawPanoramaPreview();
+});
+
+document.querySelectorAll(".tab").forEach(btn => {
+  btn.addEventListener("click", () => setMode(btn.dataset.mode));
+});
+
+$("#fullscreenBtn").addEventListener("click", async () => {
+  try{
+    if(!document.fullscreenElement) await document.documentElement.requestFullscreen?.();
+    else await document.exitFullscreen?.();
+  }catch(error){ console.warn("Fullscreen indisponible",error); }
+});
+
+$("#resetBtn").addEventListener("click", async () => {
+  const ok=await showModal("Réinitialiser", "Réinitialiser la capture actuelle ? Les scènes déjà créées seront conservées.", "Réinitialiser");
+  if(!ok) return;
+  stopCamera();
+  closeViewer();
+  resetCaptureState();
+  setMode("360");
+  $("#permission").classList.remove("hidden");
+  drawPanoramaPreview();
+});
+
+window.addEventListener("beforeunload", stopCamera);
+
+/* État initial */
+renderSceneList();
+resetCaptureState();
+state.pano=createPanoramaCanvas();
+drawPanoramaPreview();
 </script>
-
 </body>
 </html>
