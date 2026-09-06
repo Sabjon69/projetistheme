@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#000000">
-    <title>Studio Visite Pro 360° - HD 22 Points</title>
+    <title>Studio Visite Pro 360° - HD Seamless</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         :root{ --black:#000; --bg:#050505; --panel:#0d0d0d; --line:#222; --text:#fff; --muted:#888; --green:#22c55e; --yellow:#eab308; --red:#ef4444; }
@@ -15,7 +15,7 @@
         .hidden{display:none!important}
         
         .app{height:100dvh;display:grid;grid-template-rows:56px 1fr;background:var(--bg)}
-        .topbar{display:flex;align-items:center;justify-content:between;padding:0 16px;background:#09090b;border-bottom:1px solid var(--line);z-index:30}
+        .topbar{display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:#09090b;border-bottom:1px solid var(--line);z-index:30}
         .brand{font-weight:800;font-size:15px;letter-spacing:-.3px}.brand span{color:var(--yellow)}
         .tabs{display:flex;gap:4px}.tab{border:0;background:transparent;color:var(--muted);padding:8px 12px;border-radius:8px;font-weight:700;font-size:13px}.tab.active{background:#18181b;color:#fff}
         
@@ -36,7 +36,6 @@
         .empty-2d{min-height:100%;border:2px dashed #222;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
         .empty-2d h2{margin:0 0 6px;font-size:18px}.empty-2d p{max-width:500px;color:var(--muted);font-size:13px;line-height:1.5}
         
-        /* CAPTURE 360 HD */
         .capture{position:relative;height:100%;width:100%;overflow:hidden;background:#000}
         #camera{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
         .flash-overlay{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:100;transition:opacity .1s ease-out}
@@ -48,7 +47,6 @@
         .capture-sub{font-size:12px;color:var(--yellow);margin-top:2px;font-weight:700}
         .capture-tools{display:flex;gap:6px;pointer-events:auto}.capture-tools button{border:1px solid #444;background:#000c;color:#fff;border-radius:8px;padding:7px 10px;font-size:12px}
         
-        /* Cible stabilisée de type pro (style HOLD) */
         .target{
             position:absolute; left:50%; top:45%; transform:translate(-50%,-50%);
             width:110px; height:150px; border:3px solid rgba(255,255,255,0.9);
@@ -74,7 +72,6 @@
         .guidance{position:absolute;left:50%;top:calc(45% + 90px);transform:translateX(-50%);background:#000e;border:1px solid #333;padding:5px 12px;border-radius:99px;font-size:11px;font-weight:800;white-space:nowrap}
         .guidance.ready{color:var(--green);border-color:#166534}
         
-        /* Mini-radar 22 points en disposition matricielle exacte */
         .minimap{
             position:absolute; bottom:85px; left:50%; transform:translateX(-50%);
             display:flex; flex-direction:column; gap:4px; background:rgba(10,10,12,0.9); border:1px solid #333;
@@ -136,7 +133,7 @@
                 <div class="empty-2d">
                     <div style="font-size:36px;margin-bottom:8px">◎</div>
                     <h2>Mode Sphérique Haute Définition</h2>
-                    <p>Le système capture exactement 22 points synchronisés pour un rendu sphérique parfait sans aucune zone floue ni raccord visible.</p>
+                    <p>Capture fluide de 22 points avec fusion harmonieuse et sans raccord.</p>
                     <button class="primary" id="import2d" style="max-width:240px;margin-top:14px">Importer des photos 2D</button>
                     <input id="photoInput" type="file" accept="image/*" multiple class="hidden">
                 </div>
@@ -148,7 +145,7 @@
                         <div class="permission-card">
                             <div class="big-icon">⦿</div>
                             <h1>Scan 360° HD (22 Points)</h1>
-                            <p>Suivez les 22 repères du radar. Visez le cadre, immobilisez-vous <b>1 seconde</b> : la capture s'effectue automatiquement avec une netteté maximale.</p>
+                            <p>Suivez les repères, immobilisez-vous <b>1 seconde</b> : la capture s'effectue automatiquement avec une netteté native.</p>
                             <button class="primary" id="start360" style="margin-top:16px">Démarrer le Scan HD</button>
                         </div>
                     </div>
@@ -175,7 +172,6 @@
                         <div class="target-dot" id="targetDot"></div>
                         <div class="guidance" id="guidance">Recherche de la position...</div>
                         
-                        <!-- Grille radar 22 points fidèle au design demandé -->
                         <div class="minimap" id="minimap"></div>
                         
                         <div class="capture-bottom">
@@ -262,18 +258,15 @@ function renameProject(){
     if(v && v.trim()){ state.projectName = v.trim(); $("#projectName").textContent = state.projectName; }
 }
 
-// Construction de la grille visuelle du mini-radar 22 points exacte (1 zénith + 6 haut + 8 milieu + 6 bas + 1 nadir)
 function renderMinimap(){
     const map = $("#minimap");
     map.innerHTML = "";
-    
-    // Structure des rangées de points pour le radar (imite la disposition demandée)
     const rowsConfig = [
-        { start: 0, count: 1 },   // Zénith (1)
-        { start: 1, count: 6 },   // Haut (6)
-        { start: 7, count: 8 },   // Milieu / Horizon (8)
-        { start: 15, count: 6 },  // Bas (6)
-        { start: 21, count: 1 }   // Nadir (1)
+        { start: 0, count: 1 },
+        { start: 1, count: 6 },
+        { start: 7, count: 8 },
+        { start: 15, count: 6 },
+        { start: 21, count: 1 }
     ];
 
     rowsConfig.forEach(rc => {
@@ -294,47 +287,36 @@ function renderMinimap(){
     });
 }
 
-// Définition exacte des 22 points de capture sphériques professionnels
 function buildTargets(startYaw){
     const targets = [];
     const base = normalizeAngle(startYaw);
     
-    // 0: Zénith (Plafond haut)
-    targets.push({ yaw: base, pitch: 85, label: "Zénith (Plafond)" });
-    
-    // 1 à 6: Anneau Supérieur (+45° pitch, 6 points espacés de 60°)
+    targets.push({ yaw: base, pitch: 88, label: "Zénith (Plafond)" });
     for(let i = 0; i < 6; i++){
-        targets.push({ yaw: normalizeAngle(base + i * 60), pitch: 45, label: `Plafond haut #${i+1}` });
+        targets.push({ yaw: normalizeAngle(base + i * 60), pitch: 48, label: `Plafond haut #${i+1}` });
     }
-    
-    // 7 à 14: Anneau Médian / Horizon (0° pitch, 8 points espacés de 45°)
     for(let i = 0; i < 8; i++){
         targets.push({ yaw: normalizeAngle(base + i * 45), pitch: 0, label: `Horizon #${i+1}` });
     }
-    
-    // 15 à 20: Anneau Inférieur (-45° pitch, 6 points espacés de 60°)
     for(let i = 0; i < 6; i++){
-        targets.push({ yaw: normalizeAngle(base + i * 60), pitch: -45, label: `Sol bas #${i+1}` });
+        targets.push({ yaw: normalizeAngle(base + i * 60), pitch: -48, label: `Sol bas #${i+1}` });
     }
-    
-    // 21: Nadir (Sol bas)
-    targets.push({ yaw: base, pitch: -85, label: "Nadir (Sol)" });
+    targets.push({ yaw: base, pitch: -88, label: "Nadir (Sol)" });
     
     return targets;
 }
 
 async function start360(){
     try {
-        if(!window.isSecureContext) throw new Error("HTTPS ou localhost requis pour la caméra.");
-        if(!navigator.mediaDevices?.getUserMedia) throw new Error("Caméra non supportée par ce navigateur.");
+        if(!window.isSecureContext) throw new Error("HTTPS ou localhost requis.");
+        if(!navigator.mediaDevices?.getUserMedia) throw new Error("Caméra non supportée.");
         resetCaptureState();
         if(typeof DeviceOrientationEvent?.requestPermission === "function"){
             const res = await DeviceOrientationEvent.requestPermission();
-            if(res !== "granted") throw new Error("Accès aux capteurs d'orientation refusé.");
+            if(res !== "granted") throw new Error("Permission capteurs refusée.");
         }
         attachSensors();
         
-        // Flux vidéo haute résolution pour éliminer tout rendu flou
         const stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: "environment", width: { ideal: 3840 }, height: { ideal: 2160 } }
         });
@@ -348,7 +330,7 @@ async function start360(){
         $("#viewer").classList.add("hidden");
         
         const initialYaw = await waitForYaw(3000);
-        if(initialYaw == null) throw new Error("Gyroscope introuvable ou inactif.");
+        if(initialYaw == null) throw new Error("Gyroscope introuvable.");
         
         state.startYaw = initialYaw;
         state.targets = buildTargets(initialYaw);
@@ -366,7 +348,6 @@ async function start360(){
     }
 }
 
-// Lissage exponentiel (EMA) des capteurs pour empêcher le point jaune de "se barrer partout"
 function attachSensors(){
     if(state.sensorListening) return;
     window.addEventListener("deviceorientation", handleOrientation, true);
@@ -386,7 +367,7 @@ function handleOrientation(e){
         if(state.rawYaw == null) state.rawYaw = rawY;
         else {
             let diff = signedAngle(rawY, state.rawYaw);
-            state.rawYaw = normalizeAngle(state.rawYaw + diff * 0.25); // Filtre anti-saccades robuste
+            state.rawYaw = normalizeAngle(state.rawYaw + diff * 0.25);
         }
         state.yaw = state.rawYaw;
     }
@@ -526,7 +507,7 @@ function capturePhoto(){
         setStep(state.step + 1);
     } catch(e){
         state.captureBusy = false;
-        alert("Erreur de capture HD : " + e.message);
+        alert("Erreur de capture : " + e.message);
     }
 }
 
@@ -540,12 +521,12 @@ function createPanoramaCanvas(){
     const c = document.createElement("canvas");
     c.width = PANO_WIDTH; c.height = PANO_HEIGHT;
     const ctx = c.getContext("2d");
-    ctx.fillStyle = "#000000";
+    ctx.fillStyle = "#111111";
     ctx.fillRect(0, 0, c.width, c.height);
     return { canvas: c, ctx };
 }
 
-// Couture haute précision équirectangulaire avec dégradé radial anti-marquage
+// Fusion rectangulaire avec dégradé doux sur les bords (supprime les carrés et le trou noir)
 function stitchPhotoIntoPanorama(src, photo){
     if(!state.pano) state.pano = createPanoramaCanvas();
     const ctx = state.pano.ctx;
@@ -553,22 +534,27 @@ function stitchPhotoIntoPanorama(src, photo){
     const centerX = ((relYaw + 360) % 360) / 360 * PANO_WIDTH;
     const centerY = PANO_HEIGHT / 2 - (photo.pitch / 90) * (PANO_HEIGHT / 2);
     
-    const tileW = Math.round(PANO_WIDTH * 0.3);
-    const tileH = Math.round(PANO_HEIGHT * 0.4);
+    const tileW = Math.round(PANO_WIDTH * 0.32);
+    const tileH = Math.round(PANO_HEIGHT * 0.42);
     
     const tile = document.createElement("canvas");
     tile.width = tileW; tile.height = tileH;
     const tc = tile.getContext("2d");
     tc.drawImage(src, 0, 0, tileW, tileH);
     
+    // Application d'un masque de fondu sur les bords de la tuile pour éliminer les carrés
     const im = tc.getImageData(0, 0, tileW, tileH), d = im.data;
-    const cx = tileW / 2, cy = tileH / 2, maxR = Math.hypot(cx, cy);
+    const edgeW = Math.round(tileW * 0.25), edgeH = Math.round(tileH * 0.25);
     for(let y = 0; y < tileH; y++){
         for(let x = 0; x < tileW; x++){
-            const dist = Math.hypot(x - cx, y - cy);
-            const alpha = clamp(1 - (dist / maxR), 0, 1);
+            let alpha = 1.0;
+            if(x < edgeW) alpha *= (x / edgeW);
+            else if(x > tileW - edgeW) alpha *= ((tileW - x) / edgeW);
+            if(y < edgeH) alpha *= (y / edgeH);
+            else if(y > tileH - edgeH) alpha *= ((tileH - y) / edgeH);
+            
             const idx = (y * tileW + x) * 4 + 3;
-            d[idx] = Math.round(d[idx] * (alpha * alpha * 0.7 + 0.3));
+            d[idx] = Math.round(d[idx] * alpha);
         }
     }
     tc.putImageData(im, 0, 0);
@@ -640,7 +626,6 @@ async function restart360(){
     renderMinimap();
 }
 
-// Visionneuse 3D Sphérique ultra-nette avec filtrage anisotropique Three.js
 class ThreePanoViewer {
     constructor(container, imageSource) {
         this.container = container;
@@ -668,7 +653,6 @@ class ThreePanoViewer {
             texture = new THREE.TextureLoader().load(imageSource);
         }
         
-        // Paramètres de netteté maximale (élimine le flou de texture)
         texture.generateMipmaps = true;
         texture.minFilter = THREE.LinearMipmapLinearFilter;
         texture.magFilter = THREE.LinearFilter;
