@@ -255,16 +255,27 @@ const camera = $("#camera"), captureCanvas = $("#captureCanvas");
 function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
 function normalizeAngle(v){ return ((v % 360) + 360) % 360; }
 function signedAngle(t, c){ return ((t - c + 540) % 360) - 180; }
-function escapeHtml(v){ return String(v).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", "\": "&quot;", "'": "&#39;"}[c])); }
+function escapeHtml(v){ return String(v).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c])); }
 
 document.addEventListener("DOMContentLoaded", () => {
-    renderSceneList();
-    document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", e => setMode(e.target.dataset.mode)));
+    // Correction de l'attachement des écouteurs sur les onglets
+    document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", e => setMode(e.currentTarget.dataset.mode)));
+    
     $("#start360").addEventListener("click", start360);
     $("#restart360").addEventListener("click", restart360);
     $("#exit360").addEventListener("click", () => { stopCamera(); setMode('2d'); });
     $("#closeViewer").addEventListener("click", closeViewer);
     $("#renameBtn").addEventListener("click", renameProject);
+    
+    // Correction du bouton d'importation 2D
+    $("#import2d").addEventListener("click", () => $("#photoInput").click());
+    $("#photoInput").addEventListener("change", (e) => {
+        if(e.target.files.length > 0) {
+            alert(e.target.files.length + " photo(s) sélectionnée(s) avec succès !");
+        }
+    });
+
+    renderSceneList();
     renderMinimap();
 });
 
@@ -421,7 +432,8 @@ function stopCamera(){
         window.removeEventListener("deviceorientationabsolute", handleOrientation, true);
         state.sensorListening = false;
     }
-    $("#targetDot").style.display = "none";
+    const dot = $("#targetDot");
+    if(dot) dot.style.display = "none";
 }
 
 function resetCaptureState(){
@@ -593,7 +605,7 @@ function finishCapture(){
     $("#progress").style.width = "100%";
     $("#counter").textContent = `Point ${TOTAL_PHOTOS} / ${TOTAL_PHOTOS}`;
     $("#qualityPill").textContent = "Panorama complet !";
-    $("#qualityPill.ok");
+    $("#qualityPill").className = "pill ok";
     $("#guidance").textContent = "✓ TERMINÉ SANS TROU";
     
     stopCamera();
