@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#000000">
-  <title>Studio Visite Pro 360° - Capture Plein Écran Continue</title>
+  <title>Studio Visite Pro 360° - Auto-Capture par Mouvement</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
     :root{ --black:#000; --bg:#050505; --panel:#0d0d0d; --line:#222; --text:#fff; --muted:#888; --green:#22c55e; --yellow:#eab308; --red:#ef4444; }
@@ -45,6 +45,8 @@
     
     .capture{position:relative;height:100%;width:100%;overflow:hidden;background:#000}
     #camera{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;background:#000}
+    .flash-overlay{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:100;transition:opacity .15s ease-out}
+    .flash-overlay.flash{opacity:1}
     .permission{position:absolute;inset:0;z-index:20;background:#000;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px}
     .permission-card{width:min(480px,100%)}
     .permission-card .big-icon{font-size:38px;margin-bottom:10px}
@@ -59,9 +61,35 @@
     .capture-tools{display:flex;gap:6px}
     .capture-tools button{border:1px solid #444;background:#000c;color:#fff;border-radius:8px;padding:7px 10px;font-size:12px}
     
-    .center-reticle{position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px;border:2px solid var(--yellow);border-radius:50%;background:rgba(234,179,8,0.3);box-shadow:0 0 10px var(--yellow);z-index:6;pointer-events:none}
-    
-    .scan-progress{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);border:1px solid #333;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:700;z-index:6;text-align:center;pointer-events:none}
+    .target-frame {
+      position: absolute; left: 50%; top: 50%;
+      width: 140px; height: 140px; margin: -70px 0 0 -70px;
+      border: 2px dashed rgba(255, 255, 255, 0.5);
+      border-radius: 50%; z-index: 4; pointer-events: none;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .target-frame.capturing {
+      border-color: var(--green);
+      background: rgba(34, 197, 94, 0.15);
+    }
+    .center-dot{position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px;border-radius:50%;background:var(--yellow);box-shadow:0 0 10px var(--yellow);z-index:6;pointer-events:none}
+
+    .guidance-text {
+      position: absolute; top: 75px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85); border: 1px solid #444;
+      padding: 6px 14px; border-radius: 16px;
+      font-size: 13px; font-weight: 800; color: #fff;
+      z-index: 6; white-space: nowrap; pointer-events: none;
+    }
+
+    .minimap{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:4px;background:rgba(10,10,12,0.85);border:1px solid #333;padding:6px 10px;border-radius:12px;pointer-events:none;z-index:6}
+    .mini-row{display:flex;gap:3px;justify-content:center;align-items:center}
+    .mini-tile{width:14px;height:14px;border-radius:3px;background:#1a1a1f;border:1px solid #333;overflow:hidden}
+    .mini-tile img{width:100%;height:100%;object-fit:cover}
+    .mini-tile.active{border-color:var(--yellow);box-shadow:0 0 6px var(--yellow)}
+    .mini-tile.done{border-color:var(--green);background:var(--green)}
 
     .viewer{position:absolute;inset:0;background:#000;z-index:20}
     #viewerContainer{width:100%;height:100%;position:absolute;inset:0}
@@ -83,13 +111,13 @@
       <div class="brand">Studio Visite <span>Pro 360°</span></div>
       <nav class="tabs" aria-label="Modes">
         <button class="tab active" data-mode="2d">2D</button>
-        <button class="tab" data-mode="360">360° Plein Écran</button>
+        <button class="tab" data-mode="360">360° HD (24 pts)</button>
       </nav>
     </header>
     <div class="workspace">
       <aside class="sidebar">
         <div class="section-title">Projet</div>
-        <div class="project-name" id="projectName">Visite 360° Fluide</div>
+        <div class="project-name" id="projectName">Visite 360° Auto-Mouvement</div>
         <button class="primary" id="renameBtn">Renommer le projet</button>
         <div class="section-title" style="margin-top:20px">Scènes 360°</div>
         <div class="scene-list" id="sceneList"></div>
@@ -102,34 +130,37 @@
           <div class="capture" id="captureScreen">
             <div class="permission" id="permission">
               <div class="permission-card">
-                <div class="big-icon">🔄</div>
-                <h1>Mode Balayage Continu</h1>
-                <p>Aucun bouton à presser et aucune superposition de photos ! Tu lances l'enregistrement, et tu balayes lentement la pièce de gauche à droite, puis de haut en bas. Tout s'assemble de manière fluide en temps réel.</p>
-                <button class="primary" id="start360" style="margin-top:16px">Démarrer le balayage</button>
+                <div class="big-icon">🎯</div>
+                <h1>Mode Sans Bouton (24 Positions)</h1>
+                <p>Pointe simplement ton appareil vers la cible demandée. Dès que le cadre devient vert, la photo se prend automatiquement sans superposition !</p>
+                <button class="primary" id="start360" style="margin-top:16px">Démarrer le scan</button>
                 <div class="err" id="permError"></div>
               </div>
             </div>
+            <div id="flashOverlay" class="flash-overlay"></div>
             <video id="camera" autoplay playsinline muted></video>
             <canvas id="captureCanvas" class="hidden"></canvas>
             <div class="capture-ui">
               <div class="capture-top">
                 <div>
-                  <div class="capture-title">Balayage en cours...</div>
-                  <div class="capture-sub" id="scanStatus">Bouge doucement l'appareil</div>
+                  <div class="capture-title" id="phaseTitle">Photo 1 / 24</div>
+                  <div class="capture-sub" id="positionLabel">Oriente l'appareil ici</div>
                 </div>
                 <div class="capture-tools">
-                  <button id="stopScanBtn" style="background:#ef4444;border-color:#ef4444;font-weight:800;">Terminer le scan</button>
+                  <button id="restart360">Recommencer</button>
                   <button id="exit360">Quitter</button>
                 </div>
               </div>
-              <div class="center-reticle"></div>
-              <div class="scan-progress" id="scanProgressText">Images capturées : 0</div>
+              <div class="guidance-text" id="guidanceText">Maintiens la cible au centre</div>
+              <div class="center-dot"></div>
+              <div class="target-frame" id="targetFrame"></div>
+              <div class="minimap" id="minimap"></div>
             </div>
           </div>
           <div class="viewer hidden" id="viewer">
             <div id="viewerContainer"></div>
             <div class="viewer-ui">
-              <h2>Panorama 360° Généré</h2>
+              <h2>Panorama 360° Assemblé</h2>
               <p>Glisse ton doigt pour explorer</p>
             </div>
             <div class="viewer-actions">
@@ -138,7 +169,7 @@
             </div>
             <div class="processing hidden" id="processing">
               <div class="spinner"></div>
-              <div id="processingLabel">Génération de la sphère...</div>
+              <div id="processingLabel">Assemblage de la sphère...</div>
             </div>
           </div>
         </section>
@@ -151,15 +182,19 @@
   <script>
     "use strict";
 
-    const PANO_W = 3000, PANO_H = 1500;
+    const TOTAL_PHOTOS = 24;
+    const ACC_W = 3000, ACC_H = 1500;
+    const V_FOV_DEG = 60;
+
     const $ = s => document.querySelector(s);
     const cameraEl = () => $("#camera");
 
     const state = {
       mode: "2d", running: false, stream: null,
-      viewer: null, projectName: "Visite 360° Fluide", scenes: [], gallery: [],
-      captureInterval: null, frameCount: 0,
-      panoCanvas: null, panoCtx: null
+      step: 0, targets: [], acc: null, viewer: null,
+      projectName: "Visite 360° Auto", scenes: [], gallery: [],
+      thumbnails: {}, currentOrientation: { alpha: 0, beta: 0, gamma: 0 },
+      stableTimer: null, isStable: false
     };
 
     function degToRad(d){ return d * Math.PI / 180; }
@@ -176,7 +211,7 @@
     document.addEventListener("DOMContentLoaded", () => {
       document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", e => setMode(e.currentTarget.dataset.mode)));
       $("#start360").addEventListener("click", start360);
-      $("#stopScanBtn").addEventListener("click", finishCapture);
+      $("#restart360").addEventListener("click", restart360);
       $("#exit360").addEventListener("click", () => { stopCamera(); setMode("2d"); });
       $("#closeViewer").addEventListener("click", closeViewer);
       $("#downloadPano").addEventListener("click", downloadCurrentPano);
@@ -185,6 +220,7 @@
       $("#projectName").textContent = state.projectName;
       renderSceneList();
       renderGallery();
+      renderMinimap();
     });
 
     function setMode(mode){
@@ -220,7 +256,7 @@
           <div style="min-height:80vh;border:2px dashed #222;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px">
             <div style="font-size:36px;margin-bottom:8px">📸</div>
             <h2>Photos 2D</h2>
-            <p style="color:var(--muted);font-size:13px;max-width:400px;line-height:1.5">Importe tes images ou lance le mode 360° pour ta visite virtuelle.</p>
+            <p style="color:var(--muted);font-size:13px;max-width:400px;line-height:1.5">Importe tes images ou lance le mode 360°.</p>
             <button class="primary" id="import2d" style="max-width:240px;margin-top:14px">Importer des photos</button>
           </div>`;
         $("#import2d").addEventListener("click", () => $("#photoInput").click());
@@ -251,16 +287,66 @@
       const list = $("#sceneList");
       list.innerHTML = "";
       if(!state.scenes.length){
-        list.innerHTML = '<div class="scene"><div class="scene-name">Aucune scène 360°</div><div class="scene-meta">Effectue un balayage</div></div>';
+        list.innerHTML = '<div class="scene"><div class="scene-name">Aucune scène HD</div><div class="scene-meta">Effectue un scan 360°</div></div>';
         return;
       }
       state.scenes.forEach((scene, index) => {
         const item = document.createElement("div");
         item.className = "scene" + (index === state.scenes.length - 1 ? " active" : "");
-        item.innerHTML = `<div class="scene-name">${escapeHtml(scene.name)}</div><div class="scene-meta">${escapeHtml(scene.date)}</div><div class="scene-actions"><button data-action="open">Ouvrir</button><button data-action="delete">Suppr</button></div>`;
+        item.innerHTML = `<div class="scene-name">${escapeHtml(scene.name)}</div><div class="scene-meta">24 pts · ${escapeHtml(scene.date)}</div><div class="scene-actions"><button data-action="open">Ouvrir</button><button data-action="delete">Suppr</button></div>`;
         item.querySelector('[data-action="open"]').onclick = () => openScene(index);
         item.querySelector('[data-action="delete"]').onclick = () => { state.scenes.splice(index, 1); renderSceneList(); };
         list.appendChild(item);
+      });
+    }
+
+    function buildTargets(){
+      const targets = [];
+      for(let i = 0; i < 12; i++){
+        targets.push({ yaw: i * 30, pitch: 0, label: `Mur horizontal (${i+1} / 12)` });
+      }
+      for(let i = 0; i < 6; i++){
+        targets.push({ yaw: i * 60 + 15, pitch: 40, label: `Plafond / Haut (${i+1} / 6)` });
+      }
+      for(let i = 0; i < 6; i++){
+        targets.push({ yaw: i * 60 + 15, pitch: -40, label: `Sol / Bas (${i+1} / 6)` });
+      }
+
+      targets.forEach((t, idx) => {
+        const phi = degToRad(90 - t.pitch);
+        const theta = degToRad(t.yaw - 90);
+        t.dir = new THREE.Vector3(Math.sin(phi)*Math.cos(theta), Math.cos(phi), Math.sin(phi)*Math.sin(theta)).normalize();
+        t.id = idx;
+      });
+      return targets;
+    }
+
+    function renderMinimap(){
+      const map = $("#minimap");
+      if(!map) return;
+      map.innerHTML = "";
+      const groups = [
+        state.targets.slice(0, 12),
+        state.targets.slice(12, 18),
+        state.targets.slice(18, 24)
+      ];
+
+      groups.forEach((group, gIdx) => {
+        const rowDiv = document.createElement("div");
+        rowDiv.className = "mini-row";
+        group.forEach((t, idx) => {
+          const globalIdx = gIdx === 0 ? idx : (gIdx === 1 ? idx + 12 : idx + 18);
+          const tile = document.createElement("div");
+          tile.className = "mini-tile";
+          if(globalIdx < state.step){
+            tile.classList.add("done");
+            if(state.thumbnails[globalIdx]) tile.innerHTML = `<img src="${state.thumbnails[globalIdx]}">`;
+          } else if(globalIdx === state.step && state.running){
+            tile.classList.add("active");
+          }
+          rowDiv.appendChild(tile);
+        });
+        map.appendChild(rowDiv);
       });
     }
 
@@ -271,6 +357,12 @@
         if(!window.isSecureContext) throw new Error("HTTPS requis pour accéder à la caméra.");
         if(!navigator.mediaDevices?.getUserMedia) throw new Error("Caméra non supportée.");
         
+        // Demande d'autorisation de l'orientation sur iOS
+        if(typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function'){
+          const response = await DeviceOrientationEvent.requestPermission();
+          if(response !== 'granted') throw new Error("Accès aux capteurs refusé.");
+        }
+
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
           audio: false
@@ -281,21 +373,17 @@
         if(screen.orientation?.lock){ screen.orientation.lock("portrait").catch(()=>{}); }
         
         state.running = true;
-        state.frameCount = 0;
+        state.targets = buildTargets();
+        state.step = 0;
+        state.thumbnails = {};
+        state.acc = createAccumulator();
+
         $("#permission").classList.add("hidden");
         $("#captureScreen").classList.remove("hidden");
         $("#viewer").classList.add("hidden");
 
-        // Initialiser la texture panoramique vide (fond noir)
-        state.panoCanvas = document.createElement("canvas");
-        state.panoCanvas.width = PANO_W;
-        state.panoCanvas.height = PANO_H;
-        state.panoCtx = state.panoCanvas.getContext("2d");
-        state.panoCtx.fillStyle = "#000";
-        state.panoCtx.fillRect(0, 0, PANO_W, PANO_H);
-
-        // Capture automatique en arrière-plan toutes les 350ms pendant que l'utilisateur bouge le téléphone
-        state.captureInterval = setInterval(captureFrameAutomatically, 350);
+        window.addEventListener("deviceorientation", handleOrientation, true);
+        setStep(0);
       } catch(e) {
         stopCamera();
         $("#permission").classList.remove("hidden");
@@ -304,7 +392,8 @@
     }
 
     function stopCamera(){
-      if(state.captureInterval){ clearInterval(state.captureInterval); state.captureInterval = null; }
+      window.removeEventListener("deviceorientation", handleOrientation, true);
+      if(state.stableTimer){ clearTimeout(state.stableTimer); state.stableTimer = null; }
       if(state.stream){
         state.stream.getTracks().forEach(t => t.stop());
         state.stream = null;
@@ -314,39 +403,163 @@
       if(screen.orientation?.unlock){ try{ screen.orientation.unlock(); }catch(_){} }
     }
 
-    function captureFrameAutomatically(){
+    function setStep(step){
+      state.step = step;
+      renderMinimap();
+      if(step >= TOTAL_PHOTOS){ finishCapture(); return; }
+      const t = state.targets[step];
+      $("#phaseTitle").textContent = `Photo ${step + 1} / ${TOTAL_PHOTOS}`;
+      $("#positionLabel").textContent = t.label;
+    }
+
+    function handleOrientation(e){
       if(!state.running) return;
+      state.currentOrientation = { alpha: e.alpha || 0, beta: e.beta || 0, gamma: e.gamma || 0 };
+      
+      // Simulation simple du vecteur pointé par le téléphone basée sur l'orientation
+      const yawRad = degToRad(e.alpha || 0);
+      const pitchRad = degToRad((e.beta || 0) - 90);
+      const currentDir = new THREE.Vector3(
+        Math.sin(yawRad) * Math.cos(pitchRad),
+        Math.sin(pitchRad),
+        Math.cos(yawRad) * Math.cos(pitchRad)
+      ).normalize();
+
+      const target = state.targets[state.step];
+      if(!target) return;
+
+      const angle = currentDir.angleTo(target.dir);
+      const frameEl = $("#targetFrame");
+      const textEl = $("#guidanceText");
+
+      // Si l'utilisateur pointe la zone (tolérance de ~25 degrés)
+      if(angle < 0.45){
+        frameEl.classList.add("capturing");
+        textEl.textContent = "Parfait, maintien...";
+        
+        if(!state.stableTimer){
+          state.stableTimer = setTimeout(() => {
+            triggerAutomaticCapture();
+          }, 600); // Capture auto après 0.6s stable
+        }
+      } else {
+        frameEl.classList.remove("capturing");
+        textEl.textContent = "Bouge pour viser la cible";
+        if(state.stableTimer){
+          clearTimeout(state.stableTimer);
+          state.stableTimer = null;
+        }
+      }
+    }
+
+    function triggerAutomaticCapture(){
+      if(!state.running) return;
+      if(state.stableTimer){ clearTimeout(state.stableTimer); state.stableTimer = null; }
+
       const cam = cameraEl();
       if(!cam.videoWidth || !cam.videoHeight) return;
+      flashCapture();
 
-      state.frameCount++;
-      $("#scanProgressText.textContent") = `Images capturées : ${state.frameCount}`;
-      document.getElementById("scanProgressText").textContent = `Images capturées : ${state.frameCount}`;
+      try {
+        const sw = cam.videoWidth, sh = cam.videoHeight;
+        const maxW = 1000, scale = Math.min(1, maxW / sw);
+        const w = Math.max(1, Math.round(sw * scale)), h = Math.max(1, Math.round(sh * scale));
+        const cv = $("#captureCanvas");
+        cv.width = w; cv.height = h;
+        const ctx = cv.getContext("2d");
+        ctx.drawImage(cam, 0, 0, w, h);
 
-      const sw = cam.videoWidth, sh = cam.videoHeight;
-      const w = 400, h = Math.round(sh * (400 / sw));
-      const cv = $("#captureCanvas");
-      cv.width = w; cv.height = h;
-      const ctx = cv.getContext("2d");
-      ctx.drawImage(cam, 0, 0, w, h);
+        state.thumbnails[state.step] = cv.toDataURL("image/jpeg", 0.5);
 
-      // Répartition automatique fluide basée sur le nombre d'images pour couvrir la sphère 360
-      const uPos = (state.frameCount * 18) % PANO_W;
-      const vPos = Math.sin(state.frameCount * 0.15) * (PANO_H * 0.25) + (PANO_H / 2) - (h / 2);
+        const target = state.targets[state.step];
+        const quat = quatFromTarget(target);
+        reprojectPhotoIntoAccumulator(cv, quat, w, h);
 
-      state.panoCtx.drawImage(cv, uPos, vPos);
+        const nextStep = state.step + 1;
+        toast(`Zone ${state.step} validée !`);
+        setStep(nextStep);
+      } catch(e){
+        toast("Erreur de capture : " + e.message);
+      }
+    }
+
+    function quatFromTarget(target){
+      const q = new THREE.Quaternion();
+      const m = new THREE.Matrix4();
+      const forward = target.dir.clone().normalize();
+      const upHint = Math.abs(forward.y) > 0.98 ? new THREE.Vector3(0,0,1) : new THREE.Vector3(0,1,0);
+      m.lookAt(new THREE.Vector3(0,0,0), forward.clone().multiplyScalar(-1), upHint);
+      q.setFromRotationMatrix(m);
+      return q;
+    }
+
+    function flashCapture(){
+      const flash = $("#flashOverlay");
+      if(!flash) return;
+      flash.classList.add("flash");
+      setTimeout(() => flash.classList.remove("flash"), 150);
+    }
+
+    function createAccumulator(){
+      const canvas = document.createElement("canvas");
+      canvas.width = ACC_W; canvas.height = ACC_H;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, ACC_W, ACC_H);
+      return { canvas, ctx };
+    }
+
+    function reprojectPhotoIntoAccumulator(cv, quat, srcW, srcH){
+      if(!state.acc) state.acc = createAccumulator();
+      const accCtx = state.acc.ctx;
+      const accW = ACC_W, accH = ACC_H;
+
+      const srcCtx = cv.getContext("2d");
+      const srcData = srcCtx.getImageData(0, 0, srcW, srcH);
+      const accData = accCtx.getImageData(0, 0, accW, accH);
+
+      const vFovRad = degToRad(V_FOV_DEG);
+      const focal = (srcH / 2) / Math.tan(vFovRad / 2);
+      const cx = srcW / 2, cy = srcH / 2;
+
+      const step = 2;
+      for(let y = 0; y < srcH; y += step){
+        for(let x = 0; x < srcW; x += step){
+          const nx = (x - cx) / focal;
+          const ny = -(y - cy) / focal;
+          const dir = new THREE.Vector3(nx, ny, -1).normalize().applyQuaternion(quat);
+
+          const phi = Math.acos(Math.max(-1, Math.min(1, dir.y)));
+          const theta = Math.atan2(dir.z, dir.x);
+
+          const u = (theta + Math.PI) / (2 * Math.PI);
+          const v = phi / Math.PI;
+
+          const px = Math.floor(u * accW);
+          const py = Math.floor(v * accH);
+
+          if(px >= 0 && px < accW && py >= 0 && py < accH){
+            const sIdx = (y * srcW + x) * 4;
+            const aIdx = (py * accW + px) * 4;
+            accData.data[aIdx] = srcData.data[sIdx];
+            accData.data[aIdx+1] = srcData.data[sIdx+1];
+            accData.data[aIdx+2] = srcData.data[sIdx+2];
+            accData.data[aIdx+3] = 255;
+          }
+        }
+      }
+      accCtx.putImageData(accData, 0, 0);
     }
 
     function finishCapture(){
-      if(!state.running) return;
       stopCamera();
       $("#processing").classList.remove("hidden");
       $("#viewer").classList.remove("hidden");
 
       setTimeout(() => {
-        const dataUrl = state.panoCanvas ? state.panoCanvas.toDataURL("image/jpeg", 0.85) : "";
+        const dataUrl = state.acc ? state.acc.canvas.toDataURL("image/jpeg", 0.9) : "";
         const sceneObj = {
-          name: `Scan Fluide ${state.scenes.length + 1}`,
+          name: `Scan Auto ${state.scenes.length + 1}`,
           date: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
           dataUrl
         };
@@ -354,7 +567,7 @@
         renderSceneList();
         $("#processing").classList.add("hidden");
         init3DViewer(dataUrl);
-      }, 500);
+      }, 400);
     }
 
     function init3DViewer(imgUrl){
@@ -370,10 +583,10 @@
       const geometry = new THREE.SphereGeometry(500, 60, 40);
       geometry.scale(-1, 1, 1);
 
-      const texture = new THREE.TextureLoader().load(imgUrl, () => {
+      new THREE.TextureLoader().load(imgUrl, () => {
         renderer.render(scene, camera);
       });
-      const material = new THREE.MeshBasicMaterial({ map: texture });
+      const material = new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load(imgUrl) });
       const mesh = new THREE.Mesh(geometry, material);
       scene.add(mesh);
 
@@ -430,12 +643,17 @@
     }
 
     function downloadCurrentPano(){
-      const url = state.panoCanvas ? state.panoCanvas.toDataURL("image/jpeg") : state.scenes[state.scenes.length - 1]?.dataUrl;
+      const url = state.acc ? state.acc.canvas.toDataURL("image/jpeg") : state.scenes[state.scenes.length - 1]?.dataUrl;
       if(!url) return;
       const a = document.createElement("a");
       a.href = url;
-      a.download = `panorama-360-fluide-${Date.now()}.jpg`;
+      a.download = `panorama-360-${Date.now()}.jpg`;
       a.click();
+    }
+
+    function restart360(){
+      stopCamera();
+      start360();
     }
   </script>
 </body>
