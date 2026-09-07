@@ -3,1057 +3,801 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#000000">
-<title>Studio Visite Pro 360°</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<style>
-:root{
-  --black:#000; --bg:#050505; --panel:#0d0d0d; --line:#222; --text:#fff; --muted:#888;
-  --green:#22c55e; --yellow:#eab308; --red:#ef4444;
-}
-*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
-html,body{margin:0;width:100%;height:100%;background:#000;color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden;overscroll-behavior:none}
-button,input{font:inherit} button{cursor:pointer}
-.hidden{display:none!important}
-.app{height:100dvh;display:grid;grid-template-rows:56px 1fr;background:var(--bg)}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:#09090b;border-bottom:1px solid var(--line);z-index:30}
-.brand{font-weight:800;font-size:15px;letter-spacing:-.3px}.brand span{color:var(--yellow)}
-.tabs{display:flex;gap:4px}
-.tab{border:0;background:transparent;color:var(--muted);padding:8px 12px;border-radius:8px;font-weight:700;font-size:13px}
-.tab.active{background:#18181b;color:#fff}
-.workspace{min-height:0;display:grid;grid-template-columns:300px 1fr}
-.sidebar{background:var(--panel);border-right:1px solid var(--line);padding:16px;overflow:auto}
-.section-title{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:800;margin:4px 0 8px}
-.project-name{font-size:18px;font-weight:800;margin-bottom:12px;word-break:break-word}
-.primary{width:100%;border:0;background:#fff;color:#000;padding:12px;border-radius:10px;font-weight:800;font-size:13px}
-.primary:active{transform:scale(.98)}
-.scene-list{display:flex;flex-direction:column;gap:8px;margin-top:8px}
-.scene{border:1px solid var(--line);background:#121215;border-radius:10px;padding:10px}
-.scene.active{border-color:#444}
-.scene-name{font-weight:700;font-size:13px}
-.scene-meta{font-size:11px;color:var(--muted);margin-top:3px}
-.scene-actions{display:flex;gap:6px;margin-top:8px}
-.scene-actions button{border:1px solid #333;background:#1a1a1e;color:#ccc;border-radius:6px;padding:5px 8px;font-size:11px;flex:1}
-.main{position:relative;min-width:0;min-height:0;background:#000}
-.mode{height:100%;width:100%}
-.mode-2d{padding:24px;overflow:auto;background:#050505}
-.empty-2d{min-height:100%;border:2px dashed #222;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
-.empty-2d h2{margin:0 0 6px;font-size:18px}
-.empty-2d p{max-width:500px;color:var(--muted);font-size:13px;line-height:1.5}
-.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
-.gallery-item{position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--line);aspect-ratio:1/1;background:#111}
-.gallery-item img{width:100%;height:100%;object-fit:cover;display:block}
-.gallery-item button{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;border:0;background:#000c;color:#fff;font-size:13px;line-height:1;padding:0}
-.gallery-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-.gallery-toolbar h2{margin:0;font-size:16px}
-.small-btn{border:1px solid #333;background:#141417;color:#eee;padding:8px 12px;border-radius:8px;font-weight:700;font-size:12px}
-.capture{position:relative;height:100%;width:100%;overflow:hidden;background:#000}
-#camera{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;background:#000}
-.flash-overlay{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:100;transition:opacity .15s ease-out}
-.flash-overlay.flash{opacity:1}
-.permission{position:absolute;inset:0;z-index:20;background:#000;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px}
-.permission-card{width:min(480px,100%)}
-.permission-card .big-icon{font-size:38px;margin-bottom:10px}
-.permission-card h1{font-size:22px;margin:0 0 8px}
-.permission-card p{margin:0 auto;max-width:420px;color:var(--muted);font-size:13px;line-height:1.5}
-.permission-card .err{color:var(--red);font-size:12px;margin-top:12px;min-height:16px}
-.capture-ui{position:absolute;inset:0;z-index:5;pointer-events:none}
-.capture-top{position:absolute;left:0;right:0;top:max(14px,env(safe-area-inset-top));display:flex;align-items:flex-start;justify-content:space-between;padding:0 16px;z-index:6}
-.capture-title{font-size:14px;font-weight:800;text-shadow:0 1px 4px #000}
-.capture-sub{font-size:12px;color:var(--yellow);margin-top:2px;font-weight:700;text-shadow:0 1px 4px #000}
-.capture-tools{display:flex;gap:6px;pointer-events:auto}
-.capture-tools button{border:1px solid #444;background:#000c;color:#fff;border-radius:8px;padding:7px 10px;font-size:12px}
+<meta name="theme-color" content="#0b0d10">
+<title>Panorama Studio — Assemblage 360° local</title>
 
-/* Cible AR : la position (left/top) est mise à jour à chaque frame via JS, mais on ajoute une
-   transition CSS courte sur "transform" pour absorber les micro-sauts résiduels — c'est ce filtre
-   visuel + le lissage du quaternion (voir handleOrientation) qui rendent le repère "posé" au lieu
-   de trembler. */
-.aim-marker{
-  position:absolute;left:0;top:0;width:70px;height:70px;margin-left:-35px;margin-top:-35px;z-index:4;
-  will-change:transform;
-  transition:opacity .15s, transform 70ms linear;
-}
-.aim-ring{position:absolute;inset:0;border-radius:50%;border:3px solid rgba(255,255,255,.8);transition:border-color .15s,transform .12s,background-color .15s}
-.aim-ring.ready{border-color:var(--green);background:rgba(34,197,94,.25);transform:scale(1.12)}
-.aim-ring.locked{border-color:var(--green)}
-.center-dot{position:absolute;left:50%;top:50%;width:7px;height:7px;margin:-3.5px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px #0009;z-index:5;pointer-events:none}
-.edge-arrow{position:absolute;z-index:4;width:42px;height:42px;margin:-21px;color:#fff;filter:drop-shadow(0 1px 3px #000);pointer-events:none;transition:opacity .15s, transform 70ms linear}
-.edge-arrow svg{width:100%;height:100%}
-.guidance-wrap{position:absolute;left:50%;top:calc(50% + 64px);transform:translateX(-50%);z-index:6}
-.guidance{background:#000a;border:1px solid #333;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:800;white-space:nowrap}
-.guidance.ready{color:var(--green);border-color:#166534}
-.minimap{position:absolute;bottom:150px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:4px;background:rgba(10,10,12,0.85);border:1px solid #333;padding:8px 10px;border-radius:12px;pointer-events:none;z-index:6;backdrop-filter:blur(8px)}
-.mini-row{display:flex;gap:5px;justify-content:center;align-items:center}
-.mini-dot{width:13px;height:13px;border-radius:50%;background:#222;border:1px solid #444;transition:all .2s}
-.mini-dot.active{border-color:var(--yellow);background:#422006;transform:scale(1.3);box-shadow:0 0 8px var(--yellow)}
-.mini-dot.done{border-color:var(--green);background:var(--green)}
-.shutter-zone{position:absolute;left:0;right:0;bottom:max(18px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:10px;z-index:7}
-.status-row{display:flex;align-items:center;justify-content:center;gap:6px;pointer-events:none}
-.pill{background:#000c;border:1px solid #333;padding:4px 10px;border-radius:99px;font-size:11px;color:#ddd}
-.pill.ok{color:var(--green);border-color:#166534;background:#052e16cc}
-.pill.bad{color:var(--red);border-color:#7f1d1d;background:#450a0acc}
-.shutter-wrap{position:relative;width:82px;height:82px;pointer-events:auto}
-.shutter-progress{position:absolute;inset:0;transform:rotate(-90deg)}
-.shutter-progress circle{fill:none;stroke-width:5}
-.shutter-progress .bg{stroke:rgba(255,255,255,.2)}
-.shutter-progress .fg{stroke:var(--green);stroke-linecap:round;transition:stroke-dashoffset .05s linear}
-.shutter-btn{position:absolute;inset:9px;border-radius:50%;border:3px solid #fff;background:#fff;transition:background-color .15s,transform .1s,border-color .15s}
-.shutter-btn:active{transform:scale(.93)}
-.shutter-btn.ready{background:var(--green);border-color:var(--green)}
-.shutter-hint{font-size:11px;color:var(--muted);pointer-events:none}
-.viewer{position:absolute;inset:0;background:#000;z-index:20}
-#viewerContainer{width:100%;height:100%;position:absolute;inset:0}
-.viewer-ui{position:absolute;left:16px;top:max(14px,env(safe-area-inset-top));z-index:4;pointer-events:none}
-.viewer-ui h2{margin:0;font-size:15px}
-.viewer-ui p{margin:4px 0;color:var(--muted);font-size:11px}
-.viewer-actions{position:absolute;right:16px;top:max(14px,env(safe-area-inset-top));z-index:4;display:flex;gap:8px}
-.viewer-actions button{border:1px solid #333;background:#111d;color:#fff;border-radius:8px;padding:7px 10px;pointer-events:auto;font-size:12px}
-.processing{position:absolute;inset:0;z-index:25;background:#000c;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px}
-.spinner{width:34px;height:34px;border-radius:50%;border:3px solid #333;border-top-color:#fff;animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#111;border:1px solid #333;color:#fff;padding:10px 16px;border-radius:10px;font-size:12px;z-index:200;opacity:0;pointer-events:none;transition:opacity .25s}
-.toast.show{opacity:1}
-@media(max-width:768px){
-  .workspace{grid-template-columns:1fr;grid-template-rows:auto 1fr}
-  .sidebar{border-right:none;border-bottom:1px solid var(--line);max-height:26vh}
-}
+<!-- Three.js : moteur de rendu WebGL pour la sphère 360° (aucune donnée envoyée en ligne) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<!-- Tailwind CSS (CDN, gratuit) -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['"Space Grotesk"', 'sans-serif'],
+          body: ['"Inter"', 'sans-serif'],
+        },
+        colors: {
+          ink:   '#0b0d10',
+          panel: '#101317',
+          line:  '#22262c',
+          amber: '#e8b04b',
+          amberDim: '#8a6a2c',
+        }
+      }
+    }
+  };
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  html,body{height:100%;overflow:hidden;background:#0b0d10;overscroll-behavior:none}
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-thumb{background:#2a2f36;border-radius:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+
+  /* Zone de dépôt : léger pouls sur la bordure pour inviter à l'action, sans animation permanente agressive */
+  .dropzone{border:1.5px dashed #333941;transition:border-color .15s, background-color .15s}
+  .dropzone.drag-over{border-color:#e8b04b;background-color:rgba(232,176,75,.06)}
+
+  .spinner{width:30px;height:30px;border-radius:50%;border:2.5px solid #2a2f36;border-top-color:#e8b04b;animation:spin .9s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .fade-in{animation:fadeIn .25s ease-out}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  .thumb-remove{opacity:0;transition:opacity .15s}
+  .thumb-wrap:hover .thumb-remove{opacity:1}
+
+  #viewerCanvasHost{touch-action:none}
 </style>
 </head>
-<body>
-<div class="app" id="app">
-  <header class="topbar">
-    <div class="brand">Studio Visite <span>Pro 360°</span></div>
-    <nav class="tabs" aria-label="Modes">
-      <button class="tab active" data-mode="2d">2D</button>
-      <button class="tab" data-mode="360">360° HD (<span id="tabTotal">22</span> pts)</button>
-    </nav>
+
+<body class="font-body text-[#eef1f4] antialiased">
+<div id="app" class="h-[100dvh] w-full flex flex-col">
+
+  <!-- ============ EN-TÊTE ============ -->
+  <header class="h-14 shrink-0 flex items-center justify-between px-4 sm:px-6 border-b border-line bg-ink z-20">
+    <div class="flex items-center gap-2.5">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" class="text-amber shrink-0">
+        <ellipse cx="12" cy="12" rx="9.5" ry="4.5" stroke="currentColor" stroke-width="1.4"/>
+        <ellipse cx="12" cy="12" rx="4.2" ry="9.5" stroke="currentColor" stroke-width="1.4" opacity="0.5"/>
+        <circle cx="12" cy="12" r="1.6" fill="currentColor"/>
+      </svg>
+      <span class="font-display font-bold text-[15px] tracking-tight">Panorama Studio</span>
+    </div>
+    <div class="flex items-center gap-1.5 text-[11px] font-medium text-[#7d848d]" id="stepIndicator">
+      <span data-step="import" class="px-2.5 py-1 rounded-full bg-[#181c21] text-[#eef1f4]">1. Import</span>
+      <span class="opacity-40">→</span>
+      <span data-step="stitch" class="px-2.5 py-1 rounded-full">2. Assemblage</span>
+      <span class="opacity-40">→</span>
+      <span data-step="view" class="px-2.5 py-1 rounded-full">3. Visite</span>
+    </div>
   </header>
 
-  <div class="workspace">
-    <aside class="sidebar">
-      <div class="section-title">Projet</div>
-      <div class="project-name" id="projectName">Visite 360° HD</div>
-      <button class="primary" id="renameBtn">Renommer le projet</button>
-      <div class="section-title" style="margin-top:20px">Scènes 360°</div>
-      <div class="scene-list" id="sceneList"></div>
-    </aside>
+  <!-- ============ ÉCRAN 1 : IMPORT ============ -->
+  <main id="screenImport" class="flex-1 min-h-0 overflow-y-auto">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
 
-    <main class="main">
-      <section class="mode mode-2d" id="mode2d">
-        <div id="galleryWrap"></div>
-      </section>
+      <div id="dropzone" class="dropzone rounded-2xl px-6 py-12 flex flex-col items-center text-center cursor-pointer">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" class="text-amber mb-3">
+          <path d="M12 15V4M12 4L7.5 8.5M12 4l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <h1 class="font-display font-bold text-lg mb-1.5">Glissez vos photos ici</h1>
+        <p class="text-[13px] text-[#8b929b] max-w-md leading-relaxed">
+          JPG ou PNG, prises en tournant sur place avec environ 30–50% de recouvrement entre deux photos voisines.
+          Tout est traité localement dans votre navigateur — aucune image n'est envoyée sur internet.
+        </p>
+        <button id="browseBtn" type="button" class="mt-5 px-4 py-2 rounded-lg bg-[#181c21] border border-line text-[13px] font-medium hover:border-amberDim transition-colors">
+          Choisir des fichiers
+        </button>
+        <input id="fileInput" type="file" accept="image/png,image/jpeg" multiple class="hidden">
+      </div>
 
-      <section class="mode hidden" id="mode360">
-        <div class="capture" id="captureScreen">
-          <div class="permission" id="permission">
-            <div class="permission-card">
-              <div class="big-icon">⦿</div>
-              <h1>Scan 360° RA</h1>
-              <p>Visez avec le repère blanc du centre, puis appuyez sur le déclencheur en bas de l'écran (ou laissez-le se remplir automatiquement quand vous êtes bien aligné).</p>
-              <button class="primary" id="start360" style="margin-top:16px">Démarrer le Scan</button>
-              <div class="err" id="permError"></div>
-            </div>
-          </div>
+      <div id="engineStatus" class="mt-4 text-[12px] text-[#8b929b] flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#555b63] animate-pulse" id="engineDot"></span>
+        <span id="engineStatusText">Chargement du moteur de traitement d'image (OpenCV.js)…</span>
+      </div>
 
-          <div id="flashOverlay" class="flash-overlay"></div>
-          <video id="camera" autoplay playsinline muted></video>
-          <canvas id="captureCanvas" class="hidden"></canvas>
-
-          <div class="capture-ui">
-            <div class="capture-top">
-              <div>
-                <div class="capture-title">Alignement Réalité Augmentée</div>
-                <div class="capture-sub" id="positionLabel">Initialisation...</div>
-              </div>
-              <div class="capture-tools">
-                <button id="restart360">Recommencer</button>
-                <button id="exit360">Quitter</button>
-              </div>
-            </div>
-
-            <div class="center-dot"></div>
-            <div class="aim-marker" id="aimMarker"><div class="aim-ring" id="aimRing"></div></div>
-            <div class="edge-arrow hidden" id="edgeArrow">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M12 4 L20 14 L14 14 L14 20 L10 20 L10 14 L4 14 Z" fill="currentColor"/></svg>
-            </div>
-
-            <div class="guidance-wrap"><div class="guidance" id="guidance">Tournez autour de vous...</div></div>
-            <div class="minimap" id="minimap"></div>
-
-            <div class="shutter-zone">
-              <div class="status-row">
-                <span class="pill" id="counter">Point 0 / 22</span>
-                <span class="pill bad" id="qualityPill">Cherchez le repère</span>
-              </div>
-              <div class="shutter-wrap">
-                <svg class="shutter-progress" viewBox="0 0 100 100">
-                  <circle class="bg" cx="50" cy="50" r="44"></circle>
-                  <circle class="fg" id="shutterRing" cx="50" cy="50" r="44" stroke-dasharray="276.5" stroke-dashoffset="276.5"></circle>
-                </svg>
-                <button class="shutter-btn" id="shutterBtn" aria-label="Capturer la photo"></button>
-              </div>
-              <div class="shutter-hint">Appuyez pour capturer manuellement</div>
-            </div>
-          </div>
+      <!-- Galerie des photos importées -->
+      <div id="gallerySection" class="mt-8 hidden">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-[13px] font-semibold text-[#c7cbd1]">
+            <span id="photoCount">0</span> photo(s) — l'ordre ci-dessous sera celui utilisé pour l'assemblage
+          </h2>
+          <button id="clearAllBtn" class="text-[12px] text-[#8b929b] hover:text-[#eef1f4]">Tout effacer</button>
         </div>
+        <div id="thumbGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2.5"></div>
 
-        <div class="viewer hidden" id="viewer">
-          <div id="viewerContainer"></div>
-          <div class="viewer-ui">
-            <h2>Panorama 360° Haute Définition</h2>
-            <p>Glissez pour explorer la pièce · molette/pincer pour zoomer</p>
+        <div class="mt-7 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 border-t border-line pt-6">
+          <div class="flex-1">
+            <label class="block text-[12px] font-medium text-[#c7cbd1] mb-1.5">Qualité de traitement</label>
+            <select id="qualitySelect" class="w-full sm:w-64 bg-[#181c21] border border-line rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-amberDim">
+              <option value="1100">Rapide — fluide sur mobile modeste</option>
+              <option value="1500" selected>Équilibrée — recommandée</option>
+              <option value="2000">Maximale — plus lente, plus nette</option>
+            </select>
           </div>
-          <div class="viewer-actions">
-            <button id="downloadPano">Télécharger</button>
-            <button id="closeViewer">Fermer</button>
-          </div>
-          <div class="processing hidden" id="processing">
-            <div class="spinner"></div>
-            <div id="processingLabel">Assemblage de la sphère...</div>
-          </div>
+          <button id="stitchBtn" disabled class="shrink-0 px-5 py-2.5 rounded-lg bg-amber text-[#1a1204] font-semibold text-[13px] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#f0bd63] transition-colors">
+            Assembler le panorama
+          </button>
         </div>
-      </section>
-    </main>
-  </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============ ÉCRAN 2 : ASSEMBLAGE ============ -->
+  <main id="screenStitch" class="hidden flex-1 min-h-0 flex items-center justify-center px-6">
+    <div class="w-full max-w-sm text-center">
+      <div class="spinner mx-auto mb-5"></div>
+      <h2 class="font-display font-bold text-base mb-1">Assemblage en cours…</h2>
+      <p id="stitchLabel" class="text-[12.5px] text-[#8b929b] mb-4 min-h-[1.2em]">Préparation des images</p>
+      <div class="h-1.5 rounded-full bg-[#181c21] overflow-hidden">
+        <div id="stitchBar" class="h-full bg-amber transition-all duration-200" style="width:0%"></div>
+      </div>
+      <p id="stitchPct" class="text-[11px] text-[#555b63] mt-2">0%</p>
+      <button id="cancelStitchBtn" class="mt-8 text-[12px] text-[#8b929b] hover:text-[#eef1f4] underline underline-offset-2">Annuler</button>
+    </div>
+  </main>
+
+  <!-- ============ ÉCRAN 3 : VIEWER 360° ============ -->
+  <main id="screenViewer" class="hidden flex-1 min-h-0 relative bg-black">
+    <div id="viewerCanvasHost" class="absolute inset-0"></div>
+
+    <div class="absolute left-4 top-4 pointer-events-none">
+      <h2 class="font-display font-bold text-sm drop-shadow">Panorama assemblé</h2>
+      <p class="text-[11.5px] text-[#c7cbd1] drop-shadow mt-0.5">Glissez pour explorer · molette ou pincement pour zoomer</p>
+    </div>
+
+    <div class="absolute right-4 top-4 flex gap-2">
+      <button id="downloadBtn" class="px-3 py-2 rounded-lg bg-black/60 border border-white/15 text-[12px] font-medium backdrop-blur hover:bg-black/80 transition-colors">
+        Télécharger le panorama
+      </button>
+      <button id="newScanBtn" class="px-3 py-2 rounded-lg bg-black/60 border border-white/15 text-[12px] font-medium backdrop-blur hover:bg-black/80 transition-colors">
+        Nouveau scan
+      </button>
+    </div>
+  </main>
+
 </div>
 
-<div class="toast" id="toast"></div>
-<input id="photoInput" type="file" accept="image/*" multiple class="hidden">
+<div id="toast" class="fixed left-1/2 bottom-6 -translate-x-1/2 bg-[#181c21] border border-line text-[12.5px] px-4 py-2.5 rounded-lg opacity-0 pointer-events-none transition-opacity z-50 max-w-[90vw] text-center"></div>
 
+<!-- ============================================================
+     CODE DU WEB WORKER (stitching OpenCV.js)
+     Placé dans un <script> non exécutable : on récupère son
+     contenu texte à l'exécution pour construire un Blob Worker.
+     Tout tourne hors du thread principal → l'interface ne freeze jamais.
+============================================================= -->
+<script type="text/js-worker" id="stitchWorkerSource">
+
+// URL officielle du binaire OpenCV.js (WebAssembly), version figée pour la stabilité en production.
+var OPENCV_JS_URL = "https://docs.opencv.org/4.9.0/opencv.js";
+
+var cvReady = false;
+var pending = null;
+
+self.importScripts(OPENCV_JS_URL);
+
+// L'objet Module d'Emscripten expose onRuntimeInitialized une fois le WASM compilé et prêt.
+if (typeof cv !== "undefined" && cv.then) {
+  // Certaines versions exposent cv comme une Promise
+  cv.then(function (target) {
+    self.cv = target;
+    cvReady = true;
+    self.postMessage({ type: "ready" });
+  });
+} else {
+  cv["onRuntimeInitialized"] = function () {
+    cvReady = true;
+    self.postMessage({ type: "ready" });
+  };
+}
+
+function log(msg) { self.postMessage({ type: "log", msg: msg }); }
+function progress(pct, label) { self.postMessage({ type: "progress", pct: pct, label: label }); }
+function fail(msg) { self.postMessage({ type: "error", message: msg }); }
+
+// Multiplie deux matrices 3x3 (tableaux plats de 9 nombres, row-major)
+function mul3(a, b) {
+  var out = new Array(9).fill(0);
+  for (var r = 0; r < 3; r++) {
+    for (var c = 0; c < 3; c++) {
+      var s = 0;
+      for (var k = 0; k < 3; k++) s += a[r * 3 + k] * b[k * 3 + c];
+      out[r * 3 + c] = s;
+    }
+  }
+  return out;
+}
+function applyH(h, x, y) {
+  var w = h[6] * x + h[7] * y + h[8];
+  if (Math.abs(w) < 1e-12) w = 1e-12;
+  return [(h[0] * x + h[1] * y + h[2]) / w, (h[3] * x + h[4] * y + h[5]) / w];
+}
+var IDENTITY3 = [1, 0, 0, 0, 1, 0, 0, 0, 1];
+
+// Décode un fichier image (ArrayBuffer) en ImageData redimensionnée, entièrement hors thread principal.
+function decodeToImageData(buffer, mime, maxDim) {
+  return new Promise(function (resolve, reject) {
+    var blob = new Blob([buffer], { type: mime });
+    createImageBitmap(blob).then(function (bitmap) {
+      var scale = Math.min(1, maxDim / Math.max(bitmap.width, bitmap.height));
+      var w = Math.max(1, Math.round(bitmap.width * scale));
+      var h = Math.max(1, Math.round(bitmap.height * scale));
+      var canvas = new OffscreenCanvas(w, h);
+      var ctx = canvas.getContext("2d");
+      ctx.drawImage(bitmap, 0, 0, w, h);
+      var imgData = ctx.getImageData(0, 0, w, h);
+      bitmap.close();
+      resolve({ imageData: imgData, width: w, height: h });
+    }, reject);
+  });
+}
+
+// Estime l'homographie qui envoie l'image B (nouvelle) dans le repère de l'image A (précédente),
+// via ORB + BFMatcher (Hamming, test du ratio de Lowe) + findHomography (RANSAC).
+// Retourne un tableau plat 3x3, ou null si le recouvrement est insuffisant.
+function estimateHomography(imgDataA, imgDataB) {
+  var matA, matB, grayA, grayB, orb, kpA, kpB, descA, descB, mask0;
+  var bf, knn, srcArr = [], dstArr = [], srcMat, dstMat, H;
+  try {
+    matA = cv.matFromImageData(imgDataA);
+    matB = cv.matFromImageData(imgDataB);
+    grayA = new cv.Mat(); grayB = new cv.Mat();
+    cv.cvtColor(matA, grayA, cv.COLOR_RGBA2GRAY);
+    cv.cvtColor(matB, grayB, cv.COLOR_RGBA2GRAY);
+
+    orb = new cv.ORB(2500);
+    kpA = new cv.KeyPointVector(); kpB = new cv.KeyPointVector();
+    descA = new cv.Mat(); descB = new cv.Mat();
+    mask0 = new cv.Mat();
+    orb.detectAndCompute(grayA, mask0, kpA, descA);
+    orb.detectAndCompute(grayB, mask0, kpB, descB);
+
+    if (descA.rows < 8 || descB.rows < 8) return null;
+
+    bf = new cv.BFMatcher(cv.NORM_HAMMING, false);
+    knn = new cv.DMatchVectorVector();
+    bf.knnMatch(descB, descA, knn, 2); // pour chaque point de B, les 2 meilleurs voisins dans A
+
+    // Test du ratio de Lowe : ne garder que les correspondances nettement meilleures que la 2e option
+    for (var i = 0; i < knn.size(); i++) {
+      var pair = knn.get(i);
+      if (pair.size() < 2) continue;
+      var m0 = pair.get(0), m1 = pair.get(1);
+      if (m0.distance < 0.75 * m1.distance) {
+        var ptB = kpB.get(m0.queryIdx).pt;
+        var ptA = kpA.get(m0.trainIdx).pt;
+        srcArr.push(ptB.x, ptB.y);
+        dstArr.push(ptA.x, ptA.y);
+      }
+    }
+
+    if (srcArr.length / 2 < 8) return null;
+
+    srcMat = cv.matFromArray(srcArr.length / 2, 1, cv.CV_32FC2, srcArr);
+    dstMat = cv.matFromArray(dstArr.length / 2, 1, cv.CV_32FC2, dstArr);
+    H = cv.findHomography(srcMat, dstMat, cv.RANSAC, 4);
+    if (H.empty() || H.rows !== 3) return null;
+
+    var flat = [];
+    for (var r = 0; r < 3; r++) for (var c = 0; c < 3; c++) flat.push(H.doubleAt(r, c));
+    return flat;
+  } finally {
+    // Nettoyage systématique : chaque cv.Mat / vecteur alloué en WASM doit être libéré à la main
+    // (le garbage collector JS ne connaît pas la mémoire du tas WASM d'OpenCV).
+    [matA, matB, grayA, grayB, descA, descB, mask0, srcMat, dstMat, H].forEach(function (m) {
+      if (m && typeof m.delete === "function" && !m.isDeleted()) m.delete();
+    });
+    if (orb) orb.delete();
+    if (kpA) kpA.delete();
+    if (kpB) kpB.delete();
+    if (bf) bf.delete();
+    if (knn) knn.delete();
+  }
+}
+
+function stitchAll(images, maxCanvasArea) {
+  var n = images.length;
+  progress(5, "Analyse des recouvrements entre photos");
+
+  // 1) Homographies successives image[i] -> image[i-1]
+  var pairwise = [IDENTITY3];
+  for (var i = 1; i < n; i++) {
+    var h = estimateHomography(images[i - 1].imageData, images[i].imageData);
+    if (!h) {
+      fail("Recouvrement insuffisant entre la photo " + i + " et la photo " + (i + 1) + ". Reprenez ces deux photos avec davantage de zone commune (30 à 50%).");
+      return;
+    }
+    pairwise.push(h);
+    progress(5 + Math.round((i / (n - 1)) * 35), "Points communs trouvés : photo " + (i + 1) + " / " + n);
+  }
+
+  // 2) Homographies cumulées vers le repère de l'image 0
+  var cumulative = [IDENTITY3];
+  for (var i = 1; i < n; i++) cumulative.push(mul3(cumulative[i - 1], pairwise[i]));
+
+  // 3) Boîte englobante de toutes les images projetées dans le repère commun
+  var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (var i = 0; i < n; i++) {
+    var w = images[i].width, h2 = images[i].height, H = cumulative[i];
+    var corners = [[0, 0], [w, 0], [w, h2], [0, h2]];
+    for (var c = 0; c < 4; c++) {
+      var p = applyH(H, corners[c][0], corners[c][1]);
+      if (p[0] < minX) minX = p[0]; if (p[0] > maxX) maxX = p[0];
+      if (p[1] < minY) minY = p[1]; if (p[1] > maxY) maxY = p[1];
+    }
+  }
+
+  var canvasW = Math.ceil(maxX - minX), canvasH = Math.ceil(maxY - minY);
+
+  // Sécurité mémoire : on plafonne la surface totale du canevas de sortie, quel que soit le
+  // nombre de clients/photos, pour garantir un comportement stable sur tous les appareils.
+  var area = canvasW * canvasH;
+  var downscale = area > maxCanvasArea ? Math.sqrt(maxCanvasArea / area) : 1;
+  canvasW = Math.max(1, Math.round(canvasW * downscale));
+  canvasH = Math.max(1, Math.round(canvasH * downscale));
+
+  var T = [downscale, 0, -minX * downscale, 0, downscale, -minY * downscale, 0, 0, 1];
+  var finalH = cumulative.map(function (H) { return mul3(T, H); });
+
+  progress(42, "Préparation de la toile panoramique (" + canvasW + "×" + canvasH + ")");
+
+  // 4) Compositing par fusion pondérée (feathering) : chaque image contribue avec un poids
+  //    maximal en son centre et décroissant vers ses bords (distanceTransform du masque).
+  var accR = new Float32Array(canvasW * canvasH);
+  var accG = new Float32Array(canvasW * canvasH);
+  var accB = new Float32Array(canvasW * canvasH);
+  var accW = new Float32Array(canvasW * canvasH);
+
+  for (var i = 0; i < n; i++) {
+    var srcMat, HMat, warped, maskSrc, maskWarped, dist;
+    try {
+      srcMat = cv.matFromImageData(images[i].imageData);
+      HMat = cv.matFromArray(3, 3, cv.CV_64F, finalH[i]);
+      var dsize = new cv.Size(canvasW, canvasH);
+
+      warped = new cv.Mat();
+      cv.warpPerspective(srcMat, warped, HMat, dsize, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar(0, 0, 0, 0));
+
+      maskSrc = new cv.Mat(images[i].height, images[i].width, cv.CV_8UC1, new cv.Scalar(255));
+      maskWarped = new cv.Mat();
+      cv.warpPerspective(maskSrc, maskWarped, HMat, dsize, cv.INTER_NEAREST, cv.BORDER_CONSTANT, new cv.Scalar(0));
+
+      dist = new cv.Mat();
+      cv.distanceTransform(maskWarped, dist, cv.DIST_L2, 3);
+
+      var wd = warped.data;       // Uint8ClampedArray RGBA
+      var dd = dist.data32F;      // Float32Array
+      var total = canvasW * canvasH;
+      for (var p = 0; p < total; p++) {
+        var weight = dd[p];
+        if (weight <= 0.01) continue;
+        weight = weight * weight; // accentue la préférence pour le centre de chaque photo
+        var o = p * 4;
+        accR[p] += wd[o] * weight;
+        accG[p] += wd[o + 1] * weight;
+        accB[p] += wd[o + 2] * weight;
+        accW[p] += weight;
+      }
+    } finally {
+      [srcMat, HMat, warped, maskSrc, maskWarped, dist].forEach(function (m) {
+        if (m && typeof m.delete === "function" && !m.isDeleted()) m.delete();
+      });
+    }
+    progress(42 + Math.round(((i + 1) / n) * 50), "Fusion des images : " + (i + 1) + " / " + n);
+  }
+
+  progress(95, "Finalisation de l'image");
+
+  var out = new Uint8ClampedArray(canvasW * canvasH * 4);
+  for (var p2 = 0; p2 < canvasW * canvasH; p2++) {
+    var o2 = p2 * 4;
+    var w2 = accW[p2];
+    if (w2 > 1e-6) {
+      out[o2] = accR[p2] / w2;
+      out[o2 + 1] = accG[p2] / w2;
+      out[o2 + 2] = accB[p2] / w2;
+      out[o2 + 3] = 255;
+    } else {
+      out[o2] = 10; out[o2 + 1] = 10; out[o2 + 2] = 12; out[o2 + 3] = 255;
+    }
+  }
+
+  progress(100, "Terminé");
+  self.postMessage({ type: "result", buffer: out.buffer, width: canvasW, height: canvasH }, [out.buffer]);
+}
+
+self.onmessage = function (e) {
+  var msg = e.data;
+  if (msg.type !== "stitch") return;
+
+  function run() {
+    Promise.all(msg.files.map(function (f) {
+      return decodeToImageData(f.buffer, f.mime, msg.maxDim);
+    })).then(function (images) {
+      progress(4, "Photos décodées, recherche des points communs…");
+      try {
+        stitchAll(images, msg.maxCanvasArea);
+      } catch (err) {
+        fail("Erreur pendant l'assemblage : " + (err && err.message ? err.message : String(err)));
+      }
+    }).catch(function (err) {
+      fail("Impossible de lire une des images : " + (err && err.message ? err.message : String(err)));
+    });
+  }
+
+  if (cvReady) run();
+  else {
+    // Ne devrait pas arriver (le bouton n'est activable qu'une fois le moteur prêt), sécurité malgré tout.
+    var wait = setInterval(function () {
+      if (cvReady) { clearInterval(wait); run(); }
+    }, 100);
+  }
+};
+</script>
+
+<!-- ============================================================
+     CODE PRINCIPAL (interface + viewer Three.js + orchestration du worker)
+============================================================= -->
 <script>
 "use strict";
 
-const TOTAL_PHOTOS = 22;
-
-/* --- Alignement avec hystérésis ---
-   ENTER : seuil pour considérer qu'on VIENT de s'aligner (strict).
-   EXIT  : seuil, plus large, en dessous duquel on reste considéré "aligné"
-           une fois qu'on l'était. Ça évite que le cercle de progression
-           se vide à cause d'un micro-tremblement de la main. */
-const ALIGN_ENTER_DEG = 9;
-const ALIGN_EXIT_DEG  = 16;
-
-/* Grâce : un bref décrochage (main qui tremble) ne remet pas le compteur à zéro. */
-const HOLD_GRACE_MS = 350;
-
-const HOLD_MS = 800;
-const V_FOV_DEG = 60;
-const ACC_W = 3000, ACC_H = 1500;
-
-/* Constante de temps du filtre passe-bas appliqué à l'orientation (en secondes).
-   Plus haut = plus stable mais plus "lourd" à suivre ; plus bas = plus réactif mais plus tremblant.
-   0.15s est un bon compromis pour un scan où l'utilisateur bouge lentement. */
-const ORIENT_SMOOTH_TAU = 0.15;
-
-const $ = s => document.querySelector(s);
-const cameraEl = () => $("#camera");
+const $ = (sel) => document.querySelector(sel);
 
 const state = {
-  mode: "2d",
-  running: false,
-  stream: null,
-  sensorEventName: null,
-  sensorListening: false,
-  initQuat: null,
-  currentQuat: null,       // orientation lissée utilisée pour l'affichage/la capture
-  hasOrientation: false,
-  lastOrientTime: 0,
-  step: 0,
-  targets: [],
-  acc: null,
-  photoCount: 0,
+  images: [],            // [{id, file, url}]
+  worker: null,
+  engineReady: false,
+  busy: false,
   viewer: null,
-  projectName: "Visite 360° HD",
-  scenes: [],
-  gallery: [],
-  captureBusy: false,
-  locked: false,           // état "aligné" avec hystérésis
-  stableSince: 0,          // instant où le maintien a commencé
-  lastAlignedTime: 0,      // dernier instant où on était aligné (pour la grâce)
-  lastAutoCapture: 0,
-  raf: null
+  resultCanvas: null,
 };
 
-function normalizeAngle(v){ return ((v % 360) + 360) % 360; }
-function degToRad(d){ return d * Math.PI / 180; }
-function escapeHtml(v){ return String(v).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
-
-function toast(msg){
+function toast(msg) {
   const t = $("#toast");
   t.textContent = msg;
-  t.classList.add("show");
+  t.classList.remove("opacity-0");
   clearTimeout(toast._t);
-  toast._t = setTimeout(()=>t.classList.remove("show"), 2200);
+  toast._t = setTimeout(() => t.classList.add("opacity-0"), 2600);
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", e => setMode(e.currentTarget.dataset.mode)));
-  $("#start360").addEventListener("click", start360);
-  $("#restart360").addEventListener("click", restart360);
-  $("#exit360").addEventListener("click", () => { stopCamera(); setMode("2d"); });
-  $("#closeViewer").addEventListener("click", closeViewer);
-  $("#downloadPano").addEventListener("click", downloadCurrentPano);
-  $("#renameBtn").addEventListener("click", renameProject);
-  $("#shutterBtn").addEventListener("click", () => { if(!state.captureBusy && state.running) capturePhoto(); });
-  $("#photoInput").addEventListener("change", onPhotosImported);
-  $("#tabTotal").textContent = TOTAL_PHOTOS;
-  $("#projectName").textContent = state.projectName;
-  renderSceneList();
-  renderGallery();
-  renderMinimap();
-});
-
-// ---------- Navigation ----------
-function setMode(mode){
-  state.mode = mode;
-  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
-  $("#mode2d").classList.toggle("hidden", mode !== "2d");
-  $("#mode360").classList.toggle("hidden", mode !== "360");
-  if(mode !== "360") stopCamera();
-}
-
-function renameProject(){
-  const name = prompt("Nom du projet :", state.projectName);
-  if(name && name.trim()){
-    state.projectName = name.trim();
-    $("#projectName").textContent = state.projectName;
-  }
-}
-
-// ---------- Galerie 2D ----------
-function onPhotosImported(e){
-  const files = Array.from(e.target.files || []);
-  files.forEach(file => {
-    if(!file.type.startsWith("image/")) return;
-    state.gallery.push({ url: URL.createObjectURL(file), name: file.name });
-  });
-  e.target.value = "";
-  renderGallery();
-}
-
-function renderGallery(){
-  const wrap = $("#galleryWrap");
-  if(!state.gallery.length){
-    wrap.innerHTML = `
-      <div class="empty-2d">
-        <div style="font-size:36px;margin-bottom:8px">◎</div>
-        <h2>Photos 2D</h2>
-        <p>Importez des photos classiques, ou passez en mode 360° pour scanner une pièce complète en réalité augmentée.</p>
-        <button class="primary" id="import2d" style="max-width:240px;margin-top:14px">Importer des photos</button>
-      </div>`;
-    $("#import2d").addEventListener("click", () => $("#photoInput").click());
-    return;
-  }
-  wrap.innerHTML = `
-    <div class="gallery-toolbar">
-      <h2>${state.gallery.length} photo(s) 2D</h2>
-      <button class="small-btn" id="addMore">+ Ajouter des photos</button>
-    </div>
-    <div class="gallery" id="galleryGrid"></div>`;
-  $("#addMore").addEventListener("click", () => $("#photoInput").click());
-  const grid = $("#galleryGrid");
-  state.gallery.forEach((p, i) => {
-    const item = document.createElement("div");
-    item.className = "gallery-item";
-    item.innerHTML = `<img src="${p.url}" alt="${escapeHtml(p.name)}"><button data-i="${i}">✕</button>`;
-    item.querySelector("button").addEventListener("click", () => {
-      URL.revokeObjectURL(p.url);
-      state.gallery.splice(i, 1);
-      renderGallery();
-    });
-    grid.appendChild(item);
+function setStep(step) {
+  document.querySelectorAll("#stepIndicator [data-step]").forEach(el => {
+    el.classList.toggle("bg-[#181c21]", el.dataset.step === step);
+    el.classList.toggle("text-[#eef1f4]", el.dataset.step === step);
   });
 }
 
-// ---------- Scènes 360 ----------
-function renderSceneList(){
-  const list = $("#sceneList");
-  list.innerHTML = "";
-  if(!state.scenes.length){
-    list.innerHTML = '<div class="scene"><div class="scene-name">Aucune scène HD</div><div class="scene-meta">Effectuez un scan 360°</div></div>';
-    return;
-  }
-  state.scenes.forEach((scene, index) => {
-    const item = document.createElement("div");
-    item.className = "scene" + (index === state.scenes.length - 1 ? " active" : "");
-    item.innerHTML = `<div class="scene-name">${escapeHtml(scene.name)}</div><div class="scene-meta">${TOTAL_PHOTOS} points HD · ${escapeHtml(scene.date)}</div><div class="scene-actions"><button data-action="open">Ouvrir</button><button data-action="delete">Suppr</button></div>`;
-    item.querySelector('[data-action="open"]').onclick = () => openScene(index);
-    item.querySelector('[data-action="delete"]').onclick = () => { state.scenes.splice(index, 1); renderSceneList(); };
-    list.appendChild(item);
-  });
-}
+// ---------- Démarrage du Worker de stitching ----------
+function initWorker() {
+  const src = document.getElementById("stitchWorkerSource").textContent;
+  const blob = new Blob([src], { type: "application/javascript" });
+  const worker = new Worker(URL.createObjectURL(blob));
 
-// ---------- Grille des points cibles (fixe, pré-établie) ----------
-function buildTargets(){
-  const targets = [];
-  for(let i = 0; i < 8; i++) targets.push({ yaw: i * 45, pitch: 0, label: `Horizon ${i+1}/8` });
-  for(let i = 0; i < 6; i++) targets.push({ yaw: i * 60, pitch: 45, label: `Plafond ${i+1}/6` });
-  targets.push({ yaw: 0, pitch: 85, label: "Zénith — visez le plafond" });
-  for(let i = 0; i < 6; i++) targets.push({ yaw: i * 60, pitch: -45, label: `Sol ${i+1}/6` });
-  targets.push({ yaw: 0, pitch: -85, label: "Nadir — visez vos pieds" });
-  targets.forEach(t => {
-    const phi = degToRad(90 - t.pitch);
-    const theta = degToRad(t.yaw - 90);
-    t.dir = new THREE.Vector3(Math.sin(phi)*Math.cos(theta), Math.cos(phi), Math.sin(phi)*Math.sin(theta)).normalize();
-  });
-  return targets;
-}
-
-function renderMinimap(){
-  const map = $("#minimap");
-  map.innerHTML = "";
-  const rowsConfig = [ {start:0,count:8}, {start:8,count:6}, {start:14,count:1}, {start:15,count:6}, {start:21,count:1} ];
-  rowsConfig.forEach(rc => {
-    const rowDiv = document.createElement("div");
-    rowDiv.className = "mini-row";
-    for(let i = 0; i < rc.count; i++){
-      const idx = rc.start + i;
-      if(idx >= TOTAL_PHOTOS) continue;
-      const dot = document.createElement("div");
-      dot.className = "mini-dot";
-      if(idx < state.step) dot.classList.add("done");
-      else if(idx === state.step && state.running) dot.classList.add("active");
-      rowDiv.appendChild(dot);
+  worker.onmessage = (e) => {
+    const msg = e.data;
+    if (msg.type === "ready") {
+      state.engineReady = true;
+      $("#engineDot").classList.remove("animate-pulse", "bg-[#555b63]");
+      $("#engineDot").classList.add("bg-[#22c55e]");
+      $("#engineStatusText").textContent = "Moteur de traitement d'image prêt.";
+      updateStitchButton();
+    } else if (msg.type === "progress") {
+      $("#stitchBar").style.width = msg.pct + "%";
+      $("#stitchPct").textContent = msg.pct + "%";
+      $("#stitchLabel").textContent = msg.label;
+    } else if (msg.type === "log") {
+      // Réservé pour un futur panneau de logs détaillés
+    } else if (msg.type === "result") {
+      onStitchResult(msg.buffer, msg.width, msg.height);
+    } else if (msg.type === "error") {
+      state.busy = false;
+      showImportScreen();
+      toast(msg.message);
     }
-    map.appendChild(rowDiv);
-  });
-}
-
-// ---------- Démarrage capture ----------
-async function start360(){
-  const errBox = $("#permError");
-  errBox.textContent = "";
-  try {
-    if(!window.isSecureContext) throw new Error("HTTPS requis pour la caméra et les capteurs.");
-    if(!navigator.mediaDevices?.getUserMedia) throw new Error("Caméra non supportée sur cet appareil/navigateur.");
-
-    resetCaptureState();
-
-    if(typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function"){
-      const res = await DeviceOrientationEvent.requestPermission();
-      if(res !== "granted") throw new Error("Permission des capteurs de mouvement refusée.");
-    }
-    attachSensors();
-
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
-      audio: false
-    });
-    state.stream = stream;
-    cameraEl().srcObject = stream;
-    await cameraEl().play();
-
-    if(screen.orientation?.lock){ screen.orientation.lock("portrait").catch(()=>{}); }
-
-    state.running = true;
-    $("#permission").classList.add("hidden");
-    $("#captureScreen").classList.remove("hidden");
-    $("#viewer").classList.add("hidden");
-
-    state.targets = buildTargets();
-    state.step = 0;
-    state.acc = createAccumulator();
-    state.photoCount = 0;
-    setStep(0);
-    watchdogOrientation();
-    state.raf = requestAnimationFrame(captureLoop);
-  } catch(e) {
-    stopCamera();
-    $("#permission").classList.remove("hidden");
-    errBox.textContent = e && e.message ? e.message : "Une erreur est survenue.";
-  }
-}
-
-function watchdogOrientation(){
-  setTimeout(() => {
-    if(state.running && !state.hasOrientation){
-      $("#guidance").textContent = "Capteurs indisponibles — visez à l'œil et appuyez sur le déclencheur";
-      $("#aimMarker").classList.add("hidden");
-    }
-  }, 2500);
-}
-
-function attachSensors(){
-  if(state.sensorListening) return;
-  state.sensorEventName = ("ondeviceorientationabsolute" in window) ? "deviceorientationabsolute" : "deviceorientation";
-  window.addEventListener(state.sensorEventName, handleOrientation, true);
-  state.sensorListening = true;
-}
-function detachSensors(){
-  if(!state.sensorListening) return;
-  window.removeEventListener(state.sensorEventName, handleOrientation, true);
-  state.sensorListening = false;
-}
-
-/* ---------- Lecture + LISSAGE de l'orientation ----------
-   C'est le cœur de la stabilisation : on ne remplace plus l'orientation
-   affichée par la valeur brute du capteur à chaque événement. On la fait
-   glisser (SLERP) vers la nouvelle valeur, avec un facteur qui dépend du
-   temps écoulé depuis la dernière lecture (filtre passe-bas indépendant
-   du taux de rafraîchissement du capteur). Résultat : le repère blanc
-   "flotte" doucement au lieu de sauter. */
-function handleOrientation(e){
-  if(e.alpha === null || e.alpha === undefined) return;
-  state.hasOrientation = true;
-  $("#aimMarker").classList.remove("hidden");
-
-  let alpha = e.alpha || 0;
-  const beta = e.beta || 0;
-  const gamma = e.gamma || 0;
-  if(typeof e.webkitCompassHeading === "number" && Number.isFinite(e.webkitCompassHeading)){
-    alpha = 360 - e.webkitCompassHeading;
-  }
-
-  const alphaRad = degToRad(alpha), betaRad = degToRad(beta), gammaRad = degToRad(gamma);
-  const orient = (screen.orientation && typeof screen.orientation.angle === "number") ? screen.orientation.angle : (window.orientation || 0);
-  const orientRad = degToRad(orient);
-
-  const euler = new THREE.Euler();
-  const q0 = new THREE.Quaternion();
-  const q1 = new THREE.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5));
-  const zee = new THREE.Vector3(0, 0, 1);
-
-  euler.set(betaRad, alphaRad, -gammaRad, "YXZ");
-  const rawQuat = new THREE.Quaternion();
-  rawQuat.setFromEuler(euler);
-  rawQuat.multiply(q1);
-  rawQuat.multiply(q0.setFromAxisAngle(zee, -orientRad));
-
-  if(!state.initQuat) state.initQuat = rawQuat.clone().invert();
-  const targetQuat = state.initQuat.clone().multiply(rawQuat);
-
-  const now = performance.now();
-  if(!state.currentQuat){
-    // première lecture : pas de filtrage possible, on part directement de cette valeur
-    state.currentQuat = targetQuat;
-  } else {
-    const dt = state.lastOrientTime ? Math.min(0.2, (now - state.lastOrientTime) / 1000) : 0.016;
-    const alphaSmooth = 1 - Math.exp(-dt / ORIENT_SMOOTH_TAU);
-    state.currentQuat.slerp(targetQuat, alphaSmooth);
-  }
-  state.lastOrientTime = now;
-}
-
-function stopCamera(){
-  if(state.stream){ state.stream.getTracks().forEach(t => t.stop()); state.stream = null; }
-  cameraEl().srcObject = null;
-  state.running = false;
-  state.captureBusy = false;
-  detachSensors();
-  if(state.raf){ cancelAnimationFrame(state.raf); state.raf = null; }
-  if(screen.orientation?.unlock){ try{ screen.orientation.unlock(); }catch(_){} }
-}
-
-function resetCaptureState(){
-  state.running = false;
-  state.step = 0;
-  state.acc = null;
-  state.photoCount = 0;
-  state.initQuat = null;
-  state.currentQuat = null;
-  state.hasOrientation = false;
-  state.lastOrientTime = 0;
-  state.targets = [];
-  state.captureBusy = false;
-  state.locked = false;
-  state.stableSince = 0;
-  state.lastAlignedTime = 0;
-  $("#aimMarker").classList.remove("hidden");
-  $("#aimRing").classList.remove("locked");
-  $("#counter").textContent = `Point 0 / ${TOTAL_PHOTOS}`;
-  $("#qualityPill").textContent = "Cherchez le repère";
-  $("#qualityPill").className = "pill bad";
-  $("#shutterBtn").classList.remove("ready");
-  $("#shutterRing").style.strokeDashoffset = 276.5;
-}
-
-function setStep(step){
-  state.step = step;
-  renderMinimap();
-  if(step >= TOTAL_PHOTOS){ finishCapture(); return; }
-  const t = state.targets[step];
-  $("#counter").textContent = `Point ${step + 1} / ${TOTAL_PHOTOS}`;
-  $("#positionLabel").textContent = t.label;
-  state.stableSince = 0;
-  state.locked = false;
-  state.lastAlignedTime = 0;
-}
-
-// ---------- Boucle principale : projection écran + alignement (avec hystérésis) ----------
-function captureLoop(){
-  if(!state.running) return;
-
-  if(state.currentQuat && state.step < TOTAL_PHOTOS){
-    const target = state.targets[state.step];
-    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(state.currentQuat);
-    const angleDeg = THREE.MathUtils.radToDeg(forward.angleTo(target.dir));
-
-    // Hystérésis : le seuil de sortie est plus large que le seuil d'entrée.
-    const threshold = state.locked ? ALIGN_EXIT_DEG : ALIGN_ENTER_DEG;
-    const isAligned = angleDeg <= threshold;
-    state.locked = isAligned;
-
-    projectTargetToScreen(target, state.currentQuat, forward);
-
-    if(!state.captureBusy){
-      const now = performance.now();
-
-      if(isAligned){
-        state.lastAlignedTime = now;
-        if(!state.stableSince) state.stableSince = now;
-
-        $("#aimRing").classList.add("ready", "locked");
-        $("#shutterBtn").classList.add("ready");
-        $("#qualityPill").textContent = "Immobile...";
-        $("#qualityPill").className = "pill ok";
-        $("#guidance").textContent = "Parfait ! Ne bougez plus...";
-        $("#guidance").classList.add("ready");
-
-        const elapsed = now - state.stableSince;
-        const ratio = Math.min(1, elapsed / HOLD_MS);
-        $("#shutterRing").style.strokeDashoffset = String(276.5 * (1 - ratio));
-
-        if(elapsed >= HOLD_MS && now - state.lastAutoCapture > 1000){
-          capturePhoto();
-          state.stableSince = 0;
-        }
-      } else {
-        // Pas aligné : on regarde si on est encore dans la période de grâce
-        // avant de considérer le maintien comme rompu.
-        const withinGrace = state.lastAlignedTime && (now - state.lastAlignedTime) < HOLD_GRACE_MS;
-
-        if(!withinGrace){
-          state.stableSince = 0;
-          $("#shutterRing").style.strokeDashoffset = 276.5;
-        }
-        // Pendant la grâce, on garde la progression affichée telle quelle
-        // (pas de reset visuel brutal) mais on repasse en état "non prêt".
-        $("#aimRing").classList.remove("ready", "locked");
-        $("#shutterBtn").classList.remove("ready");
-        $("#qualityPill").textContent = `Alignez (${Math.round(angleDeg)}°)`;
-        $("#qualityPill").className = "pill bad";
-        setGuidanceText(target, state.currentQuat);
-      }
-    }
-  } else if(!state.hasOrientation){
-    $("#shutterRing").style.strokeDashoffset = 276.5;
-  }
-
-  state.raf = requestAnimationFrame(captureLoop);
-}
-
-function projectTargetToScreen(target, quat, forward){
-  const right = new THREE.Vector3(1, 0, 0).applyQuaternion(quat);
-  const up = new THREE.Vector3(0, 1, 0).applyQuaternion(quat);
-  const dir = target.dir;
-
-  const zLocal = dir.dot(forward);
-  const xLocal = dir.dot(right);
-  const yLocal = dir.dot(up);
-
-  const w = window.innerWidth, h = window.innerHeight;
-  const vFovRad = degToRad(V_FOV_DEG);
-  const focal = (h / 2) / Math.tan(vFovRad / 2);
-
-  const marker = $("#aimMarker");
-  const arrow = $("#edgeArrow");
-
-  if(zLocal > 0.12){
-    const sx = w / 2 + (xLocal / zLocal) * focal;
-    const sy = h / 2 - (yLocal / zLocal) * focal;
-    const margin = 50;
-    const onScreen = sx > -margin && sx < w + margin && sy > -margin && sy < h + margin;
-    if(onScreen){
-      marker.style.opacity = "1";
-      marker.style.transform = `translate(${sx}px, ${sy}px)`;
-      arrow.classList.add("hidden");
-    } else {
-      marker.style.opacity = "0";
-      showEdgeArrow(sx, sy, w, h, arrow);
-    }
-  } else {
-    marker.style.opacity = "0";
-    const sx = w / 2 + Math.sign(xLocal || 1) * w;
-    const sy = h / 2 - yLocal * h;
-    showEdgeArrow(sx, sy, w, h, arrow);
-  }
-}
-
-function showEdgeArrow(sx, sy, w, h, arrow){
-  const cx = w / 2, cy = h / 2;
-  const dx = sx - cx, dy = sy - cy;
-  const angle = Math.atan2(dy, dx);
-  const pad = 46;
-  const halfW = w / 2 - pad, halfH = h / 2 - pad;
-  const scale = Math.min(Math.abs(halfW / (Math.cos(angle) || 1e-6)), Math.abs(halfH / (Math.sin(angle) || 1e-6)));
-  const ex = cx + Math.cos(angle) * scale;
-  const ey = cy + Math.sin(angle) * scale;
-  arrow.style.left = ex + "px";
-  arrow.style.top = ey + "px";
-  arrow.style.transform = `rotate(${angle + Math.PI/2}rad)`;
-  arrow.classList.remove("hidden");
-}
-
-function setGuidanceText(target, quat){
-  const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(quat);
-  const right = new THREE.Vector3(1, 0, 0).applyQuaternion(quat);
-  const up = new THREE.Vector3(0, 1, 0).applyQuaternion(quat);
-  const xLocal = target.dir.dot(right);
-  const yLocal = target.dir.dot(up);
-  const parts = [];
-  if(Math.abs(yLocal) > 0.12) parts.push(yLocal > 0 ? "levez" : "baissez");
-  if(Math.abs(xLocal) > 0.12) parts.push(xLocal > 0 ? "à droite" : "à gauche");
-  const g = $("#guidance");
-  g.classList.remove("ready");
-  g.textContent = parts.length ? `Tournez ${parts.join(" ")}` : "Rapprochez-vous du centre";
-}
-
-// ---------- Capture ----------
-function capturePhoto(){
-  const cam = cameraEl();
-  if(!cam.videoWidth || !cam.videoHeight) return;
-
-  state.captureBusy = true;
-  flashCapture();
-
-  try {
-    const sw = cam.videoWidth, sh = cam.videoHeight;
-    const maxW = 1000, scale = Math.min(1, maxW / sw);
-    const w = Math.max(1, Math.round(sw * scale)), h = Math.max(1, Math.round(sh * scale));
-    const cv = $("#captureCanvas");
-    cv.width = w; cv.height = h;
-    cv.getContext("2d").drawImage(cam, 0, 0, w, h);
-
-    const quatForShot = state.currentQuat ? state.currentQuat.clone() : quatFromYawPitch(state.targets[state.step]);
-    reprojectPhotoIntoAccumulator(cv, quatForShot, w, h);
-
-    state.photoCount++;
-    state.lastAutoCapture = performance.now();
-    state.captureBusy = false;
-    setStep(state.step + 1);
-  } catch(e){
-    state.captureBusy = false;
-    toast("Erreur de capture : " + e.message);
-  }
-}
-
-function quatFromYawPitch(target){
-  const q = new THREE.Quaternion();
-  const m = new THREE.Matrix4();
-  const forward = target.dir.clone().normalize();
-  const upHint = Math.abs(forward.y) > 0.98 ? new THREE.Vector3(0,0,1) : new THREE.Vector3(0,1,0);
-  const eye = new THREE.Vector3(0,0,0);
-  m.lookAt(eye, forward.clone().multiplyScalar(-1), upHint);
-  q.setFromRotationMatrix(m);
-  return q;
-}
-
-function flashCapture(){
-  const flash = $("#flashOverlay");
-  flash.classList.add("flash");
-  setTimeout(() => flash.classList.remove("flash"), 150);
-}
-
-// ---------- Reprojection sphérique (accumulation panorama) ----------
-function createAccumulator(){
-  const n = ACC_W * ACC_H;
-  return { r: new Float32Array(n), g: new Float32Array(n), b: new Float32Array(n), w: new Float32Array(n) };
-}
-
-function reprojectPhotoIntoAccumulator(photoCanvas, quat, srcW, srcH){
-  const acc = state.acc;
-  if(!acc) return;
-
-  const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(quat);
-  const right   = new THREE.Vector3(1, 0, 0).applyQuaternion(quat);
-  const up      = new THREE.Vector3(0, 1, 0).applyQuaternion(quat);
-
-  const aspect = srcW / srcH;
-  const vFovRad = degToRad(V_FOV_DEG);
-  const hFovRad = 2 * Math.atan(Math.tan(vFovRad / 2) * aspect);
-  const halfW = Math.tan(hFovRad / 2);
-  const halfH = Math.tan(vFovRad / 2);
-
-  const pitchCenter = Math.asin(THREE.MathUtils.clamp(forward.y, -1, 1)) * 180 / Math.PI;
-  const yawCenter = normalizeAngle(Math.atan2(forward.z, forward.x) * 180 / Math.PI + 90);
-
-  const isPolar = Math.abs(pitchCenter) > 55;
-  const latPadDeg = (V_FOV_DEG / 2) * 1.5;
-  const hFovDeg = hFovRad * 180 / Math.PI;
-  const lonPadDeg = isPolar ? 180 : Math.min(179, (hFovDeg / 2) * 1.4 / Math.max(0.2, Math.cos(degToRad(Math.min(80, Math.abs(pitchCenter))))));
-
-  const pyA = ((90 - (pitchCenter + latPadDeg)) / 180) * ACC_H;
-  const pyB = ((90 - (pitchCenter - latPadDeg)) / 180) * ACC_H;
-  const pyMin = Math.max(0, Math.floor(Math.min(pyA, pyB)));
-  const pyMax = Math.min(ACC_H - 1, Math.ceil(Math.max(pyA, pyB)));
-
-  const pxCenterF = (yawCenter / 360) * ACC_W;
-  const pxSpan = isPolar ? ACC_W : (lonPadDeg / 360) * ACC_W * 2;
-  const pxMin = Math.round(pxCenterF - pxSpan / 2);
-  const pxMax = Math.round(pxCenterF + pxSpan / 2);
-
-  const srcCtx = photoCanvas.getContext("2d");
-  const srcData = srcCtx.getImageData(0, 0, srcW, srcH).data;
-
-  const fX=forward.x, fY=forward.y, fZ=forward.z;
-  const rX=right.x, rY=right.y, rZ=right.z;
-  const uX=up.x, uY=up.y, uZ=up.z;
-
-  for(let py = pyMin; py <= pyMax; py++){
-    const pitchD = 90 - (py / ACC_H) * 180;
-    const phi = degToRad(90 - pitchD);
-    const sinPhi = Math.sin(phi), cosPhi = Math.cos(phi);
-    const dy = cosPhi;
-    const rowBase = py * ACC_W;
-
-    for(let pxRaw = pxMin; pxRaw <= pxMax; pxRaw++){
-      const yawD = (pxRaw / ACC_W) * 360;
-      const theta = degToRad(yawD - 90);
-      const dx = sinPhi * Math.cos(theta);
-      const dz = sinPhi * Math.sin(theta);
-
-      const zLocal = dx*fX + dy*fY + dz*fZ;
-      if(zLocal <= 0.08) continue;
-      const xLocal = dx*rX + dy*rY + dz*rZ;
-      const yLocal = dx*uX + dy*uY + dz*uZ;
-
-      const ndcX = xLocal / zLocal;
-      const ndcY = yLocal / zLocal;
-      if(ndcX < -halfW || ndcX > halfW || ndcY < -halfH || ndcY > halfH) continue;
-
-      const rXn = ndcX / halfW, rYn = ndcY / halfH;
-      const r2 = rXn*rXn + rYn*rYn;
-      let weight = 1 - Math.sqrt(r2 * 0.5);
-      if(weight < 0.02) continue;
-      weight *= weight;
-
-      const u = 0.5 + ndcX / (2 * halfW);
-      const v = 0.5 - ndcY / (2 * halfH);
-      const sx = Math.min(srcW - 1, Math.max(0, Math.round(u * srcW)));
-      const sy = Math.min(srcH - 1, Math.max(0, Math.round(v * srcH)));
-      const sIdx = (sy * srcW + sx) * 4;
-
-      const px = ((pxRaw % ACC_W) + ACC_W) % ACC_W;
-      const dIdx = rowBase + px;
-
-      acc.r[dIdx] += srcData[sIdx] * weight;
-      acc.g[dIdx] += srcData[sIdx+1] * weight;
-      acc.b[dIdx] += srcData[sIdx+2] * weight;
-      acc.w[dIdx] += weight;
-    }
-  }
-}
-
-function normalizeAccumulatorToCanvas(){
-  const acc = state.acc;
-  const n = ACC_W * ACC_H;
-  const out = new Uint8ClampedArray(n * 4);
-  for(let i = 0; i < n; i++){
-    const w = acc.w[i];
-    const o = i * 4;
-    if(w > 0.05){
-      out[o]   = acc.r[i] / w;
-      out[o+1] = acc.g[i] / w;
-      out[o+2] = acc.b[i] / w;
-      out[o+3] = 255;
-    } else {
-      out[o] = 16; out[o+1] = 16; out[o+2] = 18; out[o+3] = 255;
-    }
-  }
-  const canvas = document.createElement("canvas");
-  canvas.width = ACC_W; canvas.height = ACC_H;
-  canvas.getContext("2d").putImageData(new ImageData(out, ACC_W, ACC_H), 0, 0);
-  return canvas;
-}
-
-function finishCapture(){
-  state.running = false;
-  state.captureBusy = false;
-  $("#qualityPill").textContent = "Panorama HD prêt !";
-  $("#qualityPill").className = "pill ok";
-  $("#guidance").textContent = `✓ SCAN ${TOTAL_PHOTOS} POINTS TERMINÉ`;
-  stopCamera();
-  if(!state.acc) return;
-
-  $("#captureScreen").classList.add("hidden");
-  $("#viewer").classList.remove("hidden");
-  $("#processing").classList.remove("hidden");
-
-  setTimeout(() => {
-    const panoCanvas = normalizeAccumulatorToCanvas();
-    state.acc = null;
-    const data = panoCanvas.toDataURL("image/jpeg", 0.92);
-    state.scenes.push({
-      name: `Visite HD ${state.scenes.length + 1}`,
-      count: TOTAL_PHOTOS,
-      date: new Date().toLocaleDateString("fr-FR"),
-      panoDataUrl: data
-    });
-    renderSceneList();
-    $("#processing").classList.add("hidden");
-    openViewerWithCanvas(panoCanvas);
-  }, 50);
-}
-
-// ---------- Restart ----------
-async function restart360(){
-  if(!confirm("Effacer ce scan et recommencer ?")) return;
-  stopCamera();
-  resetCaptureState();
-  $("#viewer").classList.add("hidden");
-  $("#captureScreen").classList.remove("hidden");
-  $("#permission").classList.remove("hidden");
-  renderMinimap();
-}
-
-// ---------- Viewer panorama (Three.js) ----------
-function openScene(i){
-  const s = state.scenes[i];
-  if(!s) return;
-  const img = new Image();
-  img.onload = () => {
-    setMode("360");
-    $("#captureScreen").classList.add("hidden");
-    $("#viewer").classList.remove("hidden");
-    if(state.viewer) state.viewer.destroy();
-    state.viewer = new ThreePanoViewer($("#viewerContainer"), img);
-    state.viewer.currentDataUrl = s.panoDataUrl;
   };
-  img.src = s.panoDataUrl;
+  worker.onerror = (e) => {
+    state.busy = false;
+    toast("Erreur interne du moteur de traitement : " + e.message);
+    showImportScreen();
+  };
+  state.worker = worker;
 }
 
-function openViewerWithCanvas(sourceCanvas){
-  $("#captureScreen").classList.add("hidden");
-  $("#viewer").classList.remove("hidden");
-  if(state.viewer) state.viewer.destroy();
-  state.viewer = new ThreePanoViewer($("#viewerContainer"), sourceCanvas);
-  state.viewer.currentDataUrl = sourceCanvas.toDataURL("image/jpeg", 0.92);
+// ---------- Import / galerie ----------
+function addFiles(fileList) {
+  const files = Array.from(fileList).filter(f => /^image\/(jpeg|png)$/.test(f.type));
+  if (!files.length) return;
+  files.forEach(file => {
+    state.images.push({ id: crypto.randomUUID(), file, url: URL.createObjectURL(file) });
+  });
+  renderGallery();
 }
 
-function closeViewer(){
-  if(state.viewer){ state.viewer.destroy(); state.viewer = null; }
-  $("#viewer").classList.add("hidden");
-  $("#captureScreen").classList.remove("hidden");
-  setMode("2d");
+function renderGallery() {
+  const section = $("#gallerySection");
+  const grid = $("#thumbGrid");
+  section.classList.toggle("hidden", state.images.length === 0);
+  $("#photoCount").textContent = state.images.length;
+  grid.innerHTML = "";
+
+  state.images.forEach((img, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "thumb-wrap relative rounded-lg overflow-hidden border border-line aspect-square bg-[#111417] fade-in";
+    wrap.innerHTML = `
+      <img src="${img.url}" class="w-full h-full object-cover" draggable="false">
+      <span class="absolute left-1.5 bottom-1.5 text-[10px] font-semibold bg-black/70 rounded px-1.5 py-0.5">${i + 1}</span>
+      <button data-act="remove" class="thumb-remove absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 text-[13px] leading-none hover:bg-red-600/80">✕</button>
+      <div class="thumb-remove absolute top-1.5 left-1.5 flex flex-col gap-1">
+        <button data-act="up" class="w-6 h-6 rounded bg-black/70 text-[11px] hover:bg-black/90 ${i === 0 ? "opacity-30 pointer-events-none" : ""}">↑</button>
+        <button data-act="down" class="w-6 h-6 rounded bg-black/70 text-[11px] hover:bg-black/90 ${i === state.images.length - 1 ? "opacity-30 pointer-events-none" : ""}">↓</button>
+      </div>`;
+    wrap.querySelector('[data-act="remove"]').onclick = () => { URL.revokeObjectURL(img.url); state.images.splice(i, 1); renderGallery(); };
+    wrap.querySelector('[data-act="up"]').onclick = () => { [state.images[i - 1], state.images[i]] = [state.images[i], state.images[i - 1]]; renderGallery(); };
+    wrap.querySelector('[data-act="down"]').onclick = () => { [state.images[i + 1], state.images[i]] = [state.images[i], state.images[i + 1]]; renderGallery(); };
+    grid.appendChild(wrap);
+  });
+
+  updateStitchButton();
 }
 
-function downloadCurrentPano(){
-  if(!state.viewer || !state.viewer.currentDataUrl){ toast("Aucun panorama à télécharger."); return; }
-  const a = document.createElement("a");
-  a.href = state.viewer.currentDataUrl;
-  a.download = `panorama-360-${Date.now()}.jpg`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
+function updateStitchButton() {
+  $("#stitchBtn").disabled = !(state.engineReady && state.images.length >= 2 && !state.busy);
 }
 
-class ThreePanoViewer {
-  constructor(container, imageSource){
+// ---------- Lancement de l'assemblage ----------
+async function startStitch() {
+  if (state.busy) return;
+  state.busy = true;
+  showStitchScreen();
+
+  const maxDim = parseInt($("#qualitySelect").value, 10);
+  const maxCanvasArea = 4000 * 2200; // plafond mémoire raisonnable pour tous les appareils
+
+  const files = await Promise.all(state.images.map(async (img) => ({
+    buffer: await img.file.arrayBuffer(),
+    mime: img.file.type,
+  })));
+
+  const transferList = files.map(f => f.buffer);
+  state.worker.postMessage({ type: "stitch", files, maxDim, maxCanvasArea }, transferList);
+}
+
+function onStitchResult(buffer, width, height) {
+  state.busy = false;
+  const canvas = document.createElement("canvas");
+  canvas.width = width; canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  ctx.putImageData(new ImageData(new Uint8ClampedArray(buffer), width, height), 0, 0);
+  state.resultCanvas = canvas;
+  showViewerScreen(canvas);
+}
+
+// ---------- Écrans ----------
+function showImportScreen() {
+  $("#screenImport").classList.remove("hidden");
+  $("#screenStitch").classList.add("hidden");
+  $("#screenViewer").classList.add("hidden");
+  setStep("import");
+}
+function showStitchScreen() {
+  $("#screenImport").classList.add("hidden");
+  $("#screenStitch").classList.remove("hidden");
+  $("#screenViewer").classList.add("hidden");
+  $("#stitchBar").style.width = "0%";
+  $("#stitchPct").textContent = "0%";
+  $("#stitchLabel").textContent = "Préparation des images";
+  setStep("stitch");
+}
+function showViewerScreen(canvas) {
+  $("#screenImport").classList.add("hidden");
+  $("#screenStitch").classList.add("hidden");
+  $("#screenViewer").classList.remove("hidden");
+  setStep("view");
+  if (state.viewer) state.viewer.destroy();
+  state.viewer = new PanoramaViewer($("#viewerCanvasHost"), canvas);
+}
+
+// ---------- Téléchargement ----------
+function downloadPanorama() {
+  if (!state.resultCanvas) return;
+  state.resultCanvas.toBlob((blob) => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `panorama-360-${Date.now()}.jpg`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }, "image/jpeg", 0.93);
+}
+
+// ---------- Viewer 360° (Three.js) : sphère équirectangulaire, glisser-déposer + zoom fluides ----------
+class PanoramaViewer {
+  constructor(container, sourceCanvas) {
     this.container = container;
-    this.isUserInteracting = false;
-    this.onPointerDownPointerX = 0;
-    this.onPointerDownPointerY = 0;
-    this.lon = 0; this.onPointerDownLon = 0;
-    this.lat = 0; this.onPointerDownLat = 0;
-    this.phi = 0; this.theta = 0;
     this.fov = 75;
+    this.lon = 0; this.lat = 0;
+    this.targetLon = 0; this.targetLat = 0; // valeurs "cible" : lissées vers lon/lat à chaque frame pour un mouvement doux
+    this.dragging = false;
+    this.pointers = new Map();
+    this.pinchStartDist = 0;
+    this.pinchStartFov = this.fov;
 
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(this.fov, container.clientWidth / container.clientHeight, 1, 1100);
 
-    const geometry = new THREE.SphereGeometry(500, 64, 40);
+    const geometry = new THREE.SphereGeometry(500, 60, 40);
     geometry.scale(-1, 1, 1);
-
-    let texture;
-    if(imageSource instanceof HTMLCanvasElement){
-      texture = new THREE.CanvasTexture(imageSource);
-    } else if(imageSource instanceof HTMLImageElement){
-      texture = new THREE.Texture(imageSource);
-      texture.needsUpdate = true;
-    } else {
-      texture = new THREE.TextureLoader().load(imageSource);
-    }
-    texture.generateMipmaps = true;
-    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    const texture = new THREE.CanvasTexture(sourceCanvas);
+    texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.LinearFilter;
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
-    if(renderer.capabilities.getMaxAnisotropy){ texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); }
-
     const material = new THREE.MeshBasicMaterial({ map: texture });
-    const mesh = new THREE.Mesh(geometry, material);
-    this.scene.add(mesh);
+    this.mesh = new THREE.Mesh(geometry, material);
+    this.scene.add(this.mesh);
 
-    this.renderer = renderer;
+    this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.setSize(container.clientWidth, container.clientHeight);
+    container.innerHTML = "";
     container.appendChild(this.renderer.domElement);
 
-    this.onWindowResize = this.onWindowResize.bind(this);
-    this.onPointerDown = this.onPointerDown.bind(this);
-    this.onPointerMove = this.onPointerMove.bind(this);
-    this.onPointerUp = this.onPointerUp.bind(this);
-    this.onWheel = this.onWheel.bind(this);
+    this._onResize = this.onResize.bind(this);
+    this._onDown = this.onPointerDown.bind(this);
+    this._onMove = this.onPointerMove.bind(this);
+    this._onUp = this.onPointerUp.bind(this);
+    this._onWheel = this.onWheel.bind(this);
 
-    window.addEventListener("resize", this.onWindowResize);
-    container.addEventListener("pointerdown", this.onPointerDown);
-    window.addEventListener("pointermove", this.onPointerMove);
-    window.addEventListener("pointerup", this.onPointerUp);
-    container.addEventListener("wheel", this.onWheel, { passive: false });
+    window.addEventListener("resize", this._onResize);
+    container.addEventListener("pointerdown", this._onDown);
+    window.addEventListener("pointermove", this._onMove);
+    window.addEventListener("pointerup", this._onUp);
+    window.addEventListener("pointercancel", this._onUp);
+    container.addEventListener("wheel", this._onWheel, { passive: false });
 
-    this.animate = this.animate.bind(this);
-    this.raf = requestAnimationFrame(this.animate);
+    this._raf = requestAnimationFrame(this.animate.bind(this));
   }
 
-  onWindowResize(){
-    if(!this.container) return;
+  onResize() {
     this.camera.aspect = this.container.clientWidth / this.container.clientHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
   }
-  onPointerDown(event){
-    this.isUserInteracting = true;
-    this.onPointerDownPointerX = event.clientX;
-    this.onPointerDownPointerY = event.clientY;
-    this.onPointerDownLon = this.lon;
-    this.onPointerDownLat = this.lat;
+
+  onPointerDown(e) {
+    this.container.setPointerCapture(e.pointerId);
+    this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (this.pointers.size === 1) {
+      this.dragging = true;
+      this.lastX = e.clientX; this.lastY = e.clientY;
+    } else if (this.pointers.size === 2) {
+      this.dragging = false;
+      const pts = Array.from(this.pointers.values());
+      this.pinchStartDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+      this.pinchStartFov = this.fov;
+    }
   }
-  onPointerMove(event){
-    if(!this.isUserInteracting) return;
-    this.lon = (this.onPointerDownPointerX - event.clientX) * 0.12 + this.onPointerDownLon;
-    this.lat = (event.clientY - this.onPointerDownPointerY) * 0.12 + this.onPointerDownLat;
+
+  onPointerMove(e) {
+    if (!this.pointers.has(e.pointerId)) return;
+    this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (this.pointers.size === 2) {
+      const pts = Array.from(this.pointers.values());
+      const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+      if (this.pinchStartDist > 0) {
+        const ratio = this.pinchStartDist / Math.max(1, dist);
+        this.fov = clamp(this.pinchStartFov * ratio, 30, 100);
+        this.camera.fov = this.fov;
+        this.camera.updateProjectionMatrix();
+      }
+      return;
+    }
+
+    if (this.dragging && this.pointers.size === 1) {
+      const dx = e.clientX - this.lastX;
+      const dy = e.clientY - this.lastY;
+      this.lastX = e.clientX; this.lastY = e.clientY;
+      this.targetLon -= dx * 0.18;
+      this.targetLat += dy * 0.18;
+      this.targetLat = clamp(this.targetLat, -85, 85);
+    }
   }
-  onPointerUp(){ this.isUserInteracting = false; }
-  onWheel(event){
-    event.preventDefault();
-    this.fov = Math.max(30, Math.min(90, this.fov + event.deltaY * 0.05));
+
+  onPointerUp(e) {
+    this.pointers.delete(e.pointerId);
+    if (this.pointers.size === 0) this.dragging = false;
+    if (this.pointers.size < 2) this.pinchStartDist = 0;
+  }
+
+  onWheel(e) {
+    e.preventDefault();
+    this.fov = clamp(this.fov + e.deltaY * 0.05, 30, 100);
     this.camera.fov = this.fov;
     this.camera.updateProjectionMatrix();
   }
-  animate(){
-    this.raf = requestAnimationFrame(this.animate);
-    this.lat = Math.max(-85, Math.min(85, this.lat));
-    this.phi = THREE.MathUtils.degToRad(90 - this.lat);
-    this.theta = THREE.MathUtils.degToRad(this.lon);
-    const x = 500 * Math.sin(this.phi) * Math.cos(this.theta);
-    const y = 500 * Math.cos(this.phi);
-    const z = 500 * Math.sin(this.phi) * Math.sin(this.theta);
-    this.camera.lookAt(x, y, z);
+
+  animate() {
+    this._raf = requestAnimationFrame(this.animate.bind(this));
+    // Lissage exponentiel : la caméra "rattrape" la cible en douceur, ce qui évite tout à-coup
+    this.lon += (this.targetLon - this.lon) * 0.15;
+    this.lat += (this.targetLat - this.lat) * 0.15;
+
+    const phi = THREE.MathUtils.degToRad(90 - this.lat);
+    const theta = THREE.MathUtils.degToRad(this.lon);
+    const target = new THREE.Vector3(
+      500 * Math.sin(phi) * Math.cos(theta),
+      500 * Math.cos(phi),
+      500 * Math.sin(phi) * Math.sin(theta)
+    );
+    this.camera.lookAt(target);
     this.renderer.render(this.scene, this.camera);
   }
-  destroy(){
-    window.removeEventListener("resize", this.onWindowResize);
-    if(this.container){
-      this.container.removeEventListener("pointerdown", this.onPointerDown);
-      this.container.removeEventListener("wheel", this.onWheel);
-      this.container.innerHTML = "";
-    }
-    window.removeEventListener("pointermove", this.onPointerMove);
-    window.removeEventListener("pointerup", this.onPointerUp);
-    cancelAnimationFrame(this.raf);
-    if(this.renderer){ this.renderer.dispose(); }
+
+  destroy() {
+    cancelAnimationFrame(this._raf);
+    window.removeEventListener("resize", this._onResize);
+    window.removeEventListener("pointermove", this._onMove);
+    window.removeEventListener("pointerup", this._onUp);
+    window.removeEventListener("pointercancel", this._onUp);
+    this.container.removeEventListener("pointerdown", this._onDown);
+    this.container.removeEventListener("wheel", this._onWheel);
+    this.mesh.geometry.dispose();
+    this.mesh.material.map.dispose();
+    this.mesh.material.dispose();
+    this.renderer.dispose();
+    this.container.innerHTML = "";
   }
 }
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+// ---------- Écouteurs globaux ----------
+document.addEventListener("DOMContentLoaded", () => {
+  initWorker();
+
+  const dz = $("#dropzone");
+  const fileInput = $("#fileInput");
+  $("#browseBtn").addEventListener("click", () => fileInput.click());
+  dz.addEventListener("click", (e) => { if (e.target.id !== "browseBtn") fileInput.click(); });
+  fileInput.addEventListener("change", (e) => { addFiles(e.target.files); fileInput.value = ""; });
+
+  ["dragenter", "dragover"].forEach(evt => dz.addEventListener(evt, (e) => { e.preventDefault(); dz.classList.add("drag-over"); }));
+  ["dragleave", "drop"].forEach(evt => dz.addEventListener(evt, (e) => { e.preventDefault(); dz.classList.remove("drag-over"); }));
+  dz.addEventListener("drop", (e) => { if (e.dataTransfer?.files?.length) addFiles(e.dataTransfer.files); });
+
+  $("#clearAllBtn").addEventListener("click", () => {
+    state.images.forEach(img => URL.revokeObjectURL(img.url));
+    state.images = [];
+    renderGallery();
+  });
+
+  $("#stitchBtn").addEventListener("click", startStitch);
+  $("#cancelStitchBtn").addEventListener("click", () => {
+    // On ne peut pas interrompre le worker au milieu d'un calcul WASM proprement : on le
+    // recrée pour repartir sur une base saine plutôt que de laisser un calcul fantôme tourner.
+    state.worker.terminate();
+    state.busy = false;
+    state.engineReady = false;
+    $("#engineDot").classList.add("animate-pulse", "bg-[#555b63]");
+    $("#engineDot").classList.remove("bg-[#22c55e]");
+    $("#engineStatusText").textContent = "Rechargement du moteur de traitement d'image…";
+    initWorker();
+    showImportScreen();
+  });
+
+  $("#downloadBtn").addEventListener("click", downloadPanorama);
+  $("#newScanBtn").addEventListener("click", () => {
+    state.images.forEach(img => URL.revokeObjectURL(img.url));
+    state.images = [];
+    renderGallery();
+    showImportScreen();
+  });
+});
 </script>
 </body>
 </html>
