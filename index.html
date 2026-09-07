@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#000000">
-  <title>Studio Visite Pro 360°</title>
+  <title>Studio Visite Pro 360° - Scan Chirurgical</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
     :root{ --black:#000; --bg:#050505; --panel:#0d0d0d; --line:#222; --text:#fff; --muted:#888; --green:#22c55e; --yellow:#eab308; --red:#ef4444; }
@@ -64,13 +64,13 @@
     .capture-tools{display:flex;gap:6px;pointer-events:auto}
     .capture-tools button{border:1px solid #444;background:#000c;color:#fff;border-radius:8px;padding:7px 10px;font-size:12px}
     
-    /* --- GRAND CADRE PLEIN ÉCRAN (Style ton dessin vert) --- */
+    /* --- CADRE PLEIN ÉCRAN (Prend toute la largeur) --- */
     .fullscreen-frame {
       position: absolute;
-      inset: 60px 16px 120px 16px;
-      border: 3px dashed rgba(34, 197, 94, 0.75);
+      inset: 60px 16px 140px 16px;
+      border: 3px dashed rgba(34, 197, 94, 0.7);
       border-radius: 20px;
-      box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.1);
+      box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.15);
       z-index: 4;
       pointer-events: none;
       transition: border-color .2s, background-color .2s;
@@ -78,28 +78,49 @@
     .fullscreen-frame.ready {
       border-color: var(--green);
       border-style: solid;
-      background: rgba(34, 197, 94, 0.12);
+      background: rgba(34, 197, 94, 0.15);
     }
 
-    .center-dot{position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px #0009;z-index:5;pointer-events:none}
-    .edge-arrow{position:absolute;z-index:4;width:42px;height:42px;margin:-21px;color:#fff;filter:drop-shadow(0 1px 3px #000);pointer-events:none}
-    .edge-arrow svg{width:100%;height:100%}
+    .center-dot{position:absolute;left:50%;top:50%;width:12px;height:12px;margin:-6px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px #000c;z-index:5;pointer-events:none}
     
-    .guidance-wrap{position:absolute;left:50%;bottom:135px;transform:translateX(-50%);z-index:6}
+    /* Grosses flèches directionnelles d'aide */
+    .big-arrow {
+      position: absolute;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 54px;
+      color: var(--yellow);
+      filter: drop-shadow(0 2px 6px #000);
+      z-index: 6;
+      pointer-events: none;
+      animation: bounceArrow 0.8s infinite alternate ease-in-out;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .big-arrow.show { opacity: 1; }
+    @keyframes bounceArrow {
+      from { transform: translate(-50%, -50%) scale(1); }
+      to { transform: translate(-50%, -50%) scale(1.2); }
+    }
+
+    .guidance-wrap{position:absolute;left:50%;bottom:155px;transform:translateX(-50%);z-index:6}
     .guidance{background:#000a;border:1px solid #333;padding:6px 16px;border-radius:99px;font-size:12px;font-weight:800;white-space:nowrap}
     .guidance.ready{color:var(--green);border-color:#166534}
     
-    .minimap{position:absolute;bottom:185px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:4px;background:rgba(10,10,12,0.85);border:1px solid #333;padding:8px 10px;border-radius:12px;pointer-events:none;z-index:6;backdrop-filter:blur(8px)}
-    .mini-row{display:flex;gap:5px;justify-content:center;align-items:center}
-    .mini-dot{width:11px;height:11px;border-radius:50%;background:#222;border:1px solid #444;transition:all .2s}
-    .mini-dot.active{border-color:var(--yellow);background:#422006;transform:scale(1.3);box-shadow:0 0 8px var(--yellow)}
-    .mini-dot.done{border-color:var(--green);background:var(--green)}
+    /* --- MINI-CARTE / MOSAÏQUE PROGRESSIVE AVEC VIGNETTES --- */
+    .minimap{position:absolute;bottom:200px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:4px;background:rgba(10,10,12,0.9);border:1px solid #333;padding:6px 10px;border-radius:12px;pointer-events:none;z-index:6;backdrop-filter:blur(8px)}
+    .mini-row{display:flex;gap:4px;justify-content:center;align-items:center}
+    .mini-tile{width:18px;height:18px;border-radius:4px;background:#1a1a1f;border:1px solid #333;overflow:hidden;position:relative;transition:all .2s}
+    .mini-tile img { width: 100%; height: 100%; object-fit: cover; }
+    .mini-tile.active{border-color:var(--yellow);transform:scale(1.25);box-shadow:0 0 8px var(--yellow)}
+    .mini-tile.done{border-color:var(--green);background:var(--green)}
     
     .shutter-zone{position:absolute;left:0;right:0;bottom:max(16px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:8px;z-index:7}
     .status-row{display:flex;align-items:center;justify-content:center;gap:6px;pointer-events:none}
     .pill{background:#000c;border:1px solid #333;padding:4px 10px;border-radius:99px;font-size:11px;color:#ddd}
     .pill.ok{color:var(--green);border-color:#166534;background:#052e16cc}
     .pill.bad{color:var(--red);border-color:#7f1d1d;background:#450a0acc}
+    
     .shutter-wrap{position:relative;width:72px;height:72px;pointer-events:auto}
     .shutter-progress{position:absolute;inset:0;transform:rotate(-90deg)}
     .shutter-progress circle{fill:none;stroke-width:5}
@@ -121,10 +142,6 @@
     @keyframes spin{to{transform:rotate(360deg)}}
     .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#111;border:1px solid #333;color:#fff;padding:10px 16px;border-radius:10px;font-size:12px;z-index:200;opacity:0;pointer-events:none;transition:opacity .25s}
     .toast.show{opacity:1}
-    @media(max-width:768px){
-      .workspace{grid-template-columns:1fr;grid-template-rows:auto 1fr}
-      .sidebar{border-right:none;border-bottom:1px solid var(--line);max-height:26vh}
-    }
   </style>
 </head>
 <body>
@@ -152,9 +169,9 @@
           <div class="capture" id="captureScreen">
             <div class="permission" id="permission">
               <div class="permission-card">
-                <div class="big-icon">📱</div>
-                <h1>Scan 360° Séquentiel</h1>
-                <p>Le cadre plein écran vert délimite votre capture. Suivez l'ordre : Tour 360° des murs, puis les hauteurs (plafonds), puis les sols.</p>
+                <div class="big-icon">📐</div>
+                <h1>Scan Chirurgical Zéro Superposition</h1>
+                <p>Suivez l'ordre rigoureux : Tour 360° des murs, puis les Hauteurs (Plafond), puis les Sols. Le viseur magnétique verrouille automatiquement chaque case.</p>
                 <button class="primary" id="start360" style="margin-top:16px">Démarrer le Scan</button>
                 <div class="err" id="permError"></div>
               </div>
@@ -175,22 +192,20 @@
               </div>
               <div class="center-dot"></div>
               <div class="fullscreen-frame" id="fullscreenFrame"></div>
-              <div class="edge-arrow hidden" id="edgeArrow">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M12 4 L20 14 L14 14 L14 20 L10 20 L10 14 L4 14 Z" fill="currentColor"/></svg>
-              </div>
-              <div class="guidance-wrap"><div class="guidance" id="guidance">Tournez pour aligner...</div></div>
+              <div class="big-arrow" id="bigArrow">⬆️</div>
+              <div class="guidance-wrap"><div class="guidance" id="guidance">Alignez la cible...</div></div>
               <div class="minimap" id="minimap"></div>
               <div class="shutter-zone">
                 <div class="status-row">
-                  <span class="pill" id="counter">Point 0 / 22</span>
-                  <span class="pill bad" id="qualityPill">Alignement requis</span>
+                  <span class="pill" id="counter">0% (0 / 22)</span>
+                  <span class="pill bad" id="qualityPill">Recherche cible</span>
                 </div>
                 <div class="shutter-wrap">
                   <svg class="shutter-progress" viewBox="0 0 100 100">
                     <circle class="bg" cx="50" cy="50" r="38"></circle>
                     <circle class="fg" id="shutterRing" cx="50" cy="50" r="38" stroke-dasharray="238.7" stroke-dashoffset="238.7"></circle>
                   </svg>
-                  <button class="shutter-btn" id="shutterBtn" aria-label="Capturer la photo"></button>
+                  <button class="shutter-btn" id="shutterBtn" aria-label="Capturer"></button>
                 </div>
               </div>
             </div>
@@ -198,8 +213,8 @@
           <div class="viewer hidden" id="viewer">
             <div id="viewerContainer"></div>
             <div class="viewer-ui">
-              <h2>Panorama 360° Haute Définition</h2>
-              <p>Glissez pour explorer · pincer pour zoomer</p>
+              <h2>Panorama 360° Assemblé</h2>
+              <p>Glissez pour explorer · 0% de superposition</p>
             </div>
             <div class="viewer-actions">
               <button id="downloadPano">Télécharger</button>
@@ -207,7 +222,7 @@
             </div>
             <div class="processing hidden" id="processing">
               <div class="spinner"></div>
-              <div id="processingLabel">Assemblage sphérique en cours...</div>
+              <div id="processingLabel">Assemblage de la sphère...</div>
             </div>
           </div>
         </section>
@@ -220,12 +235,12 @@
   <script>
     "use strict";
     const TOTAL_PHOTOS = 22;
-    const ALIGN_ENTER_DEG = 10;
-    const ALIGN_EXIT_DEG  = 16;
-    const HOLD_MS = 800;
+    const ALIGN_ENTER_DEG = 12;
+    const ALIGN_EXIT_DEG  = 18;
+    const HOLD_MS = 600;
     const V_FOV_DEG = 60;
     const ACC_W = 3000, ACC_H = 1500;
-    const ORIENT_SMOOTH_TAU = 0.15;
+    const ORIENT_SMOOTH_TAU = 0.12;
 
     const $ = s => document.querySelector(s);
     const cameraEl = () => $("#camera");
@@ -235,7 +250,8 @@
       initQuat: null, currentQuat: null, hasOrientation: false, lastOrientTime: 0,
       step: 0, targets: [], acc: null, photoCount: 0, viewer: null,
       projectName: "Visite 360° HD", scenes: [], gallery: [], captureBusy: false,
-      locked: false, stableSince: 0, lastAlignedTime: 0, lastAutoCapture: 0, raf: null
+      locked: false, stableSince: 0, lastAlignedTime: 0, lastAutoCapture: 0, raf: null,
+      thumbnails: {} // Stocke les vignettes par étape
     };
 
     function degToRad(d){ return d * Math.PI / 180; }
@@ -299,7 +315,7 @@
           <div class="empty-2d">
             <div style="font-size:36px;margin-bottom:8px">📸</div>
             <h2>Photos 2D</h2>
-            <p>Importez vos images ou lancez le mode 360° pour un scan guidé complet.</p>
+            <p>Importez vos images ou lancez le mode 360° pour un scan chirurgical complet.</p>
             <button class="primary" id="import2d" style="max-width:240px;margin-top:14px">Importer des photos</button>
           </div>`;
         $("#import2d").addEventListener("click", () => $("#photoInput").click());
@@ -343,15 +359,12 @@
       });
     }
 
-    // Ordre strict demandé : 1. Tour 360° (8 pts) -> 2. Hauteurs/Plafond (7 pts) -> 3. Sol (7 pts) = 22 pts
+    // Grille 22 points : 8 murs, 7 hauteurs/plafond, 7 sols
     function buildTargets(){
       const targets = [];
-      // 1. Tour 360° horizontal (yeux)
-      for(let i = 0; i < 8; i++) targets.push({ yaw: i * 45, pitch: 0, label: `360° Mur ${i+1}/8`, phase: 1 });
-      // 2. Hauteurs (Plafond & Haut des murs)
-      for(let i = 0; i < 6; i++) targets.push({ yaw: i * 60, pitch: 45, label: `Hauteur ${i+1}/6`, phase: 2 });
-      targets.push({ yaw: 0, pitch: 85, label: "Zénith (Plafond haut)", phase: 2 });
-      // 3. Sols (Bas des murs & Nadir)
+      for(let i = 0; i < 8; i++) targets.push({ yaw: i * 45, pitch: 0, label: `Mur ${i+1}/8 (360°)`, phase: 1 });
+      for(let i = 0; i < 6; i++) targets.push({ yaw: i * 60, pitch: 45, label: `Hauteur ${i+1}/6 (Plafond)`, phase: 2 });
+      targets.push({ yaw: 0, pitch: 85, label: "Zénith (Haut du Plafond)", phase: 2 });
       for(let i = 0; i < 6; i++) targets.push({ yaw: i * 60, pitch: -45, label: `Sol ${i+1}/6`, phase: 3 });
       targets.push({ yaw: 0, pitch: -85, label: "Nadir (Sol bas)", phase: 3 });
 
@@ -363,6 +376,7 @@
       return targets;
     }
 
+    // Rendu de la mini-carte en mosaïque (avec vignettes)
     function renderMinimap(){
       const map = $("#minimap");
       map.innerHTML = "";
@@ -375,11 +389,17 @@
         for(let i = 0; i < rc.count; i++){
           const idx = rc.start + i;
           if(idx >= TOTAL_PHOTOS) continue;
-          const dot = document.createElement("div");
-          dot.className = "mini-dot";
-          if(idx < state.step) dot.classList.add("done");
-          else if(idx === state.step && state.running) dot.classList.add("active");
-          rowDiv.appendChild(dot);
+          const tile = document.createElement("div");
+          tile.className = "mini-tile";
+          if(idx < state.step){
+            tile.classList.add("done");
+            if(state.thumbnails[idx]){
+              tile.innerHTML = `<img src="${state.thumbnails[idx]}">`;
+            }
+          } else if(idx === state.step && state.running){
+            tile.classList.add("active");
+          }
+          rowDiv.appendChild(tile);
         }
         map.appendChild(rowDiv);
       });
@@ -412,6 +432,7 @@
         $("#viewer").classList.add("hidden");
         state.targets = buildTargets();
         state.step = 0;
+        state.thumbnails = {};
         state.acc = createAccumulator();
         state.photoCount = 0;
         setStep(0);
@@ -494,9 +515,11 @@
       state.initQuat = null; state.currentQuat = null; state.hasOrientation = false;
       state.lastOrientTime = 0; state.targets = []; state.captureBusy = false;
       state.locked = false; state.stableSince = 0; state.lastAlignedTime = 0;
+      state.thumbnails = {};
       $("#fullscreenFrame").classList.remove("ready");
-      $("#counter").textContent = `Point 0 / ${TOTAL_PHOTOS}`;
-      $("#qualityPill").textContent = "Alignement requis";
+      const pct = Math.round((0 / TOTAL_PHOTOS) * 100);
+      $("#counter").textContent = `${pct}% (0 / ${TOTAL_PHOTOS})`;
+      $("#qualityPill").textContent = "Recherche cible";
       $("#qualityPill").className = "pill bad";
       $("#shutterBtn").classList.remove("ready");
       $("#shutterRing").style.strokeDashoffset = 238.7;
@@ -505,9 +528,10 @@
     function setStep(step){
       state.step = step;
       renderMinimap();
+      const pct = Math.round((step / TOTAL_PHOTOS) * 100);
       if(step >= TOTAL_PHOTOS){ finishCapture(); return; }
       const t = state.targets[step];
-      $("#counter").textContent = `Point ${step + 1} / ${TOTAL_PHOTOS}`;
+      $("#counter").textContent = `${pct}% (${step} / ${TOTAL_PHOTOS})`;
       $("#positionLabel").textContent = t.label;
 
       if(t.phase === 1) $("#phaseTitle").textContent = "Phase 1 : Tour 360° (Murs)";
@@ -534,10 +558,11 @@
             if(!state.stableSince) state.stableSince = now;
             $("#fullscreenFrame").classList.add("ready");
             $("#shutterBtn").classList.add("ready");
-            $("#qualityPill").textContent = "Immobile (Prêt)";
+            $("#qualityPill").textContent = "Verrouillé (Immobile)";
             $("#qualityPill").className = "pill ok";
             $("#guidance").textContent = "Parfait, maintien...";
             $("#guidance").classList.add("ready");
+            $("#bigArrow").classList.remove("show");
 
             const elapsed = now - state.stableSince;
             const ratio = Math.min(1, elapsed / HOLD_MS);
@@ -555,28 +580,47 @@
             }
             $("#fullscreenFrame").classList.remove("ready");
             $("#shutterBtn").classList.remove("ready");
-            $("#qualityPill").textContent = `Alignez (${Math.round(angleDeg)}°)`;
+            $("#qualityPill").textContent = `Cible (${Math.round(angleDeg)}°)`;
             $("#qualityPill").className = "pill bad";
-            setGuidanceText(target, state.currentQuat);
+            updateDirectionalArrow(target, state.currentQuat);
           }
         }
       }
       state.raf = requestAnimationFrame(captureLoop);
     }
 
-    function setGuidanceText(target, quat){
+    function updateDirectionalArrow(target, quat){
       const right = new THREE.Vector3(1, 0, 0).applyQuaternion(quat);
       const up = new THREE.Vector3(0, 1, 0).applyQuaternion(quat);
       const xLocal = target.dir.dot(right);
       const yLocal = target.dir.dot(up);
 
-      const parts = [];
-      if(Math.abs(yLocal) > 0.15) parts.push(yLocal > 0 ? "levez" : "baissez");
-      if(Math.abs(xLocal) > 0.15) parts.push(xLocal > 0 ? "à droite" : "à gauche");
-
+      const arrow = $("#bigArrow");
       const g = $("#guidance");
       g.classList.remove("ready");
-      g.textContent = parts.length ? `Tournez ${parts.join(" ")}` : "Dans le cadre, restez stable";
+
+      let text = "Cherchez la cible";
+      let arrowSymbol = "⬆️";
+      let showArrow = true;
+
+      if(yLocal > 0.25 && Math.abs(xLocal) < 0.3){
+        text = "Visez plus HAUT"; arrowSymbol = "⬆️";
+      } else if(yLocal < -0.25 && Math.abs(xLocal) < 0.3){
+        text = "Visez plus BAS"; arrowSymbol = "⬇️";
+      } else if(xLocal > 0.25){
+        text = "Tournez à DROITE"; arrowSymbol = "➡️";
+      } else if(xLocal < -0.25){
+        text = "Tournez à GAUCHE"; arrowSymbol = "⬅️";
+      } else {
+        showArrow = false;
+        text = "Rapprochez-vous du centre";
+      }
+
+      arrow.textContent = arrowSymbol;
+      if(showArrow) arrow.classList.add("show");
+      else arrow.classList.remove("show");
+
+      g.textContent = text;
     }
 
     function capturePhoto(){
@@ -591,7 +635,11 @@
         const w = Math.max(1, Math.round(sw * scale)), h = Math.max(1, Math.round(sh * scale));
         const cv = $("#captureCanvas");
         cv.width = w; cv.height = h;
-        cv.getContext("2d").drawImage(cam, 0, 0, w, h);
+        const ctx = cv.getContext("2d");
+        ctx.drawImage(cam, 0, 0, w, h);
+
+        // Sauvegarde de la vignette pour la mosaïque
+        state.thumbnails[state.step] = cv.toDataURL("image/jpeg", 0.5);
 
         const quatForShot = state.currentQuat ? state.currentQuat.clone() : quatFromYawPitch(state.targets[state.step]);
         reprojectPhotoIntoAccumulator(cv, quatForShot, w, h);
@@ -689,7 +737,7 @@
         renderSceneList();
         $("#processing").classList.add("hidden");
         init3DViewer(dataUrl);
-      }, 300);
+      }, 400);
     }
 
     function init3DViewer(imgUrl){
