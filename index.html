@@ -61,14 +61,21 @@
     .capture-sub{font-size:12px;color:var(--yellow);margin-top:2px;font-weight:700;text-shadow:0 1px 4px #000}
     .capture-tools{display:flex;gap:6px;pointer-events:auto}
     .capture-tools button{border:1px solid #444;background:#000c;color:#fff;border-radius:8px;padding:7px 10px;font-size:12px}
-    .aim-marker{ position:absolute;left:0;top:0;width:70px;height:70px;margin-left:-35px;margin-top:-35px;z-index:4; will-change:transform; transition:opacity .15s, transform 70ms linear; }
-    .aim-ring{position:absolute;inset:0;border-radius:50%;border:3px solid rgba(255,255,255,.8);transition:border-color .15s,transform .12s,background-color .15s}
-    .aim-ring.ready{border-color:var(--green);background:rgba(34,197,94,.25);transform:scale(1.12)}
+    
+    /* --- GRAND CADRE DE CADRAGE --- */
+    .aim-marker{ position:absolute;left:0;top:0;width:240px;height:160px;margin-left:-120px;margin-top:-80px;z-index:4; will-change:transform; transition:opacity .15s, transform 70ms linear; }
+    .aim-ring{position:absolute;inset:0;border-radius:16px;border:2px dashed rgba(255,255,255,0.7);box-shadow:0 0 0 9999px rgba(0, 0, 0, 0.25);transition:border-color .15s, transform .12s, background-color .15s, border-style .15s}
+    .aim-ring::before, .aim-ring::after { content:''; position:absolute; width:16px; height:16px; border-color:#fff; border-style:solid; }
+    .aim-ring::before { top:-2px; left:-2px; border-width:3px 0 0 3px; border-top-left-radius:14px; }
+    .aim-ring::after { bottom:-2px; right:-2px; border-width:0 3px 3px 0; border-bottom-right-radius:14px; }
+    .aim-ring.ready{border-color:var(--green); border-style:solid; background:rgba(34,197,94,.18); transform:scale(1.05);}
+    .aim-ring.ready::before, .aim-ring.ready::after { border-color:var(--green); }
     .aim-ring.locked{border-color:var(--green)}
-    .center-dot{position:absolute;left:50%;top:50%;width:7px;height:7px;margin:-3.5px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px #0009;z-index:5;pointer-events:none}
+    
+    .center-dot{position:absolute;left:50%;top:50%;width:9px;height:9px;margin:-4.5px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px #0009;z-index:5;pointer-events:none}
     .edge-arrow{position:absolute;z-index:4;width:42px;height:42px;margin:-21px;color:#fff;filter:drop-shadow(0 1px 3px #000);pointer-events:none;transition:opacity .15s, transform 70ms linear}
     .edge-arrow svg{width:100%;height:100%}
-    .guidance-wrap{position:absolute;left:50%;top:calc(50% + 64px);transform:translateX(-50%);z-index:6}
+    .guidance-wrap{position:absolute;left:50%;top:calc(50% + 105px);transform:translateX(-50%);z-index:6}
     .guidance{background:#000a;border:1px solid #333;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:800;white-space:nowrap}
     .guidance.ready{color:var(--green);border-color:#166534}
     .minimap{position:absolute;bottom:150px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:4px;background:rgba(10,10,12,0.85);border:1px solid #333;padding:8px 10px;border-radius:12px;pointer-events:none;z-index:6;backdrop-filter:blur(8px)}
@@ -105,6 +112,7 @@
     @media(max-width:768px){
       .workspace{grid-template-columns:1fr;grid-template-rows:auto 1fr}
       .sidebar{border-right:none;border-bottom:1px solid var(--line);max-height:26vh}
+      .aim-marker{ width:200px; height:140px; margin-left:-100px; margin-top:-70px; }
     }
   </style>
 </head>
@@ -135,7 +143,7 @@
               <div class="permission-card">
                 <div class="big-icon">⦿</div>
                 <h1>Scan 360° RA</h1>
-                <p>Visez avec le repère blanc du centre, puis appuyez sur le déclencheur en bas de l'écran (ou laissez-le se remplir automatiquement quand vous êtes bien aligné).</p>
+                <p>Cadrez avec le grand rectangle visuel et placez le point blanc au centre pour capturer automatiquement chaque angle de la pièce.</p>
                 <button class="primary" id="start360" style="margin-top:16px">Démarrer le Scan</button>
                 <div class="err" id="permError"></div>
               </div>
@@ -164,7 +172,7 @@
               <div class="shutter-zone">
                 <div class="status-row">
                   <span class="pill" id="counter">Point 0 / 22</span>
-                  <span class="pill bad" id="qualityPill">Cherchez le repère</span>
+                  <span class="pill bad" id="qualityPill">Cherchez le cadre</span>
                 </div>
                 <div class="shutter-wrap">
                   <svg class="shutter-progress" viewBox="0 0 100 100">
@@ -507,7 +515,7 @@
       $("#aimMarker").classList.remove("hidden");
       $("#aimRing").classList.remove("locked");
       $("#counter").textContent = `Point 0 / ${TOTAL_PHOTOS}`;
-      $("#qualityPill").textContent = "Cherchez le repère";
+      $("#qualityPill").textContent = "Cherchez le cadre";
       $("#qualityPill").className = "pill bad";
       $("#shutterBtn").classList.remove("ready");
       $("#shutterRing").style.strokeDashoffset = 276.5;
@@ -597,7 +605,7 @@
       if(zLocal > 0.12){
         const sx = w / 2 + (xLocal / zLocal) * focal;
         const sy = h / 2 - (yLocal / zLocal) * focal;
-        const margin = 50;
+        const margin = 80;
         const onScreen = sx > -margin && sx < w + margin && sy > -margin && sy < h + margin;
 
         if(onScreen){
@@ -644,7 +652,7 @@
 
       const g = $("#guidance");
       g.classList.remove("ready");
-      g.textContent = parts.length ? `Tournez ${parts.join(" ")}` : "Rapprochez-vous du centre";
+      g.textContent = parts.length ? `Tournez ${parts.join(" ")}` : "Rapprochez-vous du cadre";
     }
 
     function capturePhoto(){
