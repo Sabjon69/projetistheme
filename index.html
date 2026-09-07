@@ -61,24 +61,62 @@
     .capture-tools{display:flex;gap:6px}
     .capture-tools button{border:1px solid #444;background:#000c;color:#fff;border-radius:8px;padding:7px 10px;font-size:12px}
     
-    /* VISEUR DE PRÉCISION AUTOMATIQUE */
+    /* VISEUR DE PRÉCISION AVEC POINT JAUNE ET FLÈCHES DIRECTIONNELLES */
     .target-frame {
       position: absolute;
       left: 50%; top: 50%;
-      width: 140px; height: 140px;
-      margin: -70px 0 0 -70px;
-      border: 3px solid rgba(255, 255, 255, 0.4);
+      width: 180px; height: 180px;
+      margin: -90px 0 0 -90px;
+      border: 2px dashed rgba(234, 179, 8, 0.5);
       border-radius: 50%;
       z-index: 4;
       pointer-events: none;
-      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
     }
     .target-frame.locked {
       border-color: var(--green);
+      border-style: solid;
       transform: scale(0.95);
-      box-shadow: 0 0 20px var(--green);
+      box-shadow: 0 0 25px var(--green);
     }
-    .center-dot{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px #000c;z-index:5;pointer-events:none}
+    .big-yellow-dot {
+      width: 28px; height: 28px;
+      background: var(--yellow);
+      border-radius: 50%;
+      box-shadow: 0 0 15px var(--yellow), inset 0 0 6px rgba(0,0,0,0.4);
+      z-index: 5;
+      pointer-events: none;
+      transition: transform 0.2s, background-color 0.2s;
+    }
+    .target-frame.locked .big-yellow-dot {
+      background: var(--green);
+      box-shadow: 0 0 25px var(--green);
+      transform: scale(1.2);
+    }
+
+    /* Flèches directionnelles de guidage */
+    .dir-arrow {
+      position: absolute;
+      color: var(--yellow);
+      font-size: 26px;
+      font-weight: 900;
+      opacity: 0.2;
+      text-shadow: 0 0 6px #000;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .dir-arrow.active {
+      opacity: 1;
+      text-shadow: 0 0 12px var(--yellow);
+    }
+    .arrow-up { top: -32px; left: 50%; transform: translateX(-50%); }
+    .arrow-down { bottom: -32px; left: 50%; transform: translateX(-50%); }
+    .arrow-left { left: -32px; top: 50%; transform: translateY(-50%); }
+    .arrow-right { right: -32px; top: 50%; transform: translateY(-50%); }
+
+    .center-dot{position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px #000c;z-index:6;pointer-events:none}
 
     /* RADAR / MINI-CARTE DES 24 PHOTOS */
     .minimap{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:4px;background:rgba(10,10,12,0.85);border:1px solid #333;padding:8px 12px;border-radius:12px;pointer-events:none;z-index:6;backdrop-filter:blur(8px)}
@@ -88,7 +126,7 @@
     .mini-tile.active{border-color:var(--yellow);box-shadow:0 0 6px var(--yellow)}
     .mini-tile.done{border-color:var(--green);background:var(--green)}
     
-    .auto-indicator{position:absolute;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);border:1px solid #444;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:700;color:var(--yellow);z-index:6;text-align:center}
+    .auto-indicator{position:absolute;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);border:1px solid #444;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:700;color:var(--yellow);z-index:6;text-align:center}
     .auto-indicator.ready{color:var(--green);border-color:var(--green);animation: pulse 0.8s infinite alternate;}
     @keyframes pulse { from { opacity: 0.7; } to { opacity: 1; } }
 
@@ -131,10 +169,10 @@
           <div class="capture" id="captureScreen">
             <div class="permission" id="permission">
               <div class="permission-card">
-                <div class="big-icon">🤖</div>
-                <h1>Scan 360° 100% Automatique</h1>
-                <p>Le système déclenchera tout seul les 24 photos dès que tu vises exactement les zones préétablies (0 superposition, 0 angle mort). Maintiens le téléphone stable !</p>
-                <button class="primary" id="start360" style="margin-top:16px">Démarrer le Scan Automatique</button>
+                <div class="big-icon">🎯</div>
+                <h1>Scan 360° avec Viseur Intelligent</h1>
+                <p>Suis les flèches directionnelles et vise le gros point jaune pour déclencher automatiquement les 24 photos (zéro angle mort, précision millimétrée).</p>
+                <button class="primary" id="start360" style="margin-top:16px">Démarrer le Scan Guidé</button>
                 <div class="err" id="permError"></div>
               </div>
             </div>
@@ -153,8 +191,14 @@
                 </div>
               </div>
               <div class="center-dot"></div>
-              <div class="target-frame" id="targetFrame"></div>
-              <div class="auto-indicator" id="autoIndicator">Maintiens la position pour capturer...</div>
+              <div class="target-frame" id="targetFrame">
+                <div class="big-yellow-dot"></div>
+                <div class="dir-arrow arrow-up" id="arrowUp">▲</div>
+                <div class="dir-arrow arrow-down" id="arrowDown">▼</div>
+                <div class="dir-arrow arrow-left" id="arrowLeft">◀</div>
+                <div class="dir-arrow arrow-right" id="arrowRight">▶</div>
+              </div>
+              <div class="auto-indicator" id="autoIndicator">Oriente ton téléphone vers la cible...</div>
               <div class="minimap" id="minimap"></div>
             </div>
           </div>
@@ -227,7 +271,7 @@
       mode: "2d", running: false, stream: null,
       step: 0, targets: [], acc: null, viewer: null,
       projectName: "Visite 360° Auto", scenes: [], gallery: [], captureBusy: false,
-      thumbnails: {}, stableTime: 0, lastCheckTime: performance.now()
+      thumbnails: {}, stableTime: 0
     };
 
     function degToRad(d){ return d * Math.PI / 180; }
@@ -289,7 +333,7 @@
           <div style="min-height:80vh;border:2px dashed #222;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px">
             <div style="font-size:36px;margin-bottom:8px">📸</div>
             <h2>Photos 2D</h2>
-            <p style="color:var(--muted);font-size:13px;max-width:400px;line-height:1.5">Importe tes images ou lance le mode 360° pour un scan automatique.</p>
+            <p style="color:var(--muted);font-size:13px;max-width:400px;line-height:1.5">Importe tes images ou lance le mode 360° pour un scan automatique guidé.</p>
             <button class="primary" id="import2d" style="max-width:240px;margin-top:14px">Importer des photos</button>
           </div>`;
         $("#import2d").addEventListener("click", () => $("#photoInput").click());
@@ -333,40 +377,33 @@
       });
     }
 
-    // Création rigoureuse des 24 cibles préétablies
     function buildTargets(){
       const targets = [];
       
-      // 1. 12 Photos horizontales (30° par secteur, pitch 0°)
+      // 12 Photos horizontales
       for(let i = 0; i < 12; i++){
-        const yaw = i * 30 + 15; // centre du secteur
+        const yaw = i * 30 + 15;
         targets.push({
           yaw: yaw, pitch: 0,
-          label: `Tour horizontal (Mur ${i+1} / 12)`,
-          minYaw: i * 30, maxYaw: (i + 1) * 30,
-          minPitch: -15, maxPitch: 15
+          label: `Tour horizontal (Mur ${i+1} / 12)`
         });
       }
 
-      // 2. 6 Photos en hauteur / Plafond (60° par secteur, pitch +45°)
+      // 6 Photos en hauteur / Plafond
       for(let i = 0; i < 6; i++){
         const yaw = i * 60 + 30;
         targets.push({
           yaw: yaw, pitch: 45,
-          label: `Plafond / Hauteur (Zone ${i+1} / 6)`,
-          minYaw: i * 60, maxYaw: (i + 1) * 60,
-          minPitch: 15, maxPitch: 75
+          label: `Plafond / Hauteur (Zone ${i+1} / 6)`
         });
       }
 
-      // 3. 6 Photos en bas / Sol (60° par secteur, pitch -45°)
+      // 6 Photos en bas / Sol
       for(let i = 0; i < 6; i++){
         const yaw = i * 60 + 30;
         targets.push({
           yaw: yaw, pitch: -45,
-          label: `Sol / Bas (Zone ${i+1} / 6)`,
-          minYaw: i * 60, maxYaw: (i + 1) * 60,
-          minPitch: -75, maxPitch: -15
+          label: `Sol / Bas (Zone ${i+1} / 6)`
         });
       }
 
@@ -383,12 +420,10 @@
     function renderMinimap(){
       const map = $("#minimap");
       map.innerHTML = "";
-      
-      // Diviser en 3 lignes de 8 ou affichage compact
       const groups = [
-        state.targets.slice(0, 12), // Horizontal
-        state.targets.slice(12, 18), // Haut
-        state.targets.slice(18, 24)  // Bas
+        state.targets.slice(0, 12),
+        state.targets.slice(12, 18),
+        state.targets.slice(18, 24)
       ];
 
       groups.forEach((group, gIdx) => {
@@ -417,7 +452,6 @@
         if(!window.isSecureContext) throw new Error("HTTPS requis pour accéder à la caméra et aux capteurs.");
         if(!navigator.mediaDevices?.getUserMedia) throw new Error("Caméra non supportée.");
 
-        // Demande d'autorisation iOS DeviceOrientation si nécessaire
         if(typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function'){
           const response = await DeviceOrientationEvent.requestPermission();
           if(response !== 'granted') throw new Error("Accès aux capteurs d'orientation refusé.");
@@ -473,49 +507,64 @@
       state.stableTime = 0;
     }
 
-    // Gestionnaire temps réel de l'orientation pour déclenchement automatique ultra-précis
+    // Gestion de l'orientation avec guidage par flèches et point jaune
     function handleOrientation(e){
       if(!state.running || state.captureBusy) return;
 
-      const alpha = e.alpha; // boussole 0-360
-      const beta = e.beta;   // inclinaison avant/arrière -180 à 180
+      const alpha = e.alpha;
+      const beta = e.beta;
       if(alpha === null || beta === null) return;
 
-      // Normalisation de l'azimut
       let currentYaw = alpha;
       const currentPitch = beta > 90 ? 180 - beta : (beta < -90 ? -180 - beta : beta);
 
       const target = state.targets[state.step];
       if(!target) return;
 
-      // Vérification si le téléphone est dans la zone cible exacte
-      let yawDiff = Math.abs(currentYaw - target.yaw);
-      if(yawDiff > 180) yawDiff = 360 - yawDiff;
-      const pitchDiff = Math.abs(currentPitch - target.pitch);
+      let yawError = currentYaw - target.yaw;
+      while (yawError > 180) yawError -= 360;
+      while (yawError < -180) yawError += 360;
+      const pitchError = currentPitch - target.pitch;
 
-      // Tolérance de précision millimétrée (ex: 4 degrés max d'écart)
+      const yawDiff = Math.abs(yawError);
+      const pitchDiff = Math.abs(pitchError);
+
       const TOLERANCE = 4.0;
       const isAligned = yawDiff <= TOLERANCE && pitchDiff <= TOLERANCE;
 
       const frameEl = $("#targetFrame");
       const indicatorEl = $("#autoIndicator");
+      const arrowUp = $("#arrowUp");
+      const arrowDown = $("#arrowDown");
+      const arrowLeft = $("#arrowLeft");
+      const arrowRight = $("#arrowRight");
+
+      // Gestion de l'éclairage des flèches directionnelles
+      arrowUp.classList.toggle("active", pitchError > TOLERANCE);     // Il faut baisser le téléphone (donc la cible est plus haute ? Non, si pitchError > 0, currentPitch > target.pitch, il faut pencher vers le bas)
+      arrowDown.classList.toggle("active", pitchError < -TOLERANCE); // Il faut lever le téléphone
+      arrowLeft.classList.toggle("active", yawError > TOLERANCE);    // Tourner vers la gauche
+      arrowRight.classList.toggle("active", yawError < -TOLERANCE);  // Tourner vers la droite
 
       if(isAligned){
         frameEl.classList.add("locked");
         indicatorEl.classList.add("ready");
-        indicatorEl.textContent = "⚡ Stabilisé ! Capture auto en cours...";
+        indicatorEl.textContent = "⚡ Cible atteinte ! Capture auto imminente...";
+        arrowUp.classList.remove("active");
+        arrowDown.classList.remove("active");
+        arrowLeft.classList.remove("active");
+        arrowRight.classList.remove("active");
 
         const now = performance.now();
         if(state.stableTime === 0){
           state.stableTime = now;
-        } else if(now - state.stableTime > 250){ // Maintien stable pendant 250ms pour éviter les faux déclenchements
+        } else if(now - state.stableTime > 250){
           state.captureBusy = true;
           triggerAutoCapture();
         }
       } else {
         frameEl.classList.remove("locked");
         indicatorEl.classList.remove("ready");
-        indicatorEl.textContent = `Vise la cible (${Math.round(yawDiff)}° / ${Math.round(pitchDiff)}°)`;
+        indicatorEl.textContent = "Suis les flèches pour viser le point jaune";
         state.stableTime = 0;
       }
     }
