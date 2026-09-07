@@ -2,145 +2,127 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#000000">
-<title>Studio Visite Pro 360° - VRAIE 3D</title>
+<title>Studio Visite Pro 360°</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
-:root{ --black:#000; --bg:#050505; --panel:#0d0d0d; --line:#222; --text:#fff; --muted:#888; --green:#22c55e; --yellow:#eab308; --red:#ef4444; }
-*{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;background:#000;color:var(--text);font-family:system-ui,-apple-system,sans-serif;overflow:hidden}
+:root{
+  --black:#000; --bg:#050505; --panel:#0d0d0d; --line:#222; --text:#fff; --muted:#888;
+  --green:#22c55e; --yellow:#eab308; --red:#ef4444;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;background:#000;color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden;overscroll-behavior:none}
 button,input{font:inherit}
 button{cursor:pointer}
 .hidden{display:none!important}
+
 .app{height:100dvh;display:grid;grid-template-rows:56px 1fr;background:var(--bg)}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:#09090b;border-bottom:1px solid var(--line);z-index:30}
 .brand{font-weight:800;font-size:15px;letter-spacing:-.3px}.brand span{color:var(--yellow)}
-.tabs{display:flex;gap:4px}.tab{border:0;background:transparent;color:var(--muted);padding:8px 12px;border-radius:8px;font-weight:700;font-size:13px}.tab.active{background:#18181b;color:#fff}
+.tabs{display:flex;gap:4px}
+.tab{border:0;background:transparent;color:var(--muted);padding:8px 12px;border-radius:8px;font-weight:700;font-size:13px}
+.tab.active{background:#18181b;color:#fff}
+
 .workspace{min-height:0;display:grid;grid-template-columns:300px 1fr}
 .sidebar{background:var(--panel);border-right:1px solid var(--line);padding:16px;overflow:auto}
 .section-title{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:800;margin:4px 0 8px}
 .project-name{font-size:18px;font-weight:800;margin-bottom:12px;word-break:break-word}
 .primary{width:100%;border:0;background:#fff;color:#000;padding:12px;border-radius:10px;font-weight:800;font-size:13px}
+.primary:active{transform:scale(.98)}
+.secondary{width:100%;border:1px solid #333;background:#141417;color:#eee;padding:10px;border-radius:10px;font-weight:700;font-size:12px;margin-top:8px}
+
 .scene-list{display:flex;flex-direction:column;gap:8px;margin-top:8px}
 .scene{border:1px solid var(--line);background:#121215;border-radius:10px;padding:10px}
-.scene.active{border-color:#444}.scene-name{font-weight:700;font-size:13px}.scene-meta{font-size:11px;color:var(--muted);margin-top:3px}
-.scene-actions{display:flex;gap:6px;margin-top:8px}.scene-actions button{border:1px solid #333;background:#1a1a1e;color:#ccc;border-radius:6px;padding:5px 8px;font-size:11px}
+.scene.active{border-color:#444}
+.scene-name{font-weight:700;font-size:13px}
+.scene-meta{font-size:11px;color:var(--muted);margin-top:3px}
+.scene-actions{display:flex;gap:6px;margin-top:8px}
+.scene-actions button{border:1px solid #333;background:#1a1a1e;color:#ccc;border-radius:6px;padding:5px 8px;font-size:11px;flex:1}
+
 .main{position:relative;min-width:0;min-height:0;background:#000}
 .mode{height:100%;width:100%}
+
 .mode-2d{padding:24px;overflow:auto;background:#050505}
 .empty-2d{min-height:100%;border:2px dashed #222;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
-.empty-2d h2{margin:0 0 6px;font-size:18px}.empty-2d p{max-width:500px;color:var(--muted);font-size:13px;line-height:1.5}
+.empty-2d h2{margin:0 0 6px;font-size:18px}
+.empty-2d p{max-width:500px;color:var(--muted);font-size:13px;line-height:1.5}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.gallery-item{position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--line);aspect-ratio:1/1;background:#111}
+.gallery-item img{width:100%;height:100%;object-fit:cover;display:block}
+.gallery-item button{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;border:0;background:#000c;color:#fff;font-size:13px;line-height:1;padding:0}
+.gallery-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.gallery-toolbar h2{margin:0;font-size:16px}
+.small-btn{border:1px solid #333;background:#141417;color:#eee;padding:8px 12px;border-radius:8px;font-weight:700;font-size:12px}
 
 .capture{position:relative;height:100%;width:100%;overflow:hidden;background:#000}
-#camera{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
-#overlay3d{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;}
-
+#camera{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;background:#000}
 .flash-overlay{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:100;transition:opacity .15s ease-out}
 .flash-overlay.flash{opacity:1}
-.capture-ui{position:absolute;inset:0;z-index:5;pointer-events:none;background:radial-gradient(circle at center, transparent 40%, rgba(0,0,0,0.6) 100%)}
-.capture-top{position:absolute;left:0;right:0;top:max(14px,env(safe-area-inset-top));display:flex;align-items:flex-start;justify-content:space-between;padding:0 16px}
-.capture-title{font-size:14px;font-weight:800}
-.capture-sub{font-size:12px;color:var(--yellow);margin-top:2px;font-weight:700}
-.capture-tools{display:flex;gap:6px;pointer-events:auto}.capture-tools button{border:1px solid #444;background:#000c;color:#fff;border-radius:8px;padding:7px 10px;font-size:12px}
 
-/* RÉTICULE CENTRAL */
-.reticle {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 50px;
-  height: 50px;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 5;
-  pointer-events: none;
-}
-.reticle::after {
-  content: '';
-  width: 10px;
-  height: 10px;
-  background: var(--yellow);
-  border-radius: 50%;
-  box-shadow: 0 0 8px #000;
-}
-.reticle.ready { border-color: rgba(34, 197, 94, 0.9); }
-.reticle.ready::after { background: var(--green); transform: scale(1.4); }
+.permission{position:absolute;inset:0;z-index:20;background:#000;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px}
+.permission-card{width:min(480px,100%)}
+.permission-card .big-icon{font-size:38px;margin-bottom:10px}
+.permission-card h1{font-size:22px;margin:0 0 8px}
+.permission-card p{margin:0 auto;max-width:420px;color:var(--muted);font-size:13px;line-height:1.5}
+.permission-card .err{color:var(--red);font-size:12px;margin-top:12px;min-height:16px}
 
-/* FLÈCHE DE GUIDAGE RADAR HORS-CHAMP */
-.direction-arrow {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 8;
-  pointer-events: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.2s;
-}
-.arrow-icon {
-  font-size: 48px;
-  font-weight: 900;
-  color: var(--yellow);
-  filter: drop-shadow(0 0 6px #000);
-  animation: bounceArrow 1s infinite alternate;
-}
-.arrow-text {
-  background: rgba(0,0,0,0.8);
-  border: 1px solid var(--yellow);
-  color: var(--yellow);
-  padding: 4px 10px;
-  border-radius: 99px;
-  font-size: 11px;
-  font-weight: 800;
-  margin-top: 4px;
-}
-@keyframes bounceArrow {
-  from { transform: translateY(0); }
-  to { transform: translateY(-8px); }
-}
+.capture-ui{position:absolute;inset:0;z-index:5;pointer-events:none}
+.capture-top{position:absolute;left:0;right:0;top:max(14px,env(safe-area-inset-top));display:flex;align-items:flex-start;justify-content:space-between;padding:0 16px;z-index:6}
+.capture-title{font-size:14px;font-weight:800;text-shadow:0 1px 4px #000}
+.capture-sub{font-size:12px;color:var(--yellow);margin-top:2px;font-weight:700;text-shadow:0 1px 4px #000}
+.capture-tools{display:flex;gap:6px;pointer-events:auto}
+.capture-tools button{border:1px solid #444;background:#000c;color:#fff;border-radius:8px;padding:7px 10px;font-size:12px}
 
-.guidance{position:absolute;left:50%;top:calc(50% + 90px);transform:translateX(-50%);background:#000e;border:1px solid #333;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:800;white-space:nowrap}
+/* Cible AR qui se déplace dans l'écran selon l'orientation du téléphone */
+.target-wrap{position:absolute;left:0;top:0;width:120px;height:120px;margin-left:-60px;margin-top:-60px;z-index:4;will-change:transform;transition:opacity .15s}
+.target-ring{position:absolute;inset:0;border-radius:50%;border:3px solid rgba(255,255,255,.85);background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;transition:background-color .15s,border-color .15s,transform .1s}
+.target-ring.ready{border-color:var(--green);background:rgba(34,197,94,.35);transform:scale(1.08)}
+.target-label{color:#fff;font-weight:800;font-size:13px;letter-spacing:.5px;text-shadow:0 1px 3px #000}
+.target-progress{position:absolute;inset:-6px;transform:rotate(-90deg)}
+.target-progress circle{fill:none;stroke-width:5}
+.target-progress .bg{stroke:rgba(255,255,255,.15)}
+.target-progress .fg{stroke:var(--green);stroke-linecap:round;transition:stroke-dashoffset .05s linear}
+
+/* petit point fixe au centre de l'écran = axe de visée du téléphone */
+.center-dot{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px #0008;z-index:5;pointer-events:none}
+
+.edge-arrow{position:absolute;z-index:4;width:46px;height:46px;margin:-23px;color:#fff;filter:drop-shadow(0 1px 3px #000);pointer-events:none;transition:opacity .15s}
+.edge-arrow svg{width:100%;height:100%}
+
+.guidance{position:absolute;left:50%;bottom:calc(100% + 0px);transform:translateX(-50%);background:#000a;border:1px solid #333;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:800;white-space:nowrap;z-index:6}
+.guidance-wrap{position:absolute;left:50%;top:calc(50% + 90px);transform:translateX(-50%);z-index:6}
 .guidance.ready{color:var(--green);border-color:#166534}
 
-.minimap{
-  position:absolute; bottom:85px; left:50%; transform:translateX(-50%);
-  display:flex; flex-direction:column; gap:4px;
-  background:rgba(10,10,12,0.85); border:1px solid #333; padding:8px 12px; border-radius:12px;
-  pointer-events:auto; z-index:10; backdrop-filter:blur(8px);
-}
-.mini-row{display:flex; gap:5px; justify-content:center; align-items:center}
-.mini-dot{
-  width:14px; height:14px; border-radius:50%; background:#222; border:1px solid #444;
-  display:flex; align-items:center; justify-content:center; font-size:7px; font-weight:700; color:#777;
-}
-.mini-dot.active{border-color:var(--yellow);background:#422006;color:var(--yellow);transform:scale(1.25);box-shadow:0 0 8px var(--yellow)}
-.mini-dot.done{border-color:var(--green);background:#052e16;color:var(--green)}
-.capture-bottom{position:absolute;left:0;right:0;bottom:max(12px,env(safe-area-inset-top));display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none}
+.minimap{position:absolute;bottom:96px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:4px;background:rgba(10,10,12,0.85);border:1px solid #333;padding:8px 10px;border-radius:12px;pointer-events:none;z-index:6;backdrop-filter:blur(8px)}
+.mini-row{display:flex;gap:5px;justify-content:center;align-items:center}
+.mini-dot{width:13px;height:13px;border-radius:50%;background:#222;border:1px solid #444;transition:all .2s}
+.mini-dot.active{border-color:var(--yellow);background:#422006;transform:scale(1.3);box-shadow:0 0 8px var(--yellow)}
+.mini-dot.done{border-color:var(--green);background:var(--green)}
+
+.capture-bottom{position:absolute;left:0;right:0;bottom:max(12px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;z-index:6}
 .status-row{display:flex;align-items:center;justify-content:center;gap:6px}
 .pill{background:#000c;border:1px solid #333;padding:4px 10px;border-radius:99px;font-size:11px;color:#ddd}
 .pill.ok{color:var(--green);border-color:#166534;background:#052e16cc}
 .pill.bad{color:var(--red);border-color:#7f1d1d;background:#450a0acc}
 .progress-wrap{width:min(340px,70vw);height:3px;background:#222;border-radius:99px;overflow:hidden}
 .progress{height:100%;width:0;background:#fff;transition:width .2s}
+.manual-btn{pointer-events:auto;border:1px solid #444;background:#111c;color:#fff;border-radius:99px;padding:8px 16px;font-size:11px;font-weight:700}
 
-.permission{position:absolute;inset:0;z-index:20;background:#000;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px}
-.permission-card{width:min(480px,100%)}.permission-card .big-icon{font-size:38px;margin-bottom:10px}.permission-card h1{font-size:22px;margin:0 0 8px}.permission-card p{margin:0 auto;max-width:420px;color:var(--muted);font-size:13px;line-height:1.5}
 .viewer{position:absolute;inset:0;background:#000;z-index:20}
 #viewerContainer{width:100%;height:100%;position:absolute;inset:0}
 .viewer-ui{position:absolute;left:16px;top:max(14px,env(safe-area-inset-top));z-index:4;pointer-events:none}
-.viewer-ui h2{margin:0;font-size:15px}.viewer-ui p{margin:4px 0;color:var(--muted);font-size:11px}
-.viewer-close{position:absolute;right:16px;top:max(14px,env(safe-area-inset-top));z-index:4;border:1px solid #333;background:#111d;color:#fff;border-radius:8px;padding:7px 10px;pointer-events:auto;font-size:12px}
+.viewer-ui h2{margin:0;font-size:15px}
+.viewer-ui p{margin:4px 0;color:var(--muted);font-size:11px}
+.viewer-actions{position:absolute;right:16px;top:max(14px,env(safe-area-inset-top));z-index:4;display:flex;gap:8px}
+.viewer-actions button{border:1px solid #333;background:#111d;color:#fff;border-radius:8px;padding:7px 10px;pointer-events:auto;font-size:12px}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#111;border:1px solid #333;color:#fff;padding:10px 16px;border-radius:10px;font-size:12px;z-index:200;opacity:0;pointer-events:none;transition:opacity .25s}
+.toast.show{opacity:1}
+
 @media(max-width:768px){
-  .workspace{grid-template-columns:1fr; grid-template-rows:200px 1fr;}
-  .sidebar{border-right:none; border-bottom:1px solid var(--line);}
+  .workspace{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+  .sidebar{border-right:none;border-bottom:1px solid var(--line);max-height:26vh}
 }
 </style>
 </head>
@@ -150,43 +132,41 @@ button{cursor:pointer}
     <div class="brand">Studio Visite <span>Pro 360°</span></div>
     <nav class="tabs" aria-label="Modes">
       <button class="tab active" data-mode="2d">2D</button>
-      <button class="tab" data-mode="360">360° HD (22 Points)</button>
+      <button class="tab" data-mode="360">360° HD (<span id="tabTotal">22</span> pts)</button>
     </nav>
   </header>
+
   <div class="workspace">
     <aside class="sidebar">
       <div class="section-title">Projet</div>
       <div class="project-name" id="projectName">Visite 360° HD</div>
       <button class="primary" id="renameBtn">Renommer le projet</button>
+
       <div class="section-title" style="margin-top:20px">Scènes 360°</div>
       <div class="scene-list" id="sceneList"></div>
     </aside>
+
     <main class="main">
       <section class="mode mode-2d" id="mode2d">
-        <div class="empty-2d">
-          <div style="font-size:36px;margin-bottom:8px">◎</div>
-          <h2>Mode Réalité Augmentée 3D</h2>
-          <p>Les points sont ancrés dans l'espace réel. Aucune dérive, visée hyper naturelle.</p>
-          <button class="primary" id="import2d" style="max-width:240px;margin-top:14px">Importer des photos 2D</button>
-          <input id="photoInput" type="file" accept="image/*" multiple class="hidden">
-        </div>
+        <div id="galleryWrap"></div>
       </section>
+
       <section class="mode hidden" id="mode360">
         <div class="capture" id="captureScreen">
           <div class="permission" id="permission">
             <div class="permission-card">
               <div class="big-icon">⦿</div>
-              <h1>Scan 360° RA (22 Points Géants)</h1>
-              <p>Suivez la flèche radar pour trouver le point géant. Immobilisez-vous <b>1 seconde</b>.</p>
+              <h1>Scan 360° RA</h1>
+              <p>Placez le rond blanc du centre à l'intérieur de la cible qui apparaît. Restez immobile une seconde : la photo part toute seule.</p>
               <button class="primary" id="start360" style="margin-top:16px">Démarrer le Scan</button>
+              <div class="err" id="permError"></div>
             </div>
           </div>
+
           <div id="flashOverlay" class="flash-overlay"></div>
-          
           <video id="camera" autoplay playsinline muted></video>
-          <div id="overlay3d"></div>
           <canvas id="captureCanvas" class="hidden"></canvas>
-          
+
           <div class="capture-ui">
             <div class="capture-top">
               <div>
@@ -198,667 +178,801 @@ button{cursor:pointer}
                 <button id="exit360">Quitter</button>
               </div>
             </div>
-            
-            <!-- RÉTICULE ET FLÈCHE RADAR -->
-            <div class="reticle" id="reticle"></div>
-            <div class="direction-arrow hidden" id="directionArrow">
-              <div class="arrow-icon" id="arrowIcon">⬆</div>
-              <div class="arrow-text" id="arrowText">Tourner (120°)</div>
+
+            <div class="center-dot"></div>
+
+            <div class="target-wrap" id="targetWrap">
+              <svg class="target-progress" viewBox="0 0 120 120">
+                <circle class="bg" cx="60" cy="60" r="54"></circle>
+                <circle class="fg" id="holdRing" cx="60" cy="60" r="54" stroke-dasharray="339" stroke-dashoffset="339"></circle>
+              </svg>
+              <div class="target-ring" id="targetRing">
+                <span class="target-label" id="targetLabel">1</span>
+              </div>
             </div>
-            
-            <div class="guidance" id="guidance">Cherchez le point géant...</div>
+
+            <div class="edge-arrow hidden" id="edgeArrow">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 4 L20 14 L14 14 L14 20 L10 20 L10 14 L4 14 Z" fill="currentColor"/></svg>
+            </div>
+
+            <div class="guidance-wrap">
+              <div class="guidance" id="guidance">Tournez autour de vous...</div>
+            </div>
+
             <div class="minimap" id="minimap"></div>
+
             <div class="capture-bottom">
+              <button class="manual-btn hidden" id="manualCapture">Capturer manuellement</button>
               <div class="status-row">
                 <span class="pill" id="counter">Point 0 / 22</span>
-                <span class="pill bad" id="qualityPill">Cherchez le point blanc</span>
+                <span class="pill bad" id="qualityPill">Cherchez la cible</span>
               </div>
               <div class="progress-wrap"><div class="progress" id="progress"></div></div>
             </div>
           </div>
         </div>
+
         <div class="viewer hidden" id="viewer">
           <div id="viewerContainer"></div>
           <div class="viewer-ui">
             <h2>Panorama 360° Haute Définition</h2>
-            <p>Glissez pour explorer la pièce fluidement</p>
+            <p>Glissez pour explorer la pièce · molette/pincer pour zoomer</p>
           </div>
-          <button class="viewer-close" id="closeViewer">Fermer</button>
+          <div class="viewer-actions">
+            <button id="downloadPano">Télécharger</button>
+            <button id="closeViewer">Fermer</button>
+          </div>
         </div>
       </section>
     </main>
   </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
+<input id="photoInput" type="file" accept="image/*" multiple class="hidden">
+
 <script>
 "use strict";
+
 const TOTAL_PHOTOS = 22;
-const YAW_TOLERANCE = 8; 
+const ALIGN_TOLERANCE_DEG = 9;      // tolérance angulaire pour valider un point
+const HOLD_MS = 900;                 // temps d'immobilité avant capture auto
 const PANO_WIDTH = 6000, PANO_HEIGHT = 3000;
-
-let scene3D, camera3D, renderer3D, targetSprites = [];
-let matWhite, matGreen, matDim;
-
-const state = {
-    mode: "2d", running: false, stream: null, sensorListening: false,
-    initQuat: null, step: 0, targets: [], photos: [], pano: null,
-    viewer: null, projectName: "Visite 360° HD", scenes: [],
-    captureBusy: false, stableSince: 0, lastAutoCapture: 0
-};
+const V_FOV_DEG = 62;                // FOV vertical assumé pour la projection écran
 
 const $ = s => document.querySelector(s);
-const camera = $("#camera"), captureCanvas = $("#captureCanvas");
+const camera = () => $("#camera");
 
+const state = {
+  mode: "2d",
+  running: false,
+  stream: null,
+  sensorEventName: null,
+  sensorListening: false,
+  initQuat: null,
+  currentQuat: null,
+  hasOrientation: false,
+  step: 0,
+  targets: [],
+  photos: [],
+  pano: null,
+  viewer: null,
+  projectName: "Visite 360° HD",
+  scenes: [],
+  gallery: [],       // photos 2D importées {url, name}
+  captureBusy: false,
+  stableSince: 0,
+  lastAutoCapture: 0,
+  raf: null
+};
+
+// ---------- Utilitaires ----------
 function normalizeAngle(v){ return ((v % 360) + 360) % 360; }
-function escapeHtml(v){ return String(v).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c])); }
+function normalizeSigned(v){ let a = normalizeAngle(v); return a > 180 ? a - 360 : a; }
+function escapeHtml(v){ return String(v).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toast._t); toast._t = setTimeout(()=>t.classList.remove("show"), 2200); }
 
 document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", e => setMode(e.currentTarget.dataset.mode)));
-    $("#start360").addEventListener("click", start360);
-    $("#restart360").addEventListener("click", restart360);
-    $("#exit360").addEventListener("click", () => { stopCamera(); setMode('2d'); });
-    $("#closeViewer").addEventListener("click", closeViewer);
-    $("#renameBtn").addEventListener("click", renameProject);
-    $("#import2d").addEventListener("click", () => $("#photoInput").click());
-    
-    window.addEventListener("resize", () => {
-        if(camera3D && renderer3D) {
-            camera3D.aspect = window.innerWidth / window.innerHeight;
-            camera3D.updateProjectionMatrix();
-            renderer3D.setSize(window.innerWidth, window.innerHeight);
-        }
-    });
+  document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", e => setMode(e.currentTarget.dataset.mode)));
+  $("#start360").addEventListener("click", start360);
+  $("#restart360").addEventListener("click", restart360);
+  $("#exit360").addEventListener("click", () => { stopCamera(); setMode("2d"); });
+  $("#closeViewer").addEventListener("click", closeViewer);
+  $("#downloadPano").addEventListener("click", downloadCurrentPano);
+  $("#renameBtn").addEventListener("click", renameProject);
+  $("#manualCapture").addEventListener("click", () => { if(!state.captureBusy) capturePhoto(); });
+  $("#photoInput").addEventListener("change", onPhotosImported);
+  $("#tabTotal").textContent = TOTAL_PHOTOS;
 
-    renderSceneList();
-    renderMinimap();
+  window.addEventListener("resize", positionAllUI);
+  window.addEventListener("orientationchange", () => setTimeout(positionAllUI, 200));
+
+  $("#projectName").textContent = state.projectName;
+  renderSceneList();
+  renderGallery();
+  renderMinimap();
 });
 
+// ---------- Navigation ----------
 function setMode(mode){
-    state.mode = mode;
-    document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
-    $("#mode2d").classList.toggle("hidden", mode !== "2d");
-    $("#mode360").classList.toggle("hidden", mode !== "360");
-    if(mode !== "360") stopCamera();
-}
-
-function renderSceneList(){
-    const list = $("#sceneList");
-    list.innerHTML = "";
-    if(!state.scenes.length){
-        list.innerHTML = '<div class="scene"><div class="scene-name">Aucune scène HD</div><div class="scene-meta">Effectuez un scan 22 points</div></div>';
-        return;
-    }
-    state.scenes.forEach((scene, index) => {
-        const item = document.createElement("div");
-        item.className = "scene" + (index === state.scenes.length - 1 ? " active" : "");
-        item.innerHTML = `<div class="scene-name">${escapeHtml(scene.name)}</div><div class="scene-meta">22 points HD · ${escapeHtml(scene.date)}</div><div class="scene-actions"><button data-action="open">Ouvrir</button><button data-action="delete">Suppr</button></div>`;
-        item.querySelector('[data-action="open"]').onclick = () => openScene(index);
-        item.querySelector('[data-action="delete"]').onclick = () => { state.scenes.splice(index, 1); renderSceneList(); };
-        list.appendChild(item);
-    });
-}
-
-function renderMinimap(){
-    const map = $("#minimap");
-    map.innerHTML = "";
-    const rowsConfig = [
-        { start: 0, count: 8 },  
-        { start: 8, count: 6 },  
-        { start: 14, count: 1 }, 
-        { start: 15, count: 6 }, 
-        { start: 21, count: 1 }  
-    ];
-    rowsConfig.forEach(rc => {
-        const rowDiv = document.createElement("div");
-        rowDiv.className = "mini-row";
-        for(let i = 0; i < rc.count; i++){
-            const idx = rc.start + i;
-            if(idx < TOTAL_PHOTOS){
-                const dot = document.createElement("div");
-                dot.className = "mini-dot";
-                if(idx < state.step) dot.classList.add("done");
-                else if(idx === state.step && state.running) dot.classList.add("active");
-                dot.textContent = idx + 1;
-                rowDiv.appendChild(dot);
-            }
-        }
-        map.appendChild(rowDiv);
-    });
-}
-
-function buildTargets(){
-    const targets = [];
-    for(let i = 0; i < 8; i++){ targets.push({ yaw: i * 45, pitch: 0, label: `Horizon ${i+1}/8` }); }
-    for(let i = 0; i < 6; i++){ targets.push({ yaw: i * 60, pitch: 45, label: `Plafond ${i+1}/6` }); }
-    targets.push({ yaw: 0, pitch: 85, label: "Zénith (Visez le plafond)" });
-    for(let i = 0; i < 6; i++){ targets.push({ yaw: i * 60, pitch: -45, label: `Sol ${i+1}/6` }); }
-    targets.push({ yaw: 0, pitch: -85, label: "Nadir (Visez vos pieds)" });
-    return targets;
-}
-
-// TEXTURES 3D : POINT BLANC ULTRA GIGANTESQUE (Beaucoup plus grand que le cercle jaune)
-function createSpriteMaterial(colorString, radius, lineWidth) {
-    const canvas = document.createElement('canvas');
-    canvas.width = 256; canvas.height = 256;
-    const ctx = canvas.getContext('2d');
-    ctx.beginPath();
-    ctx.arc(128, 128, radius, 0, Math.PI * 2);
-    ctx.fillStyle = colorString;
-    ctx.fill();
-    ctx.lineWidth = lineWidth;
-    ctx.strokeStyle = '#ffffff';
-    ctx.stroke();
-    const texture = new THREE.CanvasTexture(canvas);
-    return new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false });
-}
-
-function init3DOverlay() {
-    const container = document.getElementById('overlay3d');
-    container.innerHTML = ''; 
-    scene3D = new THREE.Scene();
-    camera3D = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-    
-    renderer3D = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    renderer3D.setSize(window.innerWidth, window.innerHeight);
-    renderer3D.setPixelRatio(window.devicePixelRatio);
-    container.appendChild(renderer3D.domElement);
-
-    // TAILLE 3X PLUS GROSSE (Rayon 95 sur 128)
-    matWhite = createSpriteMaterial('rgba(255, 255, 255, 0.95)', 95, 14);
-    matGreen = createSpriteMaterial('rgba(34, 197, 94, 0.95)', 105, 16);
-    matDim   = createSpriteMaterial('rgba(255, 255, 255, 0.25)', 25, 0);
-
-    targetSprites = [];
-    const radius = 100;
-
-    state.targets.forEach((t, i) => {
-        const sprite = new THREE.Sprite(matDim);
-        const phi = THREE.MathUtils.degToRad(90 - t.pitch);
-        const theta = THREE.MathUtils.degToRad(t.yaw - 90);
-        
-        sprite.position.x = radius * Math.sin(phi) * Math.cos(theta);
-        sprite.position.y = radius * Math.cos(phi);
-        sprite.position.z = radius * Math.sin(phi) * Math.sin(theta);
-        
-        sprite.scale.set(24, 24, 1); 
-        sprite.userData = { index: i };
-        
-        scene3D.add(sprite);
-        targetSprites.push(sprite);
-    });
-}
-
-async function start360(){
-    try {
-        if(!window.isSecureContext) throw new Error("HTTPS requis.");
-        if(!navigator.mediaDevices?.getUserMedia) throw new Error("Caméra non supportée.");
-        resetCaptureState();
-        
-        if(typeof DeviceOrientationEvent?.requestPermission === "function"){
-            const res = await DeviceOrientationEvent.requestPermission();
-            if(res !== "granted") throw new Error("Permission capteurs refusée.");
-        }
-        
-        attachSensors();
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: "environment", width: { ideal: 3840 }, height: { ideal: 2160 } } 
-        });
-        state.stream = stream;
-        camera.srcObject = stream;
-        await camera.play();
-        
-        state.running = true;
-        $("#permission").classList.add("hidden");
-        $("#captureScreen").classList.remove("hidden");
-        $("#viewer").classList.add("hidden");
-        
-        state.targets = buildTargets();
-        init3DOverlay();
-        
-        state.step = 0;
-        state.photos = [];
-        state.pano = createPanoramaCanvas();
-        setStep(0);
-        
-        requestAnimationFrame(captureLoop);
-    } catch(e) {
-        stopCamera();
-        $("#permission").classList.remove("hidden");
-        alert("Erreur : " + e.message);
-    }
-}
-
-function attachSensors(){
-    if(state.sensorListening) return;
-    window.addEventListener("deviceorientation", handleOrientation, true);
-    state.sensorListening = true;
-}
-
-function handleOrientation(e){
-    if(!state.running || !camera3D) return;
-
-    let alpha = e.alpha || 0;
-    let beta = e.beta || 0;
-    let gamma = e.gamma || 0;
-
-    if(typeof e.webkitCompassHeading === "number" && Number.isFinite(e.webkitCompassHeading)){
-        alpha = 360 - e.webkitCompassHeading;
-    }
-
-    const alphaRad = THREE.MathUtils.degToRad(alpha);
-    const betaRad = THREE.MathUtils.degToRad(beta);
-    const gammaRad = THREE.MathUtils.degToRad(gamma);
-    const orient = window.orientation || screen.orientation?.angle || 0;
-    const orientRad = THREE.MathUtils.degToRad(orient);
-
-    const euler = new THREE.Euler();
-    const q0 = new THREE.Quaternion();
-    const q1 = new THREE.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5));
-    const zee = new THREE.Vector3(0, 0, 1);
-
-    euler.set(betaRad, alphaRad, -gammaRad, 'YXZ');
-    const currentRawQuat = new THREE.Quaternion();
-    currentRawQuat.setFromEuler(euler);
-    currentRawQuat.multiply(q1);
-    currentRawQuat.multiply(q0.setFromAxisAngle(zee, -orientRad));
-
-    if(!state.initQuat){
-        state.initQuat = currentRawQuat.clone().invert();
-    }
-
-    camera3D.quaternion.copy(state.initQuat.clone().multiply(currentRawQuat));
-}
-
-function stopCamera(){
-    if(state.stream){
-        state.stream.getTracks().forEach(t => t.stop());
-        state.stream = null;
-    }
-    camera.srcObject = null;
-    state.running = false;
-    state.captureBusy = false;
-    if(state.sensorListening){
-        window.removeEventListener("deviceorientation", handleOrientation, true);
-        state.sensorListening = false;
-    }
-    if(renderer3D) {
-        document.getElementById('overlay3d').innerHTML = '';
-        renderer3D = null;
-    }
-}
-
-function resetCaptureState(){
-    state.running = false;
-    state.step = 0;
-    state.photos = [];
-    state.pano = null;
-    state.initQuat = null;
-    state.targets = [];
-    state.captureBusy = false;
-    state.stableSince = 0;
-    $("#counter").textContent = "Point 0 / 22";
-    $("#progress").style.width = "0%";
-    $("#qualityPill").textContent = "Cherchez le point blanc";
-    $("#qualityPill").className = "pill bad";
-    $("#reticle").classList.remove("ready");
-    $("#directionArrow").classList.add("hidden");
-}
-
-function setStep(step){
-    state.step = step;
-    renderMinimap();
-    if(step >= TOTAL_PHOTOS){ finishCapture(); return; }
-    
-    targetSprites.forEach((sprite, i) => {
-        if(i < step) {
-            sprite.visible = false;
-        } else if (i === step) {
-            sprite.visible = true;
-            sprite.material = matWhite;
-            sprite.scale.set(35, 35, 1); 
-        } else {
-            sprite.visible = true;
-            sprite.material = matDim;
-            sprite.scale.set(8, 8, 1); 
-        }
-    });
-
-    const t = state.targets[step];
-    $("#counter").textContent = `Point ${step + 1} / ${TOTAL_PHOTOS}`;
-    $("#progress").style.width = `${(step / TOTAL_PHOTOS) * 100}%`;
-    $("#positionLabel").textContent = t.label;
-    state.stableSince = 0;
-}
-
-function captureLoop(){
-    if(!state.running || !camera3D || !renderer3D) return;
-
-    if(!state.captureBusy && state.step < TOTAL_PHOTOS && state.initQuat) {
-        const camDir = new THREE.Vector3(0, 0, -1).applyQuaternion(camera3D.quaternion);
-        const currentSprite = targetSprites[state.step];
-        const targetDir = currentSprite.position.clone().normalize();
-        
-        const angleDeg = THREE.MathUtils.radToDeg(camDir.angleTo(targetDir));
-        const isAligned = angleDeg <= YAW_TOLERANCE;
-
-        const vector = currentSprite.position.clone();
-        vector.project(camera3D);
-        const isBehind = vector.z > 1; 
-        const isOffScreen = isBehind || Math.abs(vector.x) > 1 || Math.abs(vector.y) > 1;
-
-        if (isOffScreen || !isAligned) {
-            state.stableSince = 0;
-            currentSprite.material = matWhite;
-            $("#qualityPill").textContent = `Cherchez (${Math.round(angleDeg)}°)`;
-            $("#qualityPill").className = "pill bad";
-            $("#reticle").classList.remove("ready");
-
-            const arrow = $("#directionArrow");
-            arrow.classList.remove("hidden");
-            
-            const flatCamDir = new THREE.Vector3(camDir.x, 0, camDir.z).normalize();
-            const flatTargetDir = new THREE.Vector3(targetDir.x, 0, targetDir.z).normalize();
-            let cross = flatCamDir.clone().cross(flatTargetDir).y;
-            let dot = flatCamDir.dot(flatTargetDir);
-            let relAngle = THREE.MathUtils.radToDeg(Math.acos(Math.max(-1, Math.min(1, dot))));
-            if(cross < 0) relAngle = -relAngle;
-
-            const icon = $("#arrowIcon");
-            const txt = $("#arrowText");
-            
-            if (isBehind || Math.abs(relAngle) > 90) {
-                icon.textContent = "⬇";
-                txt.textContent = "Faites demi-tour !";
-            } else if (relAngle > 0) {
-                icon.textContent = "➡";
-                txt.textContent = `Tournez à droite (${Math.round(angleDeg)}°)`;
-            } else {
-                icon.textContent = "⬅";
-                txt.textContent = `Tournez à gauche (${Math.round(angleDeg)}°)`;
-            }
-            
-            $("#guidance").textContent = "Suivez la flèche radar !";
-            $("#guidance").classList.remove("ready");
-        } else {
-            $("#directionArrow").classList.add("hidden");
-            currentSprite.material = matGreen;
-            $("#qualityPill").textContent = "Immobile (1s)...";
-            $("#qualityPill").className = "pill ok";
-            $("#reticle").classList.add("ready");
-            $("#guidance").textContent = "Parfait ! Ne bougez plus...";
-            $("#guidance").classList.add("ready");
-
-            const now = performance.now();
-            if(!state.stableSince) state.stableSince = now;
-            
-            if(now - state.stableSince >= 1000 && now - state.lastAutoCapture > 1200){
-                capturePhoto();
-                state.stableSince = 0;
-            }
-        }
-    }
-
-    renderer3D.render(scene3D, camera3D);
-    if(state.running) requestAnimationFrame(captureLoop);
-}
-
-function capturePhoto(){
-    if(!camera.videoWidth || !camera.videoHeight) return;
-    state.captureBusy = true;
-    flashCapture();
-    try {
-        const sw = camera.videoWidth, sh = camera.videoHeight;
-        const maxW = 1600, scale = Math.min(1, maxW / sw);
-        const w = Math.max(1, Math.round(sw * scale)), h = Math.max(1, Math.round(sh * scale));
-        captureCanvas.width = w;
-        captureCanvas.height = h;
-        captureCanvas.getContext("2d").drawImage(camera, 0, 0, w, h);
-        
-        const target = state.targets[state.step];
-        const photo = { index: state.step, yaw: target.yaw, pitch: target.pitch, width: w, height: h };
-        stitchPhotoIntoPanorama(captureCanvas, photo);
-        state.photos.push(photo);
-        
-        state.lastAutoCapture = performance.now();
-        state.captureBusy = false;
-        setStep(state.step + 1); 
-    } catch(e){
-        state.captureBusy = false;
-        alert("Erreur de capture : " + e.message);
-    }
-}
-
-function flashCapture(){
-    const flash = $("#flashOverlay");
-    flash.classList.add("flash");
-    setTimeout(() => flash.classList.remove("flash"), 150);
-}
-
-function createPanoramaCanvas(){
-    const c = document.createElement("canvas");
-    c.width = PANO_WIDTH;
-    c.height = PANO_HEIGHT;
-    const ctx = c.getContext("2d");
-    ctx.fillStyle = "#111111";
-    ctx.fillRect(0, 0, c.width, c.height);
-    return { canvas: c, ctx };
-}
-
-function stitchPhotoIntoPanorama(src, photo){
-    if(!state.pano) state.pano = createPanoramaCanvas();
-    const ctx = state.pano.ctx;
-    const centerX = (normalizeAngle(photo.yaw) / 360) * PANO_WIDTH;
-    const centerY = PANO_HEIGHT / 2 - (photo.pitch / 90) * (PANO_HEIGHT / 2);
-    
-    const tileW = Math.round(PANO_WIDTH * 0.30);
-    const tileH = Math.round(PANO_HEIGHT * 0.40);
-    
-    const tile = document.createElement("canvas");
-    tile.width = tileW;
-    tile.height = tileH;
-    const tc = tile.getContext("2d");
-    tc.drawImage(src, 0, 0, tileW, tileH);
-    
-    const im = tc.getImageData(0, 0, tileW, tileH), d = im.data;
-    const edgeW = Math.round(tileW * 0.25), edgeH = Math.round(tileH * 0.25);
-    for(let y = 0; y < tileH; y++){
-        for(let x = 0; x < tileW; x++){
-            let alpha = 1.0;
-            if(x < edgeW) alpha *= (x / edgeW);
-            else if(x > tileW - edgeW) alpha *= ((tileW - x) / edgeW);
-            if(y < edgeH) alpha *= (y / edgeH);
-            else if(y > tileH - edgeH) alpha *= ((tileH - y) / edgeH);
-            const idx = (y * tileW + x) * 4 + 3;
-            d[idx] = Math.round(d[idx] * alpha);
-        }
-    }
-    tc.putImageData(im, 0, 0);
-    
-    ctx.save();
-    ctx.globalCompositeOperation = "source-over";
-    drawWrapped(ctx, tile, centerX - tileW / 2, centerY - tileH / 2);
-    ctx.restore();
-}
-
-function drawWrapped(ctx, img, x, y){
-    const w = img.width, pw = ctx.canvas.width;
-    ctx.drawImage(img, x, y);
-    if(x < 0) ctx.drawImage(img, x + pw, y);
-    if(x + w > pw) ctx.drawImage(img, x - pw, y);
-}
-
-function finishCapture(){
-    state.running = false;
-    state.captureBusy = false;
-    $("#progress").style.width = "100%";
-    $("#counter").textContent = `Point ${TOTAL_PHOTOS} / ${TOTAL_PHOTOS}`;
-    $("#qualityPill").textContent = "Panorama HD prêt !";
-    $("#qualityPill").className = "pill ok";
-    $("#guidance").textContent = "✓ SCAN 22 POINTS TERMINÉ";
-    $("#directionArrow").classList.add("hidden");
-    stopCamera();
-    if(!state.pano) return;
-    const data = state.pano.canvas.toDataURL("image/jpeg", 0.95);
-    state.scenes.push({ name: `Visite HD ${state.scenes.length + 1}`, count: TOTAL_PHOTOS, date: new Date().toLocaleDateString("fr-FR"), panoDataUrl: data });
-    renderSceneList();
-    openViewerWithCanvas(state.pano.canvas);
-}
-
-function openScene(i){
-    const s = state.scenes[i];
-    if(!s) return;
-    const img = new Image();
-    img.onload = () => {
-        setMode("360");
-        $("#captureScreen").classList.add("hidden");
-        $("#viewer").classList.remove("hidden");
-        if(state.viewer) state.viewer.destroy();
-        state.viewer = new ThreePanoViewer($("#viewerContainer"), img);
-    };
-    img.src = s.panoDataUrl;
-}
-
-function openViewerWithCanvas(source){
-    $("#captureScreen").classList.add("hidden");
-    $("#viewer").classList.remove("hidden");
-    if(state.viewer) state.viewer.destroy();
-    state.viewer = new ThreePanoViewer($("#viewerContainer"), source);
-}
-
-function closeViewer(){
-    if(state.viewer){
-        state.viewer.destroy();
-        state.viewer = null;
-    }
-    $("#viewer").classList.add("hidden");
-    $("#captureScreen").classList.remove("hidden");
-    setMode("2d");
-}
-
-async function restart360(){
-    if(!confirm("Effacer ce scan et recommencer ?")) return;
-    stopCamera();
-    resetCaptureState();
-    $("#viewer").classList.add("hidden");
-    $("#captureScreen").classList.remove("hidden");
-    $("#permission").classList.remove("hidden");
-    renderMinimap();
+  state.mode = mode;
+  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
+  $("#mode2d").classList.toggle("hidden", mode !== "2d");
+  $("#mode360").classList.toggle("hidden", mode !== "360");
+  if(mode !== "360") stopCamera();
 }
 
 function renameProject(){
-    const newName = prompt("Nom du projet :", state.projectName);
-    if(newName && newName.trim()){
-        state.projectName = newName.trim();
-        $("#projectName").textContent = state.projectName;
+  const name = prompt("Nom du projet :", state.projectName);
+  if(name && name.trim()){
+    state.projectName = name.trim();
+    $("#projectName").textContent = state.projectName;
+  }
+}
+
+// ---------- Galerie 2D ----------
+function onPhotosImported(e){
+  const files = Array.from(e.target.files || []);
+  files.forEach(file => {
+    if(!file.type.startsWith("image/")) return;
+    const url = URL.createObjectURL(file);
+    state.gallery.push({ url, name: file.name });
+  });
+  e.target.value = "";
+  renderGallery();
+}
+
+function renderGallery(){
+  const wrap = $("#galleryWrap");
+  if(!state.gallery.length){
+    wrap.innerHTML = `
+      <div class="empty-2d">
+        <div style="font-size:36px;margin-bottom:8px">◎</div>
+        <h2>Photos 2D</h2>
+        <p>Importez des photos classiques pour les associer à votre visite, ou passez en mode 360° pour scanner une pièce complète en réalité augmentée.</p>
+        <button class="primary" id="import2d" style="max-width:240px;margin-top:14px">Importer des photos</button>
+      </div>`;
+    $("#import2d").addEventListener("click", () => $("#photoInput").click());
+    return;
+  }
+  wrap.innerHTML = `
+    <div class="gallery-toolbar">
+      <h2>${state.gallery.length} photo(s) 2D</h2>
+      <button class="small-btn" id="addMore">+ Ajouter des photos</button>
+    </div>
+    <div class="gallery" id="galleryGrid"></div>`;
+  $("#addMore").addEventListener("click", () => $("#photoInput").click());
+  const grid = $("#galleryGrid");
+  state.gallery.forEach((p, i) => {
+    const item = document.createElement("div");
+    item.className = "gallery-item";
+    item.innerHTML = `<img src="${p.url}" alt="${escapeHtml(p.name)}"><button data-i="${i}">✕</button>`;
+    item.querySelector("button").addEventListener("click", () => {
+      URL.revokeObjectURL(p.url);
+      state.gallery.splice(i, 1);
+      renderGallery();
+    });
+    grid.appendChild(item);
+  });
+}
+
+// ---------- Liste des scènes 360 ----------
+function renderSceneList(){
+  const list = $("#sceneList");
+  list.innerHTML = "";
+  if(!state.scenes.length){
+    list.innerHTML = '<div class="scene"><div class="scene-name">Aucune scène HD</div><div class="scene-meta">Effectuez un scan 360°</div></div>';
+    return;
+  }
+  state.scenes.forEach((scene, index) => {
+    const item = document.createElement("div");
+    item.className = "scene" + (index === state.scenes.length - 1 ? " active" : "");
+    item.innerHTML = `<div class="scene-name">${escapeHtml(scene.name)}</div><div class="scene-meta">${TOTAL_PHOTOS} points HD · ${escapeHtml(scene.date)}</div><div class="scene-actions"><button data-action="open">Ouvrir</button><button data-action="delete">Suppr</button></div>`;
+    item.querySelector('[data-action="open"]').onclick = () => openScene(index);
+    item.querySelector('[data-action="delete"]').onclick = () => { state.scenes.splice(index, 1); renderSceneList(); };
+    list.appendChild(item);
+  });
+}
+
+// ---------- Grille de points cibles ----------
+function buildTargets(){
+  const targets = [];
+  for(let i = 0; i < 8; i++) targets.push({ yaw: i * 45, pitch: 0, label: `Horizon ${i+1}/8`, row: 0 });
+  for(let i = 0; i < 6; i++) targets.push({ yaw: i * 60, pitch: 45, label: `Plafond ${i+1}/6`, row: 1 });
+  targets.push({ yaw: 0, pitch: 85, label: "Zénith — visez le plafond", row: 2 });
+  for(let i = 0; i < 6; i++) targets.push({ yaw: i * 60, pitch: -45, label: `Sol ${i+1}/6`, row: 3 });
+  targets.push({ yaw: 0, pitch: -85, label: "Nadir — visez vos pieds", row: 4 });
+  // vecteur unitaire précalculé pour chaque cible
+  targets.forEach(t => {
+    const phi = THREE.MathUtils.degToRad(90 - t.pitch);
+    const theta = THREE.MathUtils.degToRad(t.yaw - 90);
+    t.dir = new THREE.Vector3(
+      Math.sin(phi) * Math.cos(theta),
+      Math.cos(phi),
+      Math.sin(phi) * Math.sin(theta)
+    ).normalize();
+  });
+  return targets;
+}
+
+function renderMinimap(){
+  const map = $("#minimap");
+  map.innerHTML = "";
+  const rowsConfig = [ {start:0,count:8}, {start:8,count:6}, {start:14,count:1}, {start:15,count:6}, {start:21,count:1} ];
+  rowsConfig.forEach(rc => {
+    const rowDiv = document.createElement("div");
+    rowDiv.className = "mini-row";
+    for(let i = 0; i < rc.count; i++){
+      const idx = rc.start + i;
+      if(idx >= TOTAL_PHOTOS) continue;
+      const dot = document.createElement("div");
+      dot.className = "mini-dot";
+      if(idx < state.step) dot.classList.add("done");
+      else if(idx === state.step && state.running) dot.classList.add("active");
+      rowDiv.appendChild(dot);
     }
+    map.appendChild(rowDiv);
+  });
+}
+
+// ---------- Démarrage capture ----------
+async function start360(){
+  const errBox = $("#permError");
+  errBox.textContent = "";
+  try {
+    if(!window.isSecureContext) throw new Error("HTTPS requis pour accéder aux capteurs et à la caméra.");
+    if(!navigator.mediaDevices?.getUserMedia) throw new Error("Caméra non supportée sur cet appareil/navigateur.");
+
+    resetCaptureState();
+
+    // Permission capteurs (obligatoire sur iOS 13+, transparent ailleurs)
+    if(typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function"){
+      const res = await DeviceOrientationEvent.requestPermission();
+      if(res !== "granted") throw new Error("Permission des capteurs de mouvement refusée.");
+    }
+    attachSensors();
+
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } },
+      audio: false
+    });
+    state.stream = stream;
+    camera().srcObject = stream;
+    await camera().play();
+
+    if(screen.orientation?.lock){ screen.orientation.lock("portrait").catch(()=>{}); }
+
+    state.running = true;
+    $("#permission").classList.add("hidden");
+    $("#captureScreen").classList.remove("hidden");
+    $("#viewer").classList.add("hidden");
+
+    state.targets = buildTargets();
+    state.step = 0;
+    state.photos = [];
+    state.pano = createPanoramaCanvas();
+
+    setStep(0);
+    watchdogOrientation();
+    state.raf = requestAnimationFrame(captureLoop);
+  } catch(e) {
+    stopCamera();
+    $("#permission").classList.remove("hidden");
+    errBox.textContent = e && e.message ? e.message : "Une erreur est survenue.";
+  }
+}
+
+// Si aucune donnée d'orientation ne remonte après 2.5s, on prévient et on
+// propose la capture manuelle (device sans gyroscope, ou navigateur qui bloque l'event).
+function watchdogOrientation(){
+  setTimeout(() => {
+    if(state.running && !state.hasOrientation){
+      $("#guidance").textContent = "Capteurs indisponibles — capture manuelle activée";
+      $("#manualCapture").classList.remove("hidden");
+      $("#targetWrap").classList.add("hidden");
+    }
+  }, 2500);
+}
+
+function attachSensors(){
+  if(state.sensorListening) return;
+  // Préférence pour l'orientation absolue (plus stable / sans dérive) quand dispo
+  if("ondeviceorientationabsolute" in window){
+    state.sensorEventName = "deviceorientationabsolute";
+  } else {
+    state.sensorEventName = "deviceorientation";
+  }
+  window.addEventListener(state.sensorEventName, handleOrientation, true);
+  state.sensorListening = true;
+}
+
+function detachSensors(){
+  if(!state.sensorListening) return;
+  window.removeEventListener(state.sensorEventName, handleOrientation, true);
+  state.sensorListening = false;
+}
+
+// Calcule le quaternion de la caméra virtuelle à partir des données du gyroscope.
+function handleOrientation(e){
+  if(e.alpha === null || e.alpha === undefined) return;
+  state.hasOrientation = true;
+  $("#manualCapture").classList.add("hidden");
+  $("#targetWrap").classList.remove("hidden");
+
+  let alpha = e.alpha || 0;
+  const beta = e.beta || 0;
+  const gamma = e.gamma || 0;
+  if(typeof e.webkitCompassHeading === "number" && Number.isFinite(e.webkitCompassHeading)){
+    alpha = 360 - e.webkitCompassHeading;
+  }
+
+  const alphaRad = THREE.MathUtils.degToRad(alpha);
+  const betaRad = THREE.MathUtils.degToRad(beta);
+  const gammaRad = THREE.MathUtils.degToRad(gamma);
+
+  const orient = (screen.orientation && typeof screen.orientation.angle === "number")
+    ? screen.orientation.angle
+    : (window.orientation || 0);
+  const orientRad = THREE.MathUtils.degToRad(orient);
+
+  const euler = new THREE.Euler();
+  const q0 = new THREE.Quaternion();
+  const q1 = new THREE.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5));
+  const zee = new THREE.Vector3(0, 0, 1);
+
+  euler.set(betaRad, alphaRad, -gammaRad, "YXZ");
+  const rawQuat = new THREE.Quaternion();
+  rawQuat.setFromEuler(euler);
+  rawQuat.multiply(q1);
+  rawQuat.multiply(q0.setFromAxisAngle(zee, -orientRad));
+
+  if(!state.initQuat){
+    state.initQuat = rawQuat.clone().invert();
+  }
+  state.currentQuat = state.initQuat.clone().multiply(rawQuat);
+}
+
+function stopCamera(){
+  if(state.stream){
+    state.stream.getTracks().forEach(t => t.stop());
+    state.stream = null;
+  }
+  camera().srcObject = null;
+  state.running = false;
+  state.captureBusy = false;
+  detachSensors();
+  if(state.raf){ cancelAnimationFrame(state.raf); state.raf = null; }
+  if(screen.orientation?.unlock){ try{ screen.orientation.unlock(); }catch(_){} }
+}
+
+function resetCaptureState(){
+  state.running = false;
+  state.step = 0;
+  state.photos = [];
+  state.pano = null;
+  state.initQuat = null;
+  state.currentQuat = null;
+  state.hasOrientation = false;
+  state.targets = [];
+  state.captureBusy = false;
+  state.stableSince = 0;
+  $("#manualCapture").classList.add("hidden");
+  $("#counter").textContent = `Point 0 / ${TOTAL_PHOTOS}`;
+  $("#progress").style.width = "0%";
+  $("#qualityPill").textContent = "Cherchez la cible";
+  $("#qualityPill").className = "pill bad";
+  $("#targetRing").classList.remove("ready");
+  $("#holdRing").style.strokeDashoffset = 339;
+}
+
+function setStep(step){
+  state.step = step;
+  renderMinimap();
+  if(step >= TOTAL_PHOTOS){ finishCapture(); return; }
+  const t = state.targets[step];
+  $("#counter").textContent = `Point ${step + 1} / ${TOTAL_PHOTOS}`;
+  $("#progress").style.width = `${(step / TOTAL_PHOTOS) * 100}%`;
+  $("#positionLabel").textContent = t.label;
+  $("#targetLabel").textContent = String(step + 1);
+  state.stableSince = 0;
+}
+
+// ---------- Boucle principale : projection écran + alignement ----------
+function captureLoop(){
+  if(!state.running) return;
+
+  if(state.currentQuat && state.step < TOTAL_PHOTOS){
+    const target = state.targets[state.step];
+    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(state.currentQuat);
+    const angleDeg = THREE.MathUtils.radToDeg(forward.angleTo(target.dir));
+    const isAligned = angleDeg <= ALIGN_TOLERANCE_DEG;
+
+    projectTargetToScreen(target, state.currentQuat, forward);
+
+    if(!state.captureBusy){
+      if(!isAligned){
+        state.stableSince = 0;
+        $("#targetRing").classList.remove("ready");
+        $("#holdRing").style.strokeDashoffset = 339;
+        $("#qualityPill").textContent = `Alignez (${Math.round(angleDeg)}°)`;
+        $("#qualityPill").className = "pill bad";
+        setGuidanceText(target, state.currentQuat);
+      } else {
+        $("#targetRing").classList.add("ready");
+        $("#qualityPill").textContent = "Immobile...";
+        $("#qualityPill").className = "pill ok";
+        $("#guidance").textContent = "Parfait ! Ne bougez plus...";
+        $("#guidance").classList.add("ready");
+
+        const now = performance.now();
+        if(!state.stableSince) state.stableSince = now;
+        const elapsed = now - state.stableSince;
+        const ratio = Math.min(1, elapsed / HOLD_MS);
+        $("#holdRing").style.strokeDashoffset = String(339 * (1 - ratio));
+
+        if(elapsed >= HOLD_MS && now - state.lastAutoCapture > 1200){
+          capturePhoto();
+          state.stableSince = 0;
+        }
+      }
+    }
+  }
+
+  state.raf = requestAnimationFrame(captureLoop);
+}
+
+// Projette la direction 3D de la cible dans le repère écran (x,y en pixels)
+// à partir du quaternion caméra courant, sans WebGL : simple projection en perspective.
+function projectTargetToScreen(target, quat, forward){
+  const right = new THREE.Vector3(1, 0, 0).applyQuaternion(quat);
+  const up = new THREE.Vector3(0, 1, 0).applyQuaternion(quat);
+  const dir = target.dir;
+
+  const zLocal = dir.dot(forward);
+  const xLocal = dir.dot(right);
+  const yLocal = dir.dot(up);
+
+  const w = window.innerWidth, h = window.innerHeight;
+  const vFovRad = THREE.MathUtils.degToRad(V_FOV_DEG);
+  const focal = (h / 2) / Math.tan(vFovRad / 2);
+
+  const wrap = $("#targetWrap");
+  const arrow = $("#edgeArrow");
+
+  if(zLocal > 0.12){
+    // La cible est visible devant nous : projection perspective classique
+    const sx = w / 2 + (xLocal / zLocal) * focal;
+    const sy = h / 2 - (yLocal / zLocal) * focal;
+    const margin = 60;
+    const onScreen = sx > -margin && sx < w + margin && sy > -margin && sy < h + margin;
+
+    if(onScreen){
+      wrap.style.opacity = "1";
+      wrap.style.transform = `translate(${sx}px, ${sy}px)`;
+      arrow.classList.add("hidden");
+    } else {
+      wrap.style.opacity = "0";
+      showEdgeArrow(sx, sy, w, h, arrow);
+    }
+  } else {
+    // La cible est derrière nous : on affiche juste une flèche vers le bord le plus logique
+    wrap.style.opacity = "0";
+    const sx = w / 2 + Math.sign(xLocal || 1) * w;
+    const sy = h / 2 - (yLocal) * h;
+    showEdgeArrow(sx, sy, w, h, arrow);
+  }
+}
+
+function showEdgeArrow(sx, sy, w, h, arrow){
+  const cx = w / 2, cy = h / 2;
+  const dx = sx - cx, dy = sy - cy;
+  const angle = Math.atan2(dy, dx);
+  // Intersection avec un rectangle légèrement plus petit que l'écran
+  const pad = 46;
+  const halfW = w / 2 - pad, halfH = h / 2 - pad;
+  const scale = Math.min(Math.abs(halfW / (Math.cos(angle) || 1e-6)), Math.abs(halfH / (Math.sin(angle) || 1e-6)));
+  const ex = cx + Math.cos(angle) * scale;
+  const ey = cy + Math.sin(angle) * scale;
+  arrow.style.left = ex + "px";
+  arrow.style.top = ey + "px";
+  arrow.style.transform = `rotate(${angle + Math.PI/2}rad)`;
+  arrow.classList.remove("hidden");
+}
+
+function setGuidanceText(target, quat){
+  const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(quat);
+  const right = new THREE.Vector3(1, 0, 0).applyQuaternion(quat);
+  const up = new THREE.Vector3(0, 1, 0).applyQuaternion(quat);
+  const xLocal = target.dir.dot(right);
+  const yLocal = target.dir.dot(up);
+  const parts = [];
+  if(Math.abs(yLocal) > 0.12) parts.push(yLocal > 0 ? "levez" : "baissez");
+  if(Math.abs(xLocal) > 0.12) parts.push(xLocal > 0 ? "à droite" : "à gauche");
+  const g = $("#guidance");
+  g.classList.remove("ready");
+  g.textContent = parts.length ? `Tournez ${parts.join(" ")}` : "Rapprochez-vous du centre";
+}
+
+// ---------- Capture & stitching ----------
+function capturePhoto(){
+  const cam = camera();
+  if(!cam.videoWidth || !cam.videoHeight) return;
+  state.captureBusy = true;
+  flashCapture();
+  try {
+    const sw = cam.videoWidth, sh = cam.videoHeight;
+    const maxW = 1600, scale = Math.min(1, maxW / sw);
+    const w = Math.max(1, Math.round(sw * scale)), h = Math.max(1, Math.round(sh * scale));
+    const cv = $("#captureCanvas");
+    cv.width = w; cv.height = h;
+    cv.getContext("2d").drawImage(cam, 0, 0, w, h);
+
+    const target = state.targets[state.step];
+    const photo = { index: state.step, yaw: target.yaw, pitch: target.pitch, width: w, height: h };
+    stitchPhotoIntoPanorama(cv, photo);
+    state.photos.push(photo);
+    state.lastAutoCapture = performance.now();
+    state.captureBusy = false;
+    setStep(state.step + 1);
+  } catch(e){
+    state.captureBusy = false;
+    toast("Erreur de capture : " + e.message);
+  }
+}
+
+function flashCapture(){
+  const flash = $("#flashOverlay");
+  flash.classList.add("flash");
+  setTimeout(() => flash.classList.remove("flash"), 150);
+}
+
+function createPanoramaCanvas(){
+  const c = document.createElement("canvas");
+  c.width = PANO_WIDTH; c.height = PANO_HEIGHT;
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = "#111111";
+  ctx.fillRect(0, 0, c.width, c.height);
+  return { canvas: c, ctx };
+}
+
+function stitchPhotoIntoPanorama(src, photo){
+  if(!state.pano) state.pano = createPanoramaCanvas();
+  const ctx = state.pano.ctx;
+  const isPole = Math.abs(photo.pitch) >= 80;
+
+  const centerX = (normalizeAngle(photo.yaw) / 360) * PANO_WIDTH;
+  const centerY = PANO_HEIGHT / 2 - (photo.pitch / 90) * (PANO_HEIGHT / 2);
+
+  const tileW = Math.round(PANO_WIDTH * (isPole ? 0.9 : 0.30));
+  const tileH = Math.round(PANO_HEIGHT * (isPole ? 0.22 : 0.40));
+
+  const tile = document.createElement("canvas");
+  tile.width = tileW; tile.height = tileH;
+  const tc = tile.getContext("2d");
+  tc.drawImage(src, 0, 0, tileW, tileH);
+
+  const im = tc.getImageData(0, 0, tileW, tileH), d = im.data;
+  const edgeW = Math.round(tileW * (isPole ? 0.08 : 0.25));
+  const edgeH = Math.round(tileH * (isPole ? 0.5 : 0.25));
+  for(let y = 0; y < tileH; y++){
+    for(let x = 0; x < tileW; x++){
+      let alpha = 1.0;
+      if(!isPole){
+        if(x < edgeW) alpha *= (x / edgeW);
+        else if(x > tileW - edgeW) alpha *= ((tileW - x) / edgeW);
+      }
+      if(y < edgeH) alpha *= (y / edgeH);
+      else if(y > tileH - edgeH) alpha *= ((tileH - y) / edgeH);
+      const idx = (y * tileW + x) * 4 + 3;
+      d[idx] = Math.round(d[idx] * alpha);
+    }
+  }
+  tc.putImageData(im, 0, 0);
+
+  ctx.save();
+  ctx.globalCompositeOperation = "source-over";
+  if(isPole){
+    // Les points zénith/nadir couvrent toute la largeur pour éviter un “patch” visible
+    drawWrapped(ctx, tile, 0, centerY - tileH / 2, true);
+  } else {
+    drawWrapped(ctx, tile, centerX - tileW / 2, centerY - tileH / 2, false);
+  }
+  ctx.restore();
+}
+
+function drawWrapped(ctx, img, x, y, fullWidth){
+  const pw = ctx.canvas.width;
+  if(fullWidth){
+    ctx.drawImage(img, 0, y, pw, img.height);
+    return;
+  }
+  const w = img.width;
+  ctx.drawImage(img, x, y);
+  if(x < 0) ctx.drawImage(img, x + pw, y);
+  if(x + w > pw) ctx.drawImage(img, x - pw, y);
+}
+
+function finishCapture(){
+  state.running = false;
+  state.captureBusy = false;
+  $("#progress").style.width = "100%";
+  $("#counter").textContent = `Point ${TOTAL_PHOTOS} / ${TOTAL_PHOTOS}`;
+  $("#qualityPill").textContent = "Panorama HD prêt !";
+  $("#qualityPill").className = "pill ok";
+  $("#guidance").textContent = `✓ SCAN ${TOTAL_PHOTOS} POINTS TERMINÉ`;
+  stopCamera();
+  if(!state.pano) return;
+  const data = state.pano.canvas.toDataURL("image/jpeg", 0.92);
+  state.scenes.push({
+    name: `Visite HD ${state.scenes.length + 1}`,
+    count: TOTAL_PHOTOS,
+    date: new Date().toLocaleDateString("fr-FR"),
+    panoDataUrl: data
+  });
+  renderSceneList();
+  openViewerWithCanvas(state.pano.canvas);
+}
+
+// ---------- Restart / navigation capture ----------
+async function restart360(){
+  if(!confirm("Effacer ce scan et recommencer ?")) return;
+  stopCamera();
+  resetCaptureState();
+  $("#viewer").classList.add("hidden");
+  $("#captureScreen").classList.remove("hidden");
+  $("#permission").classList.remove("hidden");
+  renderMinimap();
+}
+
+function positionAllUI(){
+  // rien à recalculer explicitement : la boucle RAF relit innerWidth/innerHeight à chaque frame
+}
+
+// ---------- Viewer panorama (Three.js) ----------
+function openScene(i){
+  const s = state.scenes[i];
+  if(!s) return;
+  const img = new Image();
+  img.onload = () => {
+    setMode("360");
+    $("#captureScreen").classList.add("hidden");
+    $("#viewer").classList.remove("hidden");
+    if(state.viewer) state.viewer.destroy();
+    state.viewer = new ThreePanoViewer($("#viewerContainer"), img);
+    state.viewer.currentDataUrl = s.panoDataUrl;
+  };
+  img.src = s.panoDataUrl;
+}
+
+function openViewerWithCanvas(sourceCanvas){
+  $("#captureScreen").classList.add("hidden");
+  $("#viewer").classList.remove("hidden");
+  if(state.viewer) state.viewer.destroy();
+  state.viewer = new ThreePanoViewer($("#viewerContainer"), sourceCanvas);
+  state.viewer.currentDataUrl = sourceCanvas.toDataURL("image/jpeg", 0.92);
+}
+
+function closeViewer(){
+  if(state.viewer){ state.viewer.destroy(); state.viewer = null; }
+  $("#viewer").classList.add("hidden");
+  $("#captureScreen").classList.remove("hidden");
+  setMode("2d");
+}
+
+function downloadCurrentPano(){
+  if(!state.viewer || !state.viewer.currentDataUrl){ toast("Aucun panorama à télécharger."); return; }
+  const a = document.createElement("a");
+  a.href = state.viewer.currentDataUrl;
+  a.download = `panorama-360-${Date.now()}.jpg`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
 }
 
 class ThreePanoViewer {
-    constructor(container, imageSource) {
-        this.container = container;
-        this.isUserInteracting = false;
-        this.onPointerDownPointerX = 0;
-        this.onPointerDownPointerY = 0;
-        this.lon = 0;
-        this.onPointerDownLon = 0;
-        this.lat = 0;
-        this.onPointerDownLat = 0;
-        this.phi = 0;
-        this.theta = 0;
-        this.fov = 75;
-        this.scene = new THREE.Scene();
-        this.camera = new THREE.PerspectiveCamera(this.fov, container.clientWidth / container.clientHeight, 1, 1100);
-        
-        const geometry = new THREE.SphereGeometry(500, 64, 40);
-        geometry.scale(-1, 1, 1);
-        
-        let texture;
-        if(imageSource instanceof HTMLCanvasElement || imageSource instanceof HTMLImageElement){
-            texture = new THREE.CanvasTexture(imageSource);
-        } else {
-            texture = new THREE.TextureLoader().load(imageSource);
-        }
-        texture.generateMipmaps = true;
-        texture.minFilter = THREE.LinearMipmapLinearFilter;
-        texture.magFilter = THREE.LinearFilter;
-        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
-        if (renderer.capabilities.getMaxAnisotropy) {
-            texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-        }
-        const material = new THREE.MeshBasicMaterial({ map: texture });
-        const mesh = new THREE.Mesh(geometry, material);
-        this.scene.add(mesh);
-        this.renderer = renderer;
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        this.renderer.setSize(container.clientWidth, container.clientHeight);
-        container.appendChild(this.renderer.domElement);
+  constructor(container, imageSource){
+    this.container = container;
+    this.isUserInteracting = false;
+    this.onPointerDownPointerX = 0;
+    this.onPointerDownPointerY = 0;
+    this.lon = 0; this.onPointerDownLon = 0;
+    this.lat = 0; this.onPointerDownLat = 0;
+    this.phi = 0; this.theta = 0;
+    this.fov = 75;
 
-        this.onWindowResize = this.onWindowResize.bind(this);
-        this.onPointerDown = this.onPointerDown.bind(this);
-        this.onPointerMove = this.onPointerMove.bind(this);
-        this.onPointerUp = this.onPointerUp.bind(this);
-        this.onWheel = this.onWheel.bind(this);
-        
-        window.addEventListener('resize', this.onWindowResize);
-        container.addEventListener('pointerdown', this.onPointerDown);
-        window.addEventListener('pointermove', this.onPointerMove);
-        window.addEventListener('pointerup', this.onPointerUp);
-        container.addEventListener('wheel', this.onWheel, { passive: false });
+    this.scene = new THREE.Scene();
+    this.camera = new THREE.PerspectiveCamera(this.fov, container.clientWidth / container.clientHeight, 1, 1100);
 
-        this.animate = this.animate.bind(this);
-        this.raf = requestAnimationFrame(this.animate);
+    const geometry = new THREE.SphereGeometry(500, 64, 40);
+    geometry.scale(-1, 1, 1);
+
+    let texture;
+    if(imageSource instanceof HTMLCanvasElement || imageSource instanceof HTMLImageElement){
+      texture = new THREE.CanvasTexture ? (imageSource instanceof HTMLCanvasElement ? new THREE.CanvasTexture(imageSource) : new THREE.Texture(imageSource)) : new THREE.Texture(imageSource);
+      if(imageSource instanceof HTMLImageElement){ texture.needsUpdate = true; }
+    } else {
+      texture = new THREE.TextureLoader().load(imageSource);
     }
-    onWindowResize() {
-        if(!this.container) return;
-        this.camera.aspect = this.container.clientWidth / this.container.clientHeight;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
+    texture.generateMipmaps = true;
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    if(renderer.capabilities.getMaxAnisotropy){ texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); }
+
+    const material = new THREE.MeshBasicMaterial({ map: texture });
+    const mesh = new THREE.Mesh(geometry, material);
+    this.scene.add(mesh);
+
+    this.renderer = renderer;
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer.setSize(container.clientWidth, container.clientHeight);
+    container.appendChild(this.renderer.domElement);
+
+    this.onWindowResize = this.onWindowResize.bind(this);
+    this.onPointerDown = this.onPointerDown.bind(this);
+    this.onPointerMove = this.onPointerMove.bind(this);
+    this.onPointerUp = this.onPointerUp.bind(this);
+    this.onWheel = this.onWheel.bind(this);
+
+    window.addEventListener("resize", this.onWindowResize);
+    container.addEventListener("pointerdown", this.onPointerDown);
+    window.addEventListener("pointermove", this.onPointerMove);
+    window.addEventListener("pointerup", this.onPointerUp);
+    container.addEventListener("wheel", this.onWheel, { passive: false });
+
+    this.animate = this.animate.bind(this);
+    this.raf = requestAnimationFrame(this.animate);
+  }
+  onWindowResize(){
+    if(!this.container) return;
+    this.camera.aspect = this.container.clientWidth / this.container.clientHeight;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
+  }
+  onPointerDown(event){
+    this.isUserInteracting = true;
+    this.onPointerDownPointerX = event.clientX;
+    this.onPointerDownPointerY = event.clientY;
+    this.onPointerDownLon = this.lon;
+    this.onPointerDownLat = this.lat;
+  }
+  onPointerMove(event){
+    if(!this.isUserInteracting) return;
+    this.lon = (this.onPointerDownPointerX - event.clientX) * 0.12 + this.onPointerDownLon;
+    this.lat = (event.clientY - this.onPointerDownPointerY) * 0.12 + this.onPointerDownLat;
+  }
+  onPointerUp(){ this.isUserInteracting = false; }
+  onWheel(event){
+    event.preventDefault();
+    this.fov = Math.max(30, Math.min(90, this.fov + event.deltaY * 0.05));
+    this.camera.fov = this.fov;
+    this.camera.updateProjectionMatrix();
+  }
+  animate(){
+    this.raf = requestAnimationFrame(this.animate);
+    this.lat = Math.max(-85, Math.min(85, this.lat));
+    this.phi = THREE.MathUtils.degToRad(90 - this.lat);
+    this.theta = THREE.MathUtils.degToRad(this.lon);
+    const x = 500 * Math.sin(this.phi) * Math.cos(this.theta);
+    const y = 500 * Math.cos(this.phi);
+    const z = 500 * Math.sin(this.phi) * Math.sin(this.theta);
+    this.camera.lookAt(x, y, z);
+    this.renderer.render(this.scene, this.camera);
+  }
+  destroy(){
+    window.removeEventListener("resize", this.onWindowResize);
+    if(this.container){
+      this.container.removeEventListener("pointerdown", this.onPointerDown);
+      this.container.removeEventListener("wheel", this.onWheel);
+      this.container.innerHTML = "";
     }
-    onPointerDown(event) {
-        this.isUserInteracting = true;
-        this.onPointerDownPointerX = event.clientX;
-        this.onPointerDownPointerY = event.clientY;
-        this.onPointerDownLon = this.lon;
-        this.onPointerDownLat = this.lat;
-    }
-    onPointerMove(event) {
-        if (!this.isUserInteracting) return;
-        this.lon = (this.onPointerDownPointerX - event.clientX) * 0.12 + this.onPointerDownLon;
-        this.lat = (event.clientY - this.onPointerDownPointerY) * 0.12 + this.onPointerDownLat;
-    }
-    onPointerUp() {
-        this.isUserInteracting = false;
-    }
-    onWheel(event) {
-        event.preventDefault();
-        this.fov = Math.max(30, Math.min(90, this.fov + event.deltaY * 0.05));
-        this.camera.fov = this.fov;
-        this.camera.updateProjectionMatrix();
-    }
-    animate() {
-        this.raf = requestAnimationFrame(this.animate);
-        this.lat = Math.max(-85, Math.min(85, this.lat));
-        this.phi = THREE.MathUtils.degToRad(90 - this.lat);
-        this.theta = THREE.MathUtils.degToRad(this.lon);
-        const x = 500 * Math.sin(this.phi) * Math.cos(this.theta);
-        const y = 500 * Math.cos(this.phi);
-        const z = 500 * Math.sin(this.phi) * Math.sin(this.theta);
-        this.camera.lookAt(x, y, z);
-        this.renderer.render(this.scene, this.camera);
-    }
-    destroy() {
-        window.removeEventListener('resize', this.onWindowResize);
-        if(this.container){
-            this.container.removeEventListener('pointerdown', this.onPointerDown);
-            this.container.removeEventListener('wheel', this.onWheel);
-        }
-        window.removeEventListener('pointermove', this.onPointerMove);
-        window.removeEventListener('pointerup', this.onPointerUp);
-        cancelAnimationFrame(this.raf);
-        if(this.renderer && this.renderer.domElement){
-            this.renderer.domElement.remove();
-        }
-    }
+    window.removeEventListener("pointermove", this.onPointerMove);
+    window.removeEventListener("pointerup", this.onPointerUp);
+    cancelAnimationFrame(this.raf);
+    if(this.renderer){ this.renderer.dispose(); }
+  }
 }
 </script>
 </body>
