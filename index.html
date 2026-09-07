@@ -40,55 +40,62 @@ button{cursor:pointer}
 .capture-title{font-size:14px;font-weight:800}
 .capture-sub{font-size:12px;color:var(--yellow);margin-top:2px;font-weight:700}
 .capture-tools{display:flex;gap:6px;pointer-events:auto}.capture-tools button{border:1px solid #444;background:#000c;color:#fff;border-radius:8px;padding:7px 10px;font-size:12px}
-.target{
-  position:absolute;
-  left:50%;
-  top:45%;
-  transform:translate(-50%,-50%);
-  width:110px;
-  height:150px;
-  border:3px solid rgba(255,255,255,0.9);
-  border-radius:14px;
-  pointer-events:none;
-  transition:all .15s ease-out;
-  box-shadow:0 0 20px rgba(0,0,0,0.6);
-  display:flex;
-  align-items:center;
-  justify-content:center;
+
+/* NOUVEAU DESIGN DE CIBLAGE (Le gros point blanc à viser) */
+.target-circle {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  width: 90px;
+  height: 90px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 4px solid #fff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+  z-index: 4;
+  transition: transform 0.05s linear, background 0.2s ease, transform 0.2s ease;
 }
-.target.ready{border-color:var(--green);box-shadow:0 0 40px rgba(34,197,94,0.7);transform:translate(-50%,-50%) scale(0.96)}
-.target-inner{
-  width:64px;
-  height:64px;
-  background:var(--yellow);
-  border:3px solid #fff;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:11px;
-  font-weight:900;
-  color:#000;
-  box-shadow:0 0 15px rgba(0,0,0,0.8);
-  transition:all .15s ease-out;
-  text-transform:uppercase;
+.target-circle.ready {
+  background: rgba(34, 197, 94, 0.9);
+  border-color: var(--green);
+  box-shadow: 0 0 40px rgba(34, 197, 94, 0.8);
+  transform: translate(-50%, -50%) scale(1.1);
 }
-.target.ready .target-inner{background:var(--green); transform:scale(1.15); color:#fff;}
-.target-dot{
-  position:absolute;
-  left:50%;
-  top:45%;
-  width:16px;
-  height:16px;
-  background:#fff;
-  border:2px solid #000;
-  border-radius:50%;
-  transform:translate(-50%,-50%);
-  box-shadow:0 0 10px #000;
-  transition:transform .05s linear;
-  z-index:6;
+
+/* NOUVEAU RETICULE FIXE (Le petit point jaune central) */
+.reticle {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  transform: translate(-50%, -50%);
+  width: 50px;
+  height: 50px;
+  border: 2px solid rgba(234, 179, 8, 0.7);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
 }
-.guidance{position:absolute;left:50%;top:calc(45% + 90px);transform:translateX(-50%);background:#000e;border:1px solid #333;padding:5px 12px;border-radius:99px;font-size:11px;font-weight:800;white-space:nowrap}
+.reticle::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background: var(--yellow);
+  border-radius: 50%;
+  box-shadow: 0 0 10px #000;
+  transition: all 0.2s ease;
+}
+.reticle.ready {
+  border-color: rgba(255, 255, 255, 0); /* Cache l'anneau jaune quand aligné */
+}
+.reticle.ready::after {
+  background: #fff;
+  transform: scale(1.5); /* Fait grossir le point central pour confirmer */
+}
+
+.guidance{position:absolute;left:50%;top:calc(45% + 100px);transform:translateX(-50%);background:#000e;border:1px solid #333;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:800;white-space:nowrap}
 .guidance.ready{color:var(--green);border-color:#166534}
 .minimap{
   position:absolute;
@@ -183,6 +190,7 @@ button{cursor:pointer}
           <div id="flashOverlay" class="flash-overlay"></div>
           <video id="camera" autoplay playsinline muted></video>
           <canvas id="captureCanvas" class="hidden"></canvas>
+          
           <div class="capture-ui">
             <div class="capture-top">
               <div>
@@ -194,10 +202,10 @@ button{cursor:pointer}
                 <button id="exit360">Quitter</button>
               </div>
             </div>
-            <div class="target" id="targetRing">
-              <div class="target-inner" id="targetInner">HOLD</div>
-            </div>
-            <div class="target-dot" id="targetDot"></div>
+            
+            <div class="target-circle" id="targetCircle"></div>
+            <div class="reticle" id="reticle"></div>
+            
             <div class="guidance" id="guidance">Recherche de la position...</div>
             <div class="minimap" id="minimap"></div>
             <div class="capture-bottom">
@@ -224,7 +232,7 @@ button{cursor:pointer}
 
 <script>
 "use strict";
-const TOTAL_PHOTOS = 22, YAW_TOLERANCE = 8, PITCH_TOLERANCE = 8, PANO_WIDTH = 6000, PANO_HEIGHT = 3000;
+const TOTAL_PHOTOS = 22, YAW_TOLERANCE = 7, PITCH_TOLERANCE = 7, PANO_WIDTH = 6000, PANO_HEIGHT = 3000;
 const state = { mode: "2d", running: false, stream: null, sensorListening: false, rawYaw: null, rawPitch: null, yaw: null, pitch: null, startYaw: null, step: 0, targets: [], photos: [], pano: null, viewer: null, projectName: "Visite 360° HD", scenes: [], captureBusy: false, stableSince: 0, lastAutoCapture: 0 };
 const $ = s => document.querySelector(s);
 const camera = $("#camera"), captureCanvas = $("#captureCanvas");
@@ -370,7 +378,6 @@ function handleOrientation(e){
     if(typeof e.webkitCompassHeading === "number" && Number.isFinite(e.webkitCompassHeading)) rawY = normalizeAngle(e.webkitCompassHeading);
     else if(typeof e.alpha === "number" && Number.isFinite(e.alpha)) rawY = normalizeAngle(360 - e.alpha);
     
-    // CORRECTION INVERSION HAUT / BAS ICI : Inversion du signe de beta
     let rawP = null;
     if(typeof e.beta === "number" && Number.isFinite(e.beta)) rawP = clamp(-(90 - e.beta), -90, 90);
 
@@ -415,7 +422,7 @@ function stopCamera(){
         window.removeEventListener("deviceorientationabsolute", handleOrientation, true);
         state.sensorListening = false;
     }
-    const dot = $("#targetDot");
+    const dot = $("#targetCircle");
     if(dot) dot.style.display = "none";
 }
 
@@ -435,8 +442,8 @@ function resetCaptureState(){
     $("#qualityPill").textContent = "Stabilisation...";
     $("#qualityPill").className = "pill bad";
     $("#guidance").textContent = "Recherche de la position...";
-    $("#targetRing").classList.remove("ready");
-    $("#targetInner").textContent = "HOLD";
+    $("#reticle").classList.remove("ready");
+    $("#targetCircle").classList.remove("ready");
 }
 
 function setStep(step){
@@ -460,24 +467,44 @@ function alignment(){
 
 function updateGuidance(){
     const a = alignment();
-    const dot = $("#targetDot");
-    if(!a){ if(dot) dot.style.display = "none"; return; }
-    if(dot) dot.style.display = "block";
-    const pxPerDeg = 6;
-    let dx = a.yd * pxPerDeg, dy = a.pd * pxPerDeg;
-    const maxDist = window.innerWidth / 2.8, dist = Math.hypot(dx, dy);
+    const targetCircle = $("#targetCircle");
+    
+    if(!a){ 
+        if(targetCircle) targetCircle.style.display = "none"; 
+        return; 
+    }
+    
+    if(targetCircle) targetCircle.style.display = "block";
+    
+    const pxPerDeg = 10; // Sensibilité ajustée pour rendre la visée fluide
+    
+    let dx = a.yd * pxPerDeg;
+    // CORRECTIF CRUCIAL ICI : L'axe Y inversé garantit que le cercle bouge 
+    // dans le sens opposé au téléphone, exactement comme une vraie cible spatiale
+    let dy = -a.pd * pxPerDeg; 
+    
+    // Garde le cercle dans les limites de l'écran (bords adoucis)
+    const maxDist = window.innerWidth / 2.2; 
+    const dist = Math.hypot(dx, dy);
     if(dist > maxDist){
         dx = (dx / dist) * maxDist;
         dy = (dy / dist) * maxDist;
     }
-    dot.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+    
+    // Déplace le cercle blanc
+    targetCircle.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+    
     const ready = a.ready && state.running && !state.captureBusy;
+    
+    // Mise à jour de l'interface quand on est dessus
     $("#qualityPill").textContent = ready ? "Immobile (1s)..." : "Centrage requis";
     $("#qualityPill").className = "pill " + (ready ? "ok" : "bad");
-    $("#targetRing").classList.toggle("ready", ready);
-    $("#targetInner").textContent = ready ? "OK" : "HOLD";
+    
+    $("#reticle").classList.toggle("ready", ready);
+    targetCircle.classList.toggle("ready", ready);
+    
     $("#guidance").classList.toggle("ready", ready);
-    $("#guidance").textContent = ready ? "Parfait ! Ne bougez plus..." : "Centrez le point dans le cadre";
+    $("#guidance").textContent = ready ? "Parfait ! Ne bougez plus..." : "Mettez le point jaune dans le gros cercle blanc";
 }
 
 function captureLoop(){
@@ -652,7 +679,6 @@ class ThreePanoViewer {
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(this.fov, container.clientWidth / container.clientHeight, 1, 1100);
         
-        // Géométrie sphérique standard pour visite intérieure
         const geometry = new THREE.SphereGeometry(500, 64, 40);
         geometry.scale(-1, 1, 1);
         
@@ -708,7 +734,6 @@ class ThreePanoViewer {
     onPointerMove(event) {
         if (!this.isUserInteracting) return;
         this.lon = (this.onPointerDownPointerX - event.clientX) * 0.12 + this.onPointerDownLon;
-        // CORRECTION DE LA DISTORSION LATERALE / HAUT-BAS DU MOUSE DRAG
         this.lat = (event.clientY - this.onPointerDownPointerY) * 0.12 + this.onPointerDownLat;
     }
     onPointerUp() {
