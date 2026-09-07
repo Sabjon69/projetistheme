@@ -4,8 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#000000">
-  <title>Studio Visite Pro 360° - 360 Photo Cam Style</title>
+  <title>Studio Visite Pro 360° - Pannellum Edition</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
   <style>
     :root{ --black:#000; --bg:#050505; --panel:#0d0d0d; --line:#222; --text:#fff; --muted:#888; --green:#22c55e; --red:#ef4444; }
     *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
@@ -61,7 +63,7 @@
     .capture-tools{display:flex;gap:6px}
     .capture-tools button{border:1px solid #444;background:#000c;color:#fff;border-radius:8px;padding:7px 10px;font-size:12px}
     
-    /* Center crosshair fixed on screen */
+    /* Réticule central fixe */
     .center-reticle{
       position: absolute; left: 50%; top: 50%;
       width: 16px; height: 16px; margin: -8px 0 0 -8px;
@@ -70,7 +72,7 @@
       z-index: 8; pointer-events: none;
     }
 
-    /* Floating AR Target Buttons (Red / Green circles positioned in 3D space around user) */
+    /* Boutons cibles AR rouges/verts positionnés en 3D autour de l'utilisateur */
     .ar-target {
       position: absolute;
       width: 44px; height: 44px; margin: -22px 0 0 -22px;
@@ -80,7 +82,7 @@
       z-index: 7; pointer-events: auto;
       display: flex; align-items: center; justify-content: center;
       box-shadow: 0 0 12px rgba(239, 68, 68, 0.6);
-      transition: transform 0.1s, background 0.2s, border-color 0.2s, opacity 0.2s;
+      transition: transform 0.1s, background 0.2s, border-color 0.2s;
     }
     .ar-target.done {
       border-color: var(--green);
@@ -95,7 +97,7 @@
       width: 8px; height: 8px; background: #fff; border-radius: 50%;
     }
 
-    /* Radar / Matrix container at the bottom like 360 Photo Cam */
+    /* Radar / Matrice en bas style 360 Photo Cam */
     .radar-container {
       position: absolute; bottom: 20px; left: 50%;
       transform: translateX(-50%);
@@ -112,16 +114,17 @@
       cursor: pointer; transition: transform 0.2s;
     }
     .radar-dot.done { background: var(--green); border-color: var(--green); }
-    .radar-dot.current { border-color: #fff; transform: scale(1.3); box-shadow: 0 0 6px #fff; }
 
+    /* Visualiseur Pannellum */
     .viewer{position:absolute;inset:0;background:#000;z-index:20}
-    #viewerContainer{width:100%;height:100%;position:absolute;inset:0}
-    .viewer-ui{position:absolute;left:16px;top:max(14px,env(safe-area-inset-top));z-index:4;pointer-events:none}
-    .viewer-ui h2{margin:0;font-size:15px}
-    .viewer-ui p{margin:4px 0;color:var(--muted);font-size:11px}
-    .viewer-actions{position:absolute;right:16px;top:max(14px,env(safe-area-inset-top));z-index:4;display:flex;gap:8px}
+    #panorama{width:100%;height:100%;position:absolute;inset:0}
+    .viewer-ui{position:absolute;left:16px;top:max(14px,env(safe-area-inset-top));z-index:25;pointer-events:none}
+    .viewer-ui h2{margin:0;font-size:15px;text-shadow:0 1px 4px #000}
+    .viewer-ui p{margin:4px 0;color:var(--muted);font-size:11px;text-shadow:0 1px 4px #000}
+    .viewer-actions{position:absolute;right:16px;top:max(14px,env(safe-area-inset-top));z-index:25;display:flex;gap:8px}
     .viewer-actions button{border:1px solid #333;background:#111d;color:#fff;border-radius:8px;padding:7px 10px;pointer-events:auto;font-size:12px}
-    .processing{position:absolute;inset:0;z-index:25;background:#000c;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px}
+    
+    .processing{position:absolute;inset:0;z-index:30;background:#000c;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px}
     .spinner{width:34px;height:34px;border-radius:50%;border:3px solid #333;border-top-color:#fff;animation:spin 1s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
     .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#111;border:1px solid #333;color:#fff;padding:10px 16px;border-radius:10px;font-size:12px;z-index:200;opacity:0;pointer-events:none;transition:opacity .25s}
@@ -155,7 +158,7 @@
               <div class="permission-card">
                 <div class="big-icon">🔴</div>
                 <h1>Mode 360 Photo Cam (24 points)</h1>
-                <p>Les 24 points rouges sont déjà positionnés en réalité augmentée autour de toi et sur le radar en bas. Vise un point rouge avec le réticule central pour prendre la photo, ou clique directement sur les points !</p>
+                <p>Les 24 points rouges sont prêts en réalité augmentée autour de toi. Vise un point rouge avec le réticule central pour capturer la photo automatiquement, ou clique directement dessus !</p>
                 <button class="primary" id="start360" style="margin-top:16px">Démarrer la caméra 360</button>
                 <div class="err" id="permError"></div>
               </div>
@@ -176,21 +179,19 @@
                 </div>
               </div>
 
-              <!-- Center crosshair -->
               <div class="center-reticle"></div>
 
-              <!-- Container for floating AR target buttons -->
               <div id="arTargetsContainer"></div>
 
-              <!-- Radar / Matrix at the bottom -->
               <div class="radar-container" id="radarContainer"></div>
             </div>
           </div>
+
           <div class="viewer hidden" id="viewer">
-            <div id="viewerContainer"></div>
+            <div id="panorama"></div>
             <div class="viewer-ui">
               <h2>Panorama 360° Assemblé</h2>
-              <p>Glisse ton doigt pour explorer</p>
+              <p>Explore ton panorama interactif</p>
             </div>
             <div class="viewer-actions">
               <button id="downloadPano">Télécharger</button>
@@ -198,7 +199,7 @@
             </div>
             <div class="processing hidden" id="processing">
               <div class="spinner"></div>
-              <div id="processingLabel">Assemblage du panorama 360...</div>
+              <div id="processingLabel">Génération du panorama 360...</div>
             </div>
           </div>
         </section>
@@ -212,7 +213,7 @@
     "use strict";
 
     const TOTAL_PHOTOS = 24;
-    const ACC_W = 3000, ACC_H = 1500;
+    const ACC_W = 4000, ACC_H = 2000;
     const V_FOV_DEG = 60;
 
     const $ = s => document.querySelector(s);
@@ -220,7 +221,7 @@
 
     const state = {
       mode: "2d", running: false, stream: null,
-      targets: [], acc: null, viewer: null,
+      targets: [], acc: null, pannellumViewer: null,
       projectName: "Visite 360° Cam", scenes: [], gallery: [],
       currentOrientation: { alpha: 0, beta: 0, gamma: 0 },
       animationFrameId: null, autoCaptureTimer: null, lockedTargetId: null
@@ -330,18 +331,9 @@
 
     function buildTargets(){
       const targets = [];
-      // 8 points horizontal (pitch = 0)
-      for(let i = 0; i < 8; i++){
-        targets.push({ id: i, yaw: i * 45, pitch: 0, captured: false });
-      }
-      // 8 points haut (pitch = +35)
-      for(let i = 0; i < 8; i++){
-        targets.push({ id: i + 8, yaw: i * 45 + 22.5, pitch: 35, captured: false });
-      }
-      // 8 points bas (pitch = -35)
-      for(let i = 0; i < 8; i++){
-        targets.push({ id: i + 16, yaw: i * 45 + 22.5, pitch: -35, captured: false });
-      }
+      for(let i = 0; i < 8; i++){ targets.push({ id: i, yaw: i * 45, pitch: 0, captured: false }); }
+      for(let i = 0; i < 8; i++){ targets.push({ id: i + 8, yaw: i * 45 + 22.5, pitch: 35, captured: false }); }
+      for(let i = 0; i < 8; i++){ targets.push({ id: i + 16, yaw: i * 45 + 22.5, pitch: -35, captured: false }); }
 
       targets.forEach(t => {
         const phi = degToRad(90 - t.pitch);
@@ -354,11 +346,7 @@
     function buildRadarUI(){
       const radar = $("#radarContainer");
       radar.innerHTML = "";
-      const groups = [
-        state.targets.slice(0, 8),
-        state.targets.slice(8, 16),
-        state.targets.slice(16, 24)
-      ];
+      const groups = [state.targets.slice(0, 8), state.targets.slice(8, 16), state.targets.slice(16, 24)];
       groups.forEach((group) => {
         const row = document.createElement("div");
         row.className = "radar-row";
@@ -442,8 +430,6 @@
 
     function startRenderLoop(){
       const container = $("#arTargetsContainer");
-
-      // Créer les éléments DOM pour les 24 cibles une seule fois
       container.innerHTML = "";
       state.targets.forEach(t => {
         const el = document.createElement("div");
@@ -459,7 +445,6 @@
 
         const alpha = degToRad(state.currentOrientation.alpha);
         const beta = degToRad(state.currentOrientation.beta - 90);
-        const gamma = degToRad(state.currentOrientation.gamma);
 
         const camDir = new THREE.Vector3(
           Math.sin(alpha) * Math.cos(beta),
@@ -494,7 +479,6 @@
           el.style.left = px + "px";
           el.style.top = py + "px";
 
-          // Vérifier si le point est dans l'écran
           const distFromCenter = Math.hypot(px - (screenW / 2), py - (screenH / 2));
           if(distFromCenter < minDistance){
             minDistance = distFromCenter;
@@ -508,7 +492,6 @@
           }
         });
 
-        // Auto capture si le réticule central est sur un point rouge
         if(closestTarget && minDistance < 35){
           if(state.lockedTargetId !== closestTarget.id){
             state.lockedTargetId = closestTarget.id;
@@ -517,7 +500,7 @@
               if(state.running && !closestTarget.captured){
                 captureTarget(closestTarget.id);
               }
-            }, 400);
+            }, 350);
           }
         } else {
           state.lockedTargetId = null;
@@ -637,87 +620,45 @@
       setTimeout(() => {
         const dataUrl = state.acc ? state.acc.canvas.toDataURL("image/jpeg", 0.9) : "";
         const sceneObj = {
-          name: `Panorama 360° Cam ${state.scenes.length + 1}`,
+          name: `Panorama 360° ${state.scenes.length + 1}`,
           date: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
           dataUrl
         };
         state.scenes.push(sceneObj);
         renderSceneList();
         $("#processing").classList.add("hidden");
-        init3DViewer(dataUrl);
-      }, 400);
+        initPannellumViewer(dataUrl);
+      }, 500);
     }
 
-    function init3DViewer(imgUrl){
-      const container = $("#viewerContainer");
+    function initPannellumViewer(imgUrl){
+      // Destruction de l'instance précédente si elle existe
+      const container = $("#panorama");
       container.innerHTML = "";
 
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-      const renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(container.clientWidth, container.clientHeight);
-      container.appendChild(renderer.domElement);
-
-      const geometry = new THREE.SphereGeometry(500, 60, 40);
-      geometry.scale(-1, 1, 1);
-
-      const texture = new THREE.TextureLoader().load(imgUrl, () => {
-        renderer.render(scene, camera);
+      state.pannellumViewer = pannellum.viewer('panorama', {
+        type: "equirectangular",
+        panorama: imgUrl,
+        autoLoad: true,
+        compass: true,
+        hfov: 100,
+        mouseZoom: true
       });
-      const material = new THREE.MeshBasicMaterial({ map: texture });
-      const mesh = new THREE.Mesh(geometry, material);
-      scene.add(mesh);
-
-      camera.position.set(0, 0, 0.1);
-
-      let isUserInteracting = false, onPointerDownPointerX = 0, onPointerDownPointerY = 0,
-          lon = 0, onPointerDownLon = 0, lat = 0, onPointerDownLat = 0;
-
-      container.addEventListener("pointerdown", e => {
-        isUserInteracting = true;
-        onPointerDownPointerX = e.clientX;
-        onPointerDownPointerY = e.clientY;
-        onPointerDownLon = lon;
-        onPointerDownLat = lat;
-      });
-
-      window.addEventListener("pointermove", e => {
-        if(!isUserInteracting) return;
-        lon = (onPointerDownPointerX - e.clientX) * 0.2 + onPointerDownLon;
-        lat = (e.clientY - onPointerDownPointerY) * 0.2 + onPointerDownLat;
-      });
-
-      window.addEventListener("pointerup", () => isUserInteracting = false);
-
-      function animate(){
-        if(!state.viewer) return;
-        requestAnimationFrame(animate);
-        lat = Math.max(-85, Math.min(85, lat));
-        const phi = THREE.MathUtils.degToRad(90 - lat);
-        const theta = THREE.MathUtils.degToRad(lon);
-
-        camera.lookAt(new THREE.Vector3(
-          500 * Math.sin(phi) * Math.cos(theta),
-          500 * Math.cos(phi),
-          500 * Math.sin(phi) * Math.sin(theta)
-        ));
-        renderer.render(scene, camera);
-      }
-
-      state.viewer = { renderer, scene, camera };
-      animate();
     }
 
     function openScene(idx){
       const scene = state.scenes[idx];
       if(!scene) return;
       $("#viewer").classList.remove("hidden");
-      init3DViewer(scene.dataUrl);
+      initPannellumViewer(scene.dataUrl);
     }
 
     function closeViewer(){
       $("#viewer").classList.add("hidden");
-      if(state.viewer){ state.viewer.renderer.dispose(); state.viewer = null; }
+      if(state.pannellumViewer){
+        state.pannellumViewer.destroy();
+        state.pannellumViewer = null;
+      }
     }
 
     function downloadCurrentPano(){
@@ -725,7 +666,7 @@
       if(!url) return;
       const a = document.createElement("a");
       a.href = url;
-      a.download = `panorama-360-cam-${Date.now()}.jpg`;
+      a.download = `panorama-360-${Date.now()}.jpg`;
       a.click();
     }
 
