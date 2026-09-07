@@ -13,24 +13,20 @@
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
 html,body{margin:0;width:100%;height:100%;background:#000;color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden;overscroll-behavior:none}
-button,input{font:inherit}
-button{cursor:pointer}
+button,input{font:inherit} button{cursor:pointer}
 .hidden{display:none!important}
-
 .app{height:100dvh;display:grid;grid-template-rows:56px 1fr;background:var(--bg)}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:#09090b;border-bottom:1px solid var(--line);z-index:30}
 .brand{font-weight:800;font-size:15px;letter-spacing:-.3px}.brand span{color:var(--yellow)}
 .tabs{display:flex;gap:4px}
 .tab{border:0;background:transparent;color:var(--muted);padding:8px 12px;border-radius:8px;font-weight:700;font-size:13px}
 .tab.active{background:#18181b;color:#fff}
-
 .workspace{min-height:0;display:grid;grid-template-columns:300px 1fr}
 .sidebar{background:var(--panel);border-right:1px solid var(--line);padding:16px;overflow:auto}
 .section-title{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:800;margin:4px 0 8px}
 .project-name{font-size:18px;font-weight:800;margin-bottom:12px;word-break:break-word}
 .primary{width:100%;border:0;background:#fff;color:#000;padding:12px;border-radius:10px;font-weight:800;font-size:13px}
 .primary:active{transform:scale(.98)}
-
 .scene-list{display:flex;flex-direction:column;gap:8px;margin-top:8px}
 .scene{border:1px solid var(--line);background:#121215;border-radius:10px;padding:10px}
 .scene.active{border-color:#444}
@@ -38,10 +34,8 @@ button{cursor:pointer}
 .scene-meta{font-size:11px;color:var(--muted);margin-top:3px}
 .scene-actions{display:flex;gap:6px;margin-top:8px}
 .scene-actions button{border:1px solid #333;background:#1a1a1e;color:#ccc;border-radius:6px;padding:5px 8px;font-size:11px;flex:1}
-
 .main{position:relative;min-width:0;min-height:0;background:#000}
 .mode{height:100%;width:100%}
-
 .mode-2d{padding:24px;overflow:auto;background:#050505}
 .empty-2d{min-height:100%;border:2px dashed #222;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
 .empty-2d h2{margin:0 0 6px;font-size:18px}
@@ -53,19 +47,16 @@ button{cursor:pointer}
 .gallery-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
 .gallery-toolbar h2{margin:0;font-size:16px}
 .small-btn{border:1px solid #333;background:#141417;color:#eee;padding:8px 12px;border-radius:8px;font-weight:700;font-size:12px}
-
 .capture{position:relative;height:100%;width:100%;overflow:hidden;background:#000}
 #camera{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;background:#000}
 .flash-overlay{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:100;transition:opacity .15s ease-out}
 .flash-overlay.flash{opacity:1}
-
 .permission{position:absolute;inset:0;z-index:20;background:#000;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px}
 .permission-card{width:min(480px,100%)}
 .permission-card .big-icon{font-size:38px;margin-bottom:10px}
 .permission-card h1{font-size:22px;margin:0 0 8px}
 .permission-card p{margin:0 auto;max-width:420px;color:var(--muted);font-size:13px;line-height:1.5}
 .permission-card .err{color:var(--red);font-size:12px;margin-top:12px;min-height:16px}
-
 .capture-ui{position:absolute;inset:0;z-index:5;pointer-events:none}
 .capture-top{position:absolute;left:0;right:0;top:max(14px,env(safe-area-inset-top));display:flex;align-items:flex-start;justify-content:space-between;padding:0 16px;z-index:6}
 .capture-title{font-size:14px;font-weight:800;text-shadow:0 1px 4px #000}
@@ -73,28 +64,29 @@ button{cursor:pointer}
 .capture-tools{display:flex;gap:6px;pointer-events:auto}
 .capture-tools button{border:1px solid #444;background:#000c;color:#fff;border-radius:8px;padding:7px 10px;font-size:12px}
 
-/* Cible AR discrète qui indique où pointer (juste un repère, PAS un bouton) */
-.aim-marker{position:absolute;left:0;top:0;width:70px;height:70px;margin-left:-35px;margin-top:-35px;z-index:4;will-change:transform;transition:opacity .15s}
+/* Cible AR : la position (left/top) est mise à jour à chaque frame via JS, mais on ajoute une
+   transition CSS courte sur "transform" pour absorber les micro-sauts résiduels — c'est ce filtre
+   visuel + le lissage du quaternion (voir handleOrientation) qui rendent le repère "posé" au lieu
+   de trembler. */
+.aim-marker{
+  position:absolute;left:0;top:0;width:70px;height:70px;margin-left:-35px;margin-top:-35px;z-index:4;
+  will-change:transform;
+  transition:opacity .15s, transform 70ms linear;
+}
 .aim-ring{position:absolute;inset:0;border-radius:50%;border:3px solid rgba(255,255,255,.8);transition:border-color .15s,transform .12s,background-color .15s}
 .aim-ring.ready{border-color:var(--green);background:rgba(34,197,94,.25);transform:scale(1.12)}
-
-/* point fixe au centre = axe optique du téléphone */
+.aim-ring.locked{border-color:var(--green)}
 .center-dot{position:absolute;left:50%;top:50%;width:7px;height:7px;margin:-3.5px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px #0009;z-index:5;pointer-events:none}
-
-.edge-arrow{position:absolute;z-index:4;width:42px;height:42px;margin:-21px;color:#fff;filter:drop-shadow(0 1px 3px #000);pointer-events:none;transition:opacity .15s}
+.edge-arrow{position:absolute;z-index:4;width:42px;height:42px;margin:-21px;color:#fff;filter:drop-shadow(0 1px 3px #000);pointer-events:none;transition:opacity .15s, transform 70ms linear}
 .edge-arrow svg{width:100%;height:100%}
-
 .guidance-wrap{position:absolute;left:50%;top:calc(50% + 64px);transform:translateX(-50%);z-index:6}
 .guidance{background:#000a;border:1px solid #333;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:800;white-space:nowrap}
 .guidance.ready{color:var(--green);border-color:#166534}
-
 .minimap{position:absolute;bottom:150px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:4px;background:rgba(10,10,12,0.85);border:1px solid #333;padding:8px 10px;border-radius:12px;pointer-events:none;z-index:6;backdrop-filter:blur(8px)}
 .mini-row{display:flex;gap:5px;justify-content:center;align-items:center}
 .mini-dot{width:13px;height:13px;border-radius:50%;background:#222;border:1px solid #444;transition:all .2s}
 .mini-dot.active{border-color:var(--yellow);background:#422006;transform:scale(1.3);box-shadow:0 0 8px var(--yellow)}
 .mini-dot.done{border-color:var(--green);background:var(--green)}
-
-/* --- Bouton obturateur FIXE, comme un vrai appareil photo (bas, centré, toujours au même endroit) --- */
 .shutter-zone{position:absolute;left:0;right:0;bottom:max(18px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:10px;z-index:7}
 .status-row{display:flex;align-items:center;justify-content:center;gap:6px;pointer-events:none}
 .pill{background:#000c;border:1px solid #333;padding:4px 10px;border-radius:99px;font-size:11px;color:#ddd}
@@ -109,7 +101,6 @@ button{cursor:pointer}
 .shutter-btn:active{transform:scale(.93)}
 .shutter-btn.ready{background:var(--green);border-color:var(--green)}
 .shutter-hint{font-size:11px;color:var(--muted);pointer-events:none}
-
 .viewer{position:absolute;inset:0;background:#000;z-index:20}
 #viewerContainer{width:100%;height:100%;position:absolute;inset:0}
 .viewer-ui{position:absolute;left:16px;top:max(14px,env(safe-area-inset-top));z-index:4;pointer-events:none}
@@ -120,10 +111,8 @@ button{cursor:pointer}
 .processing{position:absolute;inset:0;z-index:25;background:#000c;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px}
 .spinner{width:34px;height:34px;border-radius:50%;border:3px solid #333;border-top-color:#fff;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#111;border:1px solid #333;color:#fff;padding:10px 16px;border-radius:10px;font-size:12px;z-index:200;opacity:0;pointer-events:none;transition:opacity .25s}
 .toast.show{opacity:1}
-
 @media(max-width:768px){
   .workspace{grid-template-columns:1fr;grid-template-rows:auto 1fr}
   .sidebar{border-right:none;border-bottom:1px solid var(--line);max-height:26vh}
@@ -145,7 +134,6 @@ button{cursor:pointer}
       <div class="section-title">Projet</div>
       <div class="project-name" id="projectName">Visite 360° HD</div>
       <button class="primary" id="renameBtn">Renommer le projet</button>
-
       <div class="section-title" style="margin-top:20px">Scènes 360°</div>
       <div class="scene-list" id="sceneList"></div>
     </aside>
@@ -190,7 +178,6 @@ button{cursor:pointer}
             </div>
 
             <div class="guidance-wrap"><div class="guidance" id="guidance">Tournez autour de vous...</div></div>
-
             <div class="minimap" id="minimap"></div>
 
             <div class="shutter-zone">
@@ -237,10 +224,26 @@ button{cursor:pointer}
 "use strict";
 
 const TOTAL_PHOTOS = 22;
-const ALIGN_TOLERANCE_DEG = 9;
-const HOLD_MS = 850;
-const V_FOV_DEG = 60;          // FOV vertical assumé (aussi utilisé pour la reprojection)
-const ACC_W = 3000, ACC_H = 1500; // résolution interne du panorama (bon compromis qualité/perf mobile)
+
+/* --- Alignement avec hystérésis ---
+   ENTER : seuil pour considérer qu'on VIENT de s'aligner (strict).
+   EXIT  : seuil, plus large, en dessous duquel on reste considéré "aligné"
+           une fois qu'on l'était. Ça évite que le cercle de progression
+           se vide à cause d'un micro-tremblement de la main. */
+const ALIGN_ENTER_DEG = 9;
+const ALIGN_EXIT_DEG  = 16;
+
+/* Grâce : un bref décrochage (main qui tremble) ne remet pas le compteur à zéro. */
+const HOLD_GRACE_MS = 350;
+
+const HOLD_MS = 800;
+const V_FOV_DEG = 60;
+const ACC_W = 3000, ACC_H = 1500;
+
+/* Constante de temps du filtre passe-bas appliqué à l'orientation (en secondes).
+   Plus haut = plus stable mais plus "lourd" à suivre ; plus bas = plus réactif mais plus tremblant.
+   0.15s est un bon compromis pour un scan où l'utilisateur bouge lentement. */
+const ORIENT_SMOOTH_TAU = 0.15;
 
 const $ = s => document.querySelector(s);
 const cameraEl = () => $("#camera");
@@ -252,8 +255,9 @@ const state = {
   sensorEventName: null,
   sensorListening: false,
   initQuat: null,
-  currentQuat: null,
+  currentQuat: null,       // orientation lissée utilisée pour l'affichage/la capture
   hasOrientation: false,
+  lastOrientTime: 0,
   step: 0,
   targets: [],
   acc: null,
@@ -263,7 +267,9 @@ const state = {
   scenes: [],
   gallery: [],
   captureBusy: false,
-  stableSince: 0,
+  locked: false,           // état "aligné" avec hystérésis
+  stableSince: 0,          // instant où le maintien a commencé
+  lastAlignedTime: 0,      // dernier instant où on était aligné (pour la grâce)
   lastAutoCapture: 0,
   raf: null
 };
@@ -271,7 +277,14 @@ const state = {
 function normalizeAngle(v){ return ((v % 360) + 360) % 360; }
 function degToRad(d){ return d * Math.PI / 180; }
 function escapeHtml(v){ return String(v).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
-function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toast._t); toast._t = setTimeout(()=>t.classList.remove("show"), 2200); }
+
+function toast(msg){
+  const t = $("#toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>t.classList.remove("show"), 2200);
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", e => setMode(e.currentTarget.dataset.mode)));
@@ -284,7 +297,6 @@ document.addEventListener("DOMContentLoaded", () => {
   $("#shutterBtn").addEventListener("click", () => { if(!state.captureBusy && state.running) capturePhoto(); });
   $("#photoInput").addEventListener("change", onPhotosImported);
   $("#tabTotal").textContent = TOTAL_PHOTOS;
-
   $("#projectName").textContent = state.projectName;
   renderSceneList();
   renderGallery();
@@ -371,7 +383,7 @@ function renderSceneList(){
   });
 }
 
-// ---------- Grille des points cibles ----------
+// ---------- Grille des points cibles (fixe, pré-établie) ----------
 function buildTargets(){
   const targets = [];
   for(let i = 0; i < 8; i++) targets.push({ yaw: i * 45, pitch: 0, label: `Horizon ${i+1}/8` });
@@ -442,7 +454,6 @@ async function start360(){
     state.step = 0;
     state.acc = createAccumulator();
     state.photoCount = 0;
-
     setStep(0);
     watchdogOrientation();
     state.raf = requestAnimationFrame(captureLoop);
@@ -468,13 +479,19 @@ function attachSensors(){
   window.addEventListener(state.sensorEventName, handleOrientation, true);
   state.sensorListening = true;
 }
-
 function detachSensors(){
   if(!state.sensorListening) return;
   window.removeEventListener(state.sensorEventName, handleOrientation, true);
   state.sensorListening = false;
 }
 
+/* ---------- Lecture + LISSAGE de l'orientation ----------
+   C'est le cœur de la stabilisation : on ne remplace plus l'orientation
+   affichée par la valeur brute du capteur à chaque événement. On la fait
+   glisser (SLERP) vers la nouvelle valeur, avec un facteur qui dépend du
+   temps écoulé depuis la dernière lecture (filtre passe-bas indépendant
+   du taux de rafraîchissement du capteur). Résultat : le repère blanc
+   "flotte" doucement au lieu de sauter. */
 function handleOrientation(e){
   if(e.alpha === null || e.alpha === undefined) return;
   state.hasOrientation = true;
@@ -503,7 +520,18 @@ function handleOrientation(e){
   rawQuat.multiply(q0.setFromAxisAngle(zee, -orientRad));
 
   if(!state.initQuat) state.initQuat = rawQuat.clone().invert();
-  state.currentQuat = state.initQuat.clone().multiply(rawQuat);
+  const targetQuat = state.initQuat.clone().multiply(rawQuat);
+
+  const now = performance.now();
+  if(!state.currentQuat){
+    // première lecture : pas de filtrage possible, on part directement de cette valeur
+    state.currentQuat = targetQuat;
+  } else {
+    const dt = state.lastOrientTime ? Math.min(0.2, (now - state.lastOrientTime) / 1000) : 0.016;
+    const alphaSmooth = 1 - Math.exp(-dt / ORIENT_SMOOTH_TAU);
+    state.currentQuat.slerp(targetQuat, alphaSmooth);
+  }
+  state.lastOrientTime = now;
 }
 
 function stopCamera(){
@@ -524,10 +552,14 @@ function resetCaptureState(){
   state.initQuat = null;
   state.currentQuat = null;
   state.hasOrientation = false;
+  state.lastOrientTime = 0;
   state.targets = [];
   state.captureBusy = false;
+  state.locked = false;
   state.stableSince = 0;
+  state.lastAlignedTime = 0;
   $("#aimMarker").classList.remove("hidden");
+  $("#aimRing").classList.remove("locked");
   $("#counter").textContent = `Point 0 / ${TOTAL_PHOTOS}`;
   $("#qualityPill").textContent = "Cherchez le repère";
   $("#qualityPill").className = "pill bad";
@@ -543,9 +575,11 @@ function setStep(step){
   $("#counter").textContent = `Point ${step + 1} / ${TOTAL_PHOTOS}`;
   $("#positionLabel").textContent = t.label;
   state.stableSince = 0;
+  state.locked = false;
+  state.lastAlignedTime = 0;
 }
 
-// ---------- Boucle principale : projection écran + alignement ----------
+// ---------- Boucle principale : projection écran + alignement (avec hystérésis) ----------
 function captureLoop(){
   if(!state.running) return;
 
@@ -553,29 +587,28 @@ function captureLoop(){
     const target = state.targets[state.step];
     const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(state.currentQuat);
     const angleDeg = THREE.MathUtils.radToDeg(forward.angleTo(target.dir));
-    const isAligned = angleDeg <= ALIGN_TOLERANCE_DEG;
+
+    // Hystérésis : le seuil de sortie est plus large que le seuil d'entrée.
+    const threshold = state.locked ? ALIGN_EXIT_DEG : ALIGN_ENTER_DEG;
+    const isAligned = angleDeg <= threshold;
+    state.locked = isAligned;
 
     projectTargetToScreen(target, state.currentQuat, forward);
 
     if(!state.captureBusy){
-      if(!isAligned){
-        state.stableSince = 0;
-        $("#aimRing").classList.remove("ready");
-        $("#shutterBtn").classList.remove("ready");
-        $("#shutterRing").style.strokeDashoffset = 276.5;
-        $("#qualityPill").textContent = `Alignez (${Math.round(angleDeg)}°)`;
-        $("#qualityPill").className = "pill bad";
-        setGuidanceText(target, state.currentQuat);
-      } else {
-        $("#aimRing").classList.add("ready");
+      const now = performance.now();
+
+      if(isAligned){
+        state.lastAlignedTime = now;
+        if(!state.stableSince) state.stableSince = now;
+
+        $("#aimRing").classList.add("ready", "locked");
         $("#shutterBtn").classList.add("ready");
         $("#qualityPill").textContent = "Immobile...";
         $("#qualityPill").className = "pill ok";
         $("#guidance").textContent = "Parfait ! Ne bougez plus...";
         $("#guidance").classList.add("ready");
 
-        const now = performance.now();
-        if(!state.stableSince) state.stableSince = now;
         const elapsed = now - state.stableSince;
         const ratio = Math.min(1, elapsed / HOLD_MS);
         $("#shutterRing").style.strokeDashoffset = String(276.5 * (1 - ratio));
@@ -584,6 +617,22 @@ function captureLoop(){
           capturePhoto();
           state.stableSince = 0;
         }
+      } else {
+        // Pas aligné : on regarde si on est encore dans la période de grâce
+        // avant de considérer le maintien comme rompu.
+        const withinGrace = state.lastAlignedTime && (now - state.lastAlignedTime) < HOLD_GRACE_MS;
+
+        if(!withinGrace){
+          state.stableSince = 0;
+          $("#shutterRing").style.strokeDashoffset = 276.5;
+        }
+        // Pendant la grâce, on garde la progression affichée telle quelle
+        // (pas de reset visuel brutal) mais on repasse en état "non prêt".
+        $("#aimRing").classList.remove("ready", "locked");
+        $("#shutterBtn").classList.remove("ready");
+        $("#qualityPill").textContent = `Alignez (${Math.round(angleDeg)}°)`;
+        $("#qualityPill").className = "pill bad";
+        setGuidanceText(target, state.currentQuat);
       }
     }
   } else if(!state.hasOrientation){
@@ -663,11 +712,10 @@ function setGuidanceText(target, quat){
 function capturePhoto(){
   const cam = cameraEl();
   if(!cam.videoWidth || !cam.videoHeight) return;
-  if(!state.currentQuat && state.hasOrientation === false){
-    // Pas de capteur : on capture quand même avec l'orientation "neutre" du dernier point visé
-  }
+
   state.captureBusy = true;
   flashCapture();
+
   try {
     const sw = cam.videoWidth, sh = cam.videoHeight;
     const maxW = 1000, scale = Math.min(1, maxW / sw);
@@ -678,6 +726,7 @@ function capturePhoto(){
 
     const quatForShot = state.currentQuat ? state.currentQuat.clone() : quatFromYawPitch(state.targets[state.step]);
     reprojectPhotoIntoAccumulator(cv, quatForShot, w, h);
+
     state.photoCount++;
     state.lastAutoCapture = performance.now();
     state.captureBusy = false;
@@ -689,8 +738,6 @@ function capturePhoto(){
 }
 
 function quatFromYawPitch(target){
-  // Fallback si aucune donnée gyroscope n'est disponible : on suppose que
-  // l'utilisateur a bien visé la cible affichée à l'écran.
   const q = new THREE.Quaternion();
   const m = new THREE.Matrix4();
   const forward = target.dir.clone().normalize();
@@ -707,16 +754,12 @@ function flashCapture(){
   setTimeout(() => flash.classList.remove("flash"), 150);
 }
 
-// ---------- Reprojection sphérique (le cœur du "vrai" panorama) ----------
+// ---------- Reprojection sphérique (accumulation panorama) ----------
 function createAccumulator(){
   const n = ACC_W * ACC_H;
   return { r: new Float32Array(n), g: new Float32Array(n), b: new Float32Array(n), w: new Float32Array(n) };
 }
 
-// Reprojette une photo perspective (prise à une orientation donnée) sur la
-// sphère équirectangulaire, pixel par pixel, avec pondération pour un fondu
-// propre entre les prises qui se chevauchent. C'est le même principe que les
-// applications de panorama assistées par gyroscope.
 function reprojectPhotoIntoAccumulator(photoCanvas, quat, srcW, srcH){
   const acc = state.acc;
   if(!acc) return;
@@ -792,6 +835,7 @@ function reprojectPhotoIntoAccumulator(photoCanvas, quat, srcW, srcH){
 
       const px = ((pxRaw % ACC_W) + ACC_W) % ACC_W;
       const dIdx = rowBase + px;
+
       acc.r[dIdx] += srcData[sIdx] * weight;
       acc.g[dIdx] += srcData[sIdx+1] * weight;
       acc.b[dIdx] += srcData[sIdx+2] * weight;
@@ -835,7 +879,6 @@ function finishCapture(){
   $("#viewer").classList.remove("hidden");
   $("#processing").classList.remove("hidden");
 
-  // Laisse le temps au navigateur d'afficher le loader avant le calcul final (peut prendre ~1s)
   setTimeout(() => {
     const panoCanvas = normalizeAccumulatorToCanvas();
     state.acc = null;
@@ -961,6 +1004,7 @@ class ThreePanoViewer {
     this.animate = this.animate.bind(this);
     this.raf = requestAnimationFrame(this.animate);
   }
+
   onWindowResize(){
     if(!this.container) return;
     this.camera.aspect = this.container.clientWidth / this.container.clientHeight;
