@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#000000">
 <title>Studio Visite Pro 360° - VRAIE 3D</title>
-<!-- Moteur 3D pour ancrer les points dans l'espace réel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 :root{ --black:#000; --bg:#050505; --panel:#0d0d0d; --line:#222; --text:#fff; --muted:#888; --green:#22c55e; --yellow:#eab308; --red:#ef4444; }
@@ -35,7 +34,7 @@ button{cursor:pointer}
 
 .capture{position:relative;height:100%;width:100%;overflow:hidden;background:#000}
 #camera{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
-#overlay3d{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;} /* La couche 3D par dessus la caméra */
+#overlay3d{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;}
 
 .flash-overlay{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:100;transition:opacity .15s ease-out}
 .flash-overlay.flash{opacity:1}
@@ -45,7 +44,7 @@ button{cursor:pointer}
 .capture-sub{font-size:12px;color:var(--yellow);margin-top:2px;font-weight:700}
 .capture-tools{display:flex;gap:6px;pointer-events:auto}.capture-tools button{border:1px solid #444;background:#000c;color:#fff;border-radius:8px;padding:7px 10px;font-size:12px}
 
-/* RÉTICULE FIXE AU CENTRE (La seule chose en 2D) */
+/* RÉTICULE CENTRAL */
 .reticle {
   position: absolute;
   left: 50%;
@@ -60,58 +59,67 @@ button{cursor:pointer}
   justify-content: center;
   z-index: 5;
   pointer-events: none;
-  transition: border-color 0.2s, transform 0.2s;
 }
 .reticle::after {
   content: '';
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   background: var(--yellow);
   border-radius: 50%;
   box-shadow: 0 0 8px #000;
-  transition: transform 0.2s, background-color 0.2s;
 }
-.reticle.ready {
-  border-color: rgba(34, 197, 94, 0.8);
-  transform: translate(-50%, -50%) scale(1.1);
+.reticle.ready { border-color: rgba(34, 197, 94, 0.9); }
+.reticle.ready::after { background: var(--green); transform: scale(1.4); }
+
+/* FLÈCHE DE GUIDAGE RADAR HORS-CHAMP */
+.direction-arrow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 8;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
 }
-.reticle.ready::after {
-  background: var(--green);
-  transform: scale(1.5);
+.arrow-icon {
+  font-size: 48px;
+  font-weight: 900;
+  color: var(--yellow);
+  filter: drop-shadow(0 0 6px #000);
+  animation: bounceArrow 1s infinite alternate;
+}
+.arrow-text {
+  background: rgba(0,0,0,0.8);
+  border: 1px solid var(--yellow);
+  color: var(--yellow);
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 800;
+  margin-top: 4px;
+}
+@keyframes bounceArrow {
+  from { transform: translateY(0); }
+  to { transform: translateY(-8px); }
 }
 
-.guidance{position:absolute;left:50%;top:calc(50% + 80px);transform:translateX(-50%);background:#000e;border:1px solid #333;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:800;white-space:nowrap}
+.guidance{position:absolute;left:50%;top:calc(50% + 90px);transform:translateX(-50%);background:#000e;border:1px solid #333;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:800;white-space:nowrap}
 .guidance.ready{color:var(--green);border-color:#166534}
+
 .minimap{
-  position:absolute;
-  bottom:85px;
-  left:50%;
-  transform:translateX(-50%);
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-  background:rgba(10,10,12,0.85);
-  border:1px solid #333;
-  padding:8px 12px;
-  border-radius:12px;
-  pointer-events:auto;
-  z-index:10;
-  backdrop-filter:blur(8px);
+  position:absolute; bottom:85px; left:50%; transform:translateX(-50%);
+  display:flex; flex-direction:column; gap:4px;
+  background:rgba(10,10,12,0.85); border:1px solid #333; padding:8px 12px; border-radius:12px;
+  pointer-events:auto; z-index:10; backdrop-filter:blur(8px);
 }
 .mini-row{display:flex; gap:5px; justify-content:center; align-items:center}
 .mini-dot{
-  width:14px;
-  height:14px;
-  border-radius:50%;
-  background:#222;
-  border:1px solid #444;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:7px;
-  font-weight:700;
-  color:#777;
-  transition:all .2s;
+  width:14px; height:14px; border-radius:50%; background:#222; border:1px solid #444;
+  display:flex; align-items:center; justify-content:center; font-size:7px; font-weight:700; color:#777;
 }
 .mini-dot.active{border-color:var(--yellow);background:#422006;color:var(--yellow);transform:scale(1.25);box-shadow:0 0 8px var(--yellow)}
 .mini-dot.done{border-color:var(--green);background:#052e16;color:var(--green)}
@@ -122,6 +130,7 @@ button{cursor:pointer}
 .pill.bad{color:var(--red);border-color:#7f1d1d;background:#450a0acc}
 .progress-wrap{width:min(340px,70vw);height:3px;background:#222;border-radius:99px;overflow:hidden}
 .progress{height:100%;width:0;background:#fff;transition:width .2s}
+
 .permission{position:absolute;inset:0;z-index:20;background:#000;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px}
 .permission-card{width:min(480px,100%)}.permission-card .big-icon{font-size:38px;margin-bottom:10px}.permission-card h1{font-size:22px;margin:0 0 8px}.permission-card p{margin:0 auto;max-width:420px;color:var(--muted);font-size:13px;line-height:1.5}
 .viewer{position:absolute;inset:0;background:#000;z-index:20}
@@ -167,18 +176,15 @@ button{cursor:pointer}
           <div class="permission" id="permission">
             <div class="permission-card">
               <div class="big-icon">⦿</div>
-              <h1>Scan 360° RA (22 Points)</h1>
-              <p>Placez le centre jaune sur les points blancs flottants. Immobilisez-vous <b>1 seconde</b>.</p>
+              <h1>Scan 360° RA (22 Points Géants)</h1>
+              <p>Suivez la flèche radar pour trouver le point géant. Immobilisez-vous <b>1 seconde</b>.</p>
               <button class="primary" id="start360" style="margin-top:16px">Démarrer le Scan</button>
             </div>
           </div>
           <div id="flashOverlay" class="flash-overlay"></div>
           
-          <!-- Vidéo Caméra en fond -->
           <video id="camera" autoplay playsinline muted></video>
-          <!-- Surcouche 3D Transparente -->
           <div id="overlay3d"></div>
-
           <canvas id="captureCanvas" class="hidden"></canvas>
           
           <div class="capture-ui">
@@ -193,10 +199,14 @@ button{cursor:pointer}
               </div>
             </div>
             
-            <!-- Réticule Central fixe -->
+            <!-- RÉTICULE ET FLÈCHE RADAR -->
             <div class="reticle" id="reticle"></div>
+            <div class="direction-arrow hidden" id="directionArrow">
+              <div class="arrow-icon" id="arrowIcon">⬆</div>
+              <div class="arrow-text" id="arrowText">Tourner (120°)</div>
+            </div>
             
-            <div class="guidance" id="guidance">Tournez autour de vous...</div>
+            <div class="guidance" id="guidance">Cherchez le point géant...</div>
             <div class="minimap" id="minimap"></div>
             <div class="capture-bottom">
               <div class="status-row">
@@ -223,14 +233,12 @@ button{cursor:pointer}
 <script>
 "use strict";
 const TOTAL_PHOTOS = 22;
-const YAW_TOLERANCE = 7; // Degrés de tolérance pour valider le point
+const YAW_TOLERANCE = 8; 
 const PANO_WIDTH = 6000, PANO_HEIGHT = 3000;
 
-// === MOTEUR 3D POUR L'OVERLAY (La magie opère ici) ===
 let scene3D, camera3D, renderer3D, targetSprites = [];
 let matWhite, matGreen, matDim;
 
-// Variables d'état
 const state = {
     mode: "2d", running: false, stream: null, sensorListening: false,
     initQuat: null, step: 0, targets: [], photos: [], pano: null,
@@ -294,11 +302,11 @@ function renderMinimap(){
     const map = $("#minimap");
     map.innerHTML = "";
     const rowsConfig = [
-        { start: 0, count: 8 },  // Horizon
-        { start: 8, count: 6 },  // Plafond
-        { start: 14, count: 1 }, // Zénith
-        { start: 15, count: 6 }, // Sol
-        { start: 21, count: 1 }  // Nadir
+        { start: 0, count: 8 },  
+        { start: 8, count: 6 },  
+        { start: 14, count: 1 }, 
+        { start: 15, count: 6 }, 
+        { start: 21, count: 1 }  
     ];
     rowsConfig.forEach(rc => {
         const rowDiv = document.createElement("div");
@@ -318,70 +326,61 @@ function renderMinimap(){
     });
 }
 
-// Cibles de Sphère (Généré logiquement)
-// Point 1 est droit devant (Horizon 0)
 function buildTargets(){
     const targets = [];
-    // 8 points à l'horizon (0°)
     for(let i = 0; i < 8; i++){ targets.push({ yaw: i * 45, pitch: 0, label: `Horizon ${i+1}/8` }); }
-    // 6 points en hauteur (45°)
     for(let i = 0; i < 6; i++){ targets.push({ yaw: i * 60, pitch: 45, label: `Plafond ${i+1}/6` }); }
-    // 1 point tout en haut (Zénith)
     targets.push({ yaw: 0, pitch: 85, label: "Zénith (Visez le plafond)" });
-    // 6 points en bas (-45°)
     for(let i = 0; i < 6; i++){ targets.push({ yaw: i * 60, pitch: -45, label: `Sol ${i+1}/6` }); }
-    // 1 point tout en bas (Nadir)
     targets.push({ yaw: 0, pitch: -85, label: "Nadir (Visez vos pieds)" });
-    
     return targets;
 }
 
-// Génération de textures pour les points 3D (C'est ça qui fait Pro)
+// TEXTURES 3D : POINT BLANC ULTRA GIGANTESQUE (Beaucoup plus grand que le cercle jaune)
 function createSpriteMaterial(colorString, radius, lineWidth) {
     const canvas = document.createElement('canvas');
-    canvas.width = 128; canvas.height = 128;
+    canvas.width = 256; canvas.height = 256;
     const ctx = canvas.getContext('2d');
     ctx.beginPath();
-    ctx.arc(64, 64, radius, 0, Math.PI * 2);
+    ctx.arc(128, 128, radius, 0, Math.PI * 2);
     ctx.fillStyle = colorString;
     ctx.fill();
     ctx.lineWidth = lineWidth;
     ctx.strokeStyle = '#ffffff';
     ctx.stroke();
     const texture = new THREE.CanvasTexture(canvas);
-    return new THREE.SpriteMaterial({ map: texture, transparent: true });
+    return new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false });
 }
 
-// Initialisation de la VRAIE 3D en surcouche
 function init3DOverlay() {
     const container = document.getElementById('overlay3d');
-    container.innerHTML = ''; // Nettoyer
+    container.innerHTML = ''; 
     scene3D = new THREE.Scene();
     camera3D = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
     
-    renderer3D = new THREE.WebGLRenderer({ alpha: true, antialias: true }); // Alpha true = fond transparent pour voir la vidéo !
+    renderer3D = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer3D.setSize(window.innerWidth, window.innerHeight);
     renderer3D.setPixelRatio(window.devicePixelRatio);
     container.appendChild(renderer3D.domElement);
 
-    matWhite = createSpriteMaterial('rgba(255, 255, 255, 0.8)', 40, 8);
-    matGreen = createSpriteMaterial('rgba(34, 197, 94, 0.9)', 48, 10);
-    matDim   = createSpriteMaterial('rgba(255, 255, 255, 0.2)', 15, 0);
+    // TAILLE 3X PLUS GROSSE (Rayon 95 sur 128)
+    matWhite = createSpriteMaterial('rgba(255, 255, 255, 0.95)', 95, 14);
+    matGreen = createSpriteMaterial('rgba(34, 197, 94, 0.95)', 105, 16);
+    matDim   = createSpriteMaterial('rgba(255, 255, 255, 0.25)', 25, 0);
 
     targetSprites = [];
-    const radius = 100; // Distance des points autour de toi
+    const radius = 100;
 
     state.targets.forEach((t, i) => {
-        const sprite = new THREE.Sprite(matDim); // Tous petits au début
-        // Convertir Yaw/Pitch en XYZ dans Three.js
+        const sprite = new THREE.Sprite(matDim);
         const phi = THREE.MathUtils.degToRad(90 - t.pitch);
-        const theta = THREE.MathUtils.degToRad(t.yaw - 90); // -90 pour que yaw=0 soit en face (Z négatif)
+        const theta = THREE.MathUtils.degToRad(t.yaw - 90);
         
         sprite.position.x = radius * Math.sin(phi) * Math.cos(theta);
         sprite.position.y = radius * Math.cos(phi);
         sprite.position.z = radius * Math.sin(phi) * Math.sin(theta);
         
-        sprite.scale.set(8, 8, 1); // Taille de base
+        sprite.scale.set(24, 24, 1); 
         sprite.userData = { index: i };
         
         scene3D.add(sprite);
@@ -391,7 +390,7 @@ function init3DOverlay() {
 
 async function start360(){
     try {
-        if(!window.isSecureContext) throw new Error("HTTPS requis pour les capteurs.");
+        if(!window.isSecureContext) throw new Error("HTTPS requis.");
         if(!navigator.mediaDevices?.getUserMedia) throw new Error("Caméra non supportée.");
         resetCaptureState();
         
@@ -414,7 +413,7 @@ async function start360(){
         $("#viewer").classList.add("hidden");
         
         state.targets = buildTargets();
-        init3DOverlay(); // On crée le monde 3D
+        init3DOverlay();
         
         state.step = 0;
         state.photos = [];
@@ -435,7 +434,6 @@ function attachSensors(){
     state.sensorListening = true;
 }
 
-// Le vrai calcul Gyro -> Quaterion sans perte (Adieu les fuites)
 function handleOrientation(e){
     if(!state.running || !camera3D) return;
 
@@ -464,12 +462,10 @@ function handleOrientation(e){
     currentRawQuat.multiply(q1);
     currentRawQuat.multiply(q0.setFromAxisAngle(zee, -orientRad));
 
-    // Calibrage au 1er lancement pour que le point 1 soit pile devant toi
     if(!state.initQuat){
         state.initQuat = currentRawQuat.clone().invert();
     }
 
-    // On tourne la caméra virtuelle !
     camera3D.quaternion.copy(state.initQuat.clone().multiply(currentRawQuat));
 }
 
@@ -502,9 +498,10 @@ function resetCaptureState(){
     state.stableSince = 0;
     $("#counter").textContent = "Point 0 / 22";
     $("#progress").style.width = "0%";
-    $("#qualityPill").textContent = "Tournez l'appareil...";
+    $("#qualityPill").textContent = "Cherchez le point blanc";
     $("#qualityPill").className = "pill bad";
     $("#reticle").classList.remove("ready");
+    $("#directionArrow").classList.add("hidden");
 }
 
 function setStep(step){
@@ -512,18 +509,17 @@ function setStep(step){
     renderMinimap();
     if(step >= TOTAL_PHOTOS){ finishCapture(); return; }
     
-    // Mettre à jour l'apparence des points 3D
     targetSprites.forEach((sprite, i) => {
         if(i < step) {
-            sprite.visible = false; // Caché si déjà pris
+            sprite.visible = false;
         } else if (i === step) {
             sprite.visible = true;
             sprite.material = matWhite;
-            sprite.scale.set(16, 16, 1); // Gros point actuel
+            sprite.scale.set(35, 35, 1); 
         } else {
             sprite.visible = true;
             sprite.material = matDim;
-            sprite.scale.set(5, 5, 1); // Petits points futurs
+            sprite.scale.set(8, 8, 1); 
         }
     });
 
@@ -534,32 +530,57 @@ function setStep(step){
     state.stableSince = 0;
 }
 
-// LA BOUCLE PRINCIPALE (Gère la visée et la photo automatique)
 function captureLoop(){
     if(!state.running || !camera3D || !renderer3D) return;
 
     if(!state.captureBusy && state.step < TOTAL_PHOTOS && state.initQuat) {
-        // Vecteur direction de la caméra virtuelle
         const camDir = new THREE.Vector3(0, 0, -1).applyQuaternion(camera3D.quaternion);
-        
-        // Vecteur direction du point visé
         const currentSprite = targetSprites[state.step];
         const targetDir = currentSprite.position.clone().normalize();
         
-        // Calcul d'angle direct en 3D (C'est infaillible)
         const angleDeg = THREE.MathUtils.radToDeg(camDir.angleTo(targetDir));
         const isAligned = angleDeg <= YAW_TOLERANCE;
 
-        if(!isAligned){
+        const vector = currentSprite.position.clone();
+        vector.project(camera3D);
+        const isBehind = vector.z > 1; 
+        const isOffScreen = isBehind || Math.abs(vector.x) > 1 || Math.abs(vector.y) > 1;
+
+        if (isOffScreen || !isAligned) {
             state.stableSince = 0;
             currentSprite.material = matWhite;
-            $("#qualityPill").textContent = `Alignez (${Math.round(angleDeg)}°)`;
+            $("#qualityPill").textContent = `Cherchez (${Math.round(angleDeg)}°)`;
             $("#qualityPill").className = "pill bad";
             $("#reticle").classList.remove("ready");
-            $("#guidance").textContent = "Placez le point blanc au centre";
+
+            const arrow = $("#directionArrow");
+            arrow.classList.remove("hidden");
+            
+            const flatCamDir = new THREE.Vector3(camDir.x, 0, camDir.z).normalize();
+            const flatTargetDir = new THREE.Vector3(targetDir.x, 0, targetDir.z).normalize();
+            let cross = flatCamDir.clone().cross(flatTargetDir).y;
+            let dot = flatCamDir.dot(flatTargetDir);
+            let relAngle = THREE.MathUtils.radToDeg(Math.acos(Math.max(-1, Math.min(1, dot))));
+            if(cross < 0) relAngle = -relAngle;
+
+            const icon = $("#arrowIcon");
+            const txt = $("#arrowText");
+            
+            if (isBehind || Math.abs(relAngle) > 90) {
+                icon.textContent = "⬇";
+                txt.textContent = "Faites demi-tour !";
+            } else if (relAngle > 0) {
+                icon.textContent = "➡";
+                txt.textContent = `Tournez à droite (${Math.round(angleDeg)}°)`;
+            } else {
+                icon.textContent = "⬅";
+                txt.textContent = `Tournez à gauche (${Math.round(angleDeg)}°)`;
+            }
+            
+            $("#guidance").textContent = "Suivez la flèche radar !";
             $("#guidance").classList.remove("ready");
         } else {
-            // Le joueur a verrouillé le point !
+            $("#directionArrow").classList.add("hidden");
             currentSprite.material = matGreen;
             $("#qualityPill").textContent = "Immobile (1s)...";
             $("#qualityPill").className = "pill ok";
@@ -570,7 +591,6 @@ function captureLoop(){
             const now = performance.now();
             if(!state.stableSince) state.stableSince = now;
             
-            // Attendre 1 sec pour éviter le flou de mouvement
             if(now - state.stableSince >= 1000 && now - state.lastAutoCapture > 1200){
                 capturePhoto();
                 state.stableSince = 0;
@@ -578,9 +598,7 @@ function captureLoop(){
         }
     }
 
-    // On rend la scène 3D transparente par dessus la caméra
     renderer3D.render(scene3D, camera3D);
-
     if(state.running) requestAnimationFrame(captureLoop);
 }
 
@@ -603,7 +621,7 @@ function capturePhoto(){
         
         state.lastAutoCapture = performance.now();
         state.captureBusy = false;
-        setStep(state.step + 1); // Passe au point suivant
+        setStep(state.step + 1); 
     } catch(e){
         state.captureBusy = false;
         alert("Erreur de capture : " + e.message);
@@ -677,6 +695,7 @@ function finishCapture(){
     $("#qualityPill").textContent = "Panorama HD prêt !";
     $("#qualityPill").className = "pill ok";
     $("#guidance").textContent = "✓ SCAN 22 POINTS TERMINÉ";
+    $("#directionArrow").classList.add("hidden");
     stopCamera();
     if(!state.pano) return;
     const data = state.pano.canvas.toDataURL("image/jpeg", 0.95);
@@ -724,6 +743,14 @@ async function restart360(){
     $("#captureScreen").classList.remove("hidden");
     $("#permission").classList.remove("hidden");
     renderMinimap();
+}
+
+function renameProject(){
+    const newName = prompt("Nom du projet :", state.projectName);
+    if(newName && newName.trim()){
+        state.projectName = newName.trim();
+        $("#projectName").textContent = state.projectName;
+    }
 }
 
 class ThreePanoViewer {
