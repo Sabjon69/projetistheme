@@ -61,13 +61,13 @@
     .capture-tools{display:flex;gap:6px}
     .capture-tools button{border:1px solid #444;background:#000c;color:#fff;border-radius:8px;padding:7px 10px;font-size:12px}
     
-    /* VISEUR DE PRÉCISION AVEC POINT JAUNE ET FLÈCHES DIRECTIONNELLES */
+    /* VISEUR DE PRÉCISION OPTIMISÉ (UN SEUL DÉPLACEMENT CLAIR À LA FOIS) */
     .target-frame {
       position: absolute;
       left: 50%; top: 50%;
-      width: 180px; height: 180px;
-      margin: -90px 0 0 -90px;
-      border: 2px dashed rgba(234, 179, 8, 0.5);
+      width: 220px; height: 220px;
+      margin: -110px 0 0 -110px;
+      border: 3px dashed rgba(234, 179, 8, 0.7);
       border-radius: 50%;
       z-index: 4;
       pointer-events: none;
@@ -79,44 +79,69 @@
     .target-frame.locked {
       border-color: var(--green);
       border-style: solid;
-      transform: scale(0.95);
-      box-shadow: 0 0 25px var(--green);
+      transform: scale(0.96);
+      box-shadow: 0 0 35px var(--green);
     }
     .big-yellow-dot {
-      width: 28px; height: 28px;
+      width: 44px; height: 44px;
       background: var(--yellow);
       border-radius: 50%;
-      box-shadow: 0 0 15px var(--yellow), inset 0 0 6px rgba(0,0,0,0.4);
+      box-shadow: 0 0 25px var(--yellow), inset 0 0 10px rgba(0,0,0,0.5);
       z-index: 5;
       pointer-events: none;
       transition: transform 0.2s, background-color 0.2s;
     }
     .target-frame.locked .big-yellow-dot {
       background: var(--green);
-      box-shadow: 0 0 25px var(--green);
+      box-shadow: 0 0 35px var(--green);
       transform: scale(1.2);
     }
 
-    /* Flèches directionnelles de guidage */
+    /* Flèches directionnelles indépendantes : une seule s'allume à la fois pour ne jamais se tromper */
     .dir-arrow {
       position: absolute;
-      color: var(--yellow);
-      font-size: 26px;
+      color: #333;
+      font-size: 36px;
       font-weight: 900;
-      opacity: 0.2;
-      text-shadow: 0 0 6px #000;
-      transition: opacity 0.2s, transform 0.2s;
+      opacity: 0.15;
+      text-shadow: 0 0 4px #000;
+      transition: all 0.2s;
     }
     .dir-arrow.active {
       opacity: 1;
-      text-shadow: 0 0 12px var(--yellow);
+      color: #ff3b30; /* Rouge ultra visible pour la direction exacte à suivre */
+      transform: scale(1.4);
+      text-shadow: 0 0 16px #ff3b30, 0 0 4px #000;
+      animation: pulseArrow 0.5s infinite alternate;
     }
-    .arrow-up { top: -32px; left: 50%; transform: translateX(-50%); }
-    .arrow-down { bottom: -32px; left: 50%; transform: translateX(-50%); }
-    .arrow-left { left: -32px; top: 50%; transform: translateY(-50%); }
-    .arrow-right { right: -32px; top: 50%; transform: translateY(-50%); }
+    @keyframes pulseArrow {
+      from { transform: scale(1.2); }
+      to { transform: scale(1.5); }
+    }
+    .arrow-up { top: -48px; left: 50%; transform: translateX(-50%); }
+    .arrow-down { bottom: -48px; left: 50%; transform: translateX(-50%); }
+    .arrow-left { left: -48px; top: 50%; transform: translateY(-50%); }
+    .arrow-right { right: -48px; top: 50%; transform: translateY(-50%); }
 
-    .center-dot{position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px #000c;z-index:6;pointer-events:none}
+    /* Bandeau d'instruction textuel simple et direct */
+    .guidance-text {
+      position: absolute;
+      top: 65px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.9);
+      border: 1px solid #444;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--yellow);
+      z-index: 6;
+      white-space: nowrap;
+      pointer-events: none;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+    }
+
+    .center-dot{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px #000c;z-index:6;pointer-events:none}
 
     /* RADAR / MINI-CARTE DES 24 PHOTOS */
     .minimap{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:4px;background:rgba(10,10,12,0.85);border:1px solid #333;padding:8px 12px;border-radius:12px;pointer-events:none;z-index:6;backdrop-filter:blur(8px)}
@@ -170,8 +195,8 @@
             <div class="permission" id="permission">
               <div class="permission-card">
                 <div class="big-icon">🎯</div>
-                <h1>Scan 360° avec Viseur Intelligent</h1>
-                <p>Suis les flèches directionnelles et vise le gros point jaune pour déclencher automatiquement les 24 photos (zéro angle mort, précision millimétrée).</p>
+                <h1>Scan 360° Guidé Ultra Simple</h1>
+                <p>Alignez le gros point jaune central avec la cible en suivant une seule flèche rouge à la fois. La photo se déclenchera toute seule dès que vous y êtes !</p>
                 <button class="primary" id="start360" style="margin-top:16px">Démarrer le Scan Guidé</button>
                 <div class="err" id="permError"></div>
               </div>
@@ -190,6 +215,7 @@
                   <button id="exit360">Quitter</button>
                 </div>
               </div>
+              <div class="guidance-text" id="guidanceText">Initialisation des capteurs...</div>
               <div class="center-dot"></div>
               <div class="target-frame" id="targetFrame">
                 <div class="big-yellow-dot"></div>
@@ -198,7 +224,7 @@
                 <div class="dir-arrow arrow-left" id="arrowLeft">◀</div>
                 <div class="dir-arrow arrow-right" id="arrowRight">▶</div>
               </div>
-              <div class="auto-indicator" id="autoIndicator">Oriente ton téléphone vers la cible...</div>
+              <div class="auto-indicator" id="autoIndicator">Suivez la flèche rouge</div>
               <div class="minimap" id="minimap"></div>
             </div>
           </div>
@@ -206,7 +232,7 @@
             <div id="viewerContainer"></div>
             <div class="viewer-ui">
               <h2>Panorama 360° Assemblé</h2>
-              <p>Glisse ton doigt pour explorer · Zéro dérive</p>
+              <p>Glissez votre doigt pour explorer · Zéro dérive</p>
             </div>
             <div class="viewer-actions">
               <button id="downloadPano">Télécharger</button>
@@ -226,39 +252,6 @@
 
   <script>
     "use strict";
-
-    /* debut commentaire
-       Calculs et découpage mathématique rigoureux des 24 zones de capture automatiques (0 angle mort, 0 superposition) :
-       - 12 Photos horizontales (Tour complet à 360°, secteurs exacts de 30°, pitch de -15° à +15°) :
-         * Photo 1  : Azimut 0° à 30°   (Centre : 15° piiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiile)
-         * Photo 2  : Azimut 30° à 60°   (Centre : 45° piiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiile)
-         * Photo 3  : Azimut 60° à 90°   (Centre : 75° piiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiile)
-         * Photo 4  : Azimut 90° à 120°  (Centre : 105° piiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiile)
-         * Photo 5  : Azimut 120° à 150° (Centre : 135° piiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiile)
-         * Photo 6  : Azimut 150° à 180° (Centre : 165° piiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiile)
-         * Photo 7  : Azimut 180° à 210° (Centre : 195° piiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiile)
-         * Photo 8  : Azimut 210° à 240° (Centre : 225° piiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiile)
-         * Photo 9  : Azimut 240° à 270° (Centre : 255° piiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiile)
-         * Photo 10 : Azimut 270° à 300° (Centre : 285° piiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiile)
-         * Photo 11 : Azimut 300° à 330° (Centre : 315° piiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiile)
-         * Photo 12 : Azimut 330° à 360° (Centre : 345° piiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiile)
-
-       - 6 Photos en hauteur / Plafond (Anneau supérieur, secteurs de 60°, pitch de +15° à +75°) :
-         * Photo 13 : Azimut 0° à 60°   (Pitch +45°, Centre : 30°)
-         * Photo 14 : Azimut 60° à 120°  (Pitch +45°, Centre : 90°)
-         * Photo 15 : Azimut 120° à 180° (Pitch +45°, Centre : 150°)
-         * Photo 16 : Azimut 180° à 240° (Pitch +45°, Centre : 210°)
-         * Photo 17 : Azimut 240° à 300° (Pitch +45°, Centre : 270°)
-         * Photo 18 : Azimut 300° à 360° (Pitch +45°, Centre : 330°)
-
-       - 6 Photos en bas / Sol (Anneau inférieur, secteurs de 60°, pitch de -75° à -15°) :
-         * Photo 19 : Azimut 0° à 60°   (Pitch -45°, Centre : 30°)
-         * Photo 20 : Azimut 60° à 120°  (Pitch -45°, Centre : 90°)
-         * Photo 21 : Azimut 120° à 180° (Pitch -45°, Centre : 150°)
-         * Photo 22 : Azimut 180° à 240° (Pitch -45°, Centre : 210°)
-         * Photo 23 : Azimut 240° à 300° (Pitch -45°, Centre : 270°)
-         * Photo 24 : Azimut 300° à 360° (Pitch -45°, Centre : 330°)
-    fin commentaire */
 
     const TOTAL_PHOTOS = 24;
     const ACC_W = 3000, ACC_H = 1500;
@@ -379,32 +372,14 @@
 
     function buildTargets(){
       const targets = [];
-      
-      // 12 Photos horizontales
       for(let i = 0; i < 12; i++){
-        const yaw = i * 30 + 15;
-        targets.push({
-          yaw: yaw, pitch: 0,
-          label: `Tour horizontal (Mur ${i+1} / 12)`
-        });
+        targets.push({ yaw: i * 30 + 15, pitch: 0, label: `Mur horizontal (${i+1} / 12)` });
       }
-
-      // 6 Photos en hauteur / Plafond
       for(let i = 0; i < 6; i++){
-        const yaw = i * 60 + 30;
-        targets.push({
-          yaw: yaw, pitch: 45,
-          label: `Plafond / Hauteur (Zone ${i+1} / 6)`
-        });
+        targets.push({ yaw: i * 60 + 30, pitch: 45, label: `Plafond / Haut (${i+1} / 6)` });
       }
-
-      // 6 Photos en bas / Sol
       for(let i = 0; i < 6; i++){
-        const yaw = i * 60 + 30;
-        targets.push({
-          yaw: yaw, pitch: -45,
-          label: `Sol / Bas (Zone ${i+1} / 6)`
-        });
+        targets.push({ yaw: i * 60 + 30, pitch: -45, label: `Sol / Bas (${i+1} / 6)` });
       }
 
       targets.forEach((t, idx) => {
@@ -413,7 +388,6 @@
         t.dir = new THREE.Vector3(Math.sin(phi)*Math.cos(theta), Math.cos(phi), Math.sin(phi)*Math.sin(theta)).normalize();
         t.id = idx;
       });
-
       return targets;
     }
 
@@ -507,7 +481,6 @@
       state.stableTime = 0;
     }
 
-    // Gestion de l'orientation avec guidage par flèches et point jaune
     function handleOrientation(e){
       if(!state.running || state.captureBusy) return;
 
@@ -529,42 +502,61 @@
       const yawDiff = Math.abs(yawError);
       const pitchDiff = Math.abs(pitchError);
 
-      const TOLERANCE = 4.0;
+      const TOLERANCE = 5.0;
       const isAligned = yawDiff <= TOLERANCE && pitchDiff <= TOLERANCE;
 
       const frameEl = $("#targetFrame");
       const indicatorEl = $("#autoIndicator");
+      const guidanceText = $("#guidanceText");
       const arrowUp = $("#arrowUp");
       const arrowDown = $("#arrowDown");
       const arrowLeft = $("#arrowLeft");
       const arrowRight = $("#arrowRight");
 
-      // Gestion de l'éclairage des flèches directionnelles
-      arrowUp.classList.toggle("active", pitchError > TOLERANCE);     // Il faut baisser le téléphone (donc la cible est plus haute ? Non, si pitchError > 0, currentPitch > target.pitch, il faut pencher vers le bas)
-      arrowDown.classList.toggle("active", pitchError < -TOLERANCE); // Il faut lever le téléphone
-      arrowLeft.classList.toggle("active", yawError > TOLERANCE);    // Tourner vers la gauche
-      arrowRight.classList.toggle("active", yawError < -TOLERANCE);  // Tourner vers la droite
+      // On s'assure de n'allumer qu'une seule flèche claire à la fois (priorité verticale puis horizontale)
+      let activeArrow = null;
+      let guidanceMsg = "🎯 Cible atteinte !";
+
+      if (pitchError > TOLERANCE) {
+        activeArrow = arrowDown; // Il faut baisser l'appareil
+        guidanceMsg = "⬇️ BAISSEZ le téléphone";
+      } else if (pitchError < -TOLERANCE) {
+        activeArrow = arrowUp; // Il faut lever l'appareil
+        guidanceMsg = "⬆️ LEVEZ le téléphone";
+      } else if (yawError > TOLERANCE) {
+        activeArrow = arrowLeft; // Il faut tourner à gauche
+        guidanceMsg = "⬅️ Tournez vers la GAUCHE";
+      } else if (yawError < -TOLERANCE) {
+        activeArrow = arrowRight; // Il faut tourner à droite
+        guidanceMsg = "➡️ Tournez vers la DROITE";
+      }
+
+      // Reset de toutes les flèches
+      arrowUp.classList.remove("active");
+      arrowDown.classList.remove("active");
+      arrowLeft.classList.remove("active");
+      arrowRight.classList.remove("active");
+
+      guidanceText.textContent = guidanceMsg;
 
       if(isAligned){
         frameEl.classList.add("locked");
         indicatorEl.classList.add("ready");
-        indicatorEl.textContent = "⚡ Cible atteinte ! Capture auto imminente...";
-        arrowUp.classList.remove("active");
-        arrowDown.classList.remove("active");
-        arrowLeft.classList.remove("active");
-        arrowRight.classList.remove("active");
+        indicatorEl.textContent = "⚡ Alignement parfait ! Capture imminente...";
+        guidanceText.textContent = "✅ PARFAIT !";
 
         const now = performance.now();
         if(state.stableTime === 0){
           state.stableTime = now;
-        } else if(now - state.stableTime > 250){
+        } else if(now - state.stableTime > 200){
           state.captureBusy = true;
           triggerAutoCapture();
         }
       } else {
         frameEl.classList.remove("locked");
         indicatorEl.classList.remove("ready");
-        indicatorEl.textContent = "Suis les flèches pour viser le point jaune";
+        indicatorEl.textContent = "Suivez la direction indiquée";
+        if(activeArrow) activeArrow.classList.add("active");
         state.stableTime = 0;
       }
     }
@@ -595,7 +587,7 @@
         setTimeout(() => {
           state.captureBusy = false;
           setStep(state.step + 1);
-        }, 200);
+        }, 150);
       } catch(e){
         state.captureBusy = false;
         toast("Erreur de capture : " + e.message);
