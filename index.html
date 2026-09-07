@@ -45,6 +45,7 @@
     .gallery-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
     .gallery-toolbar h2{margin:0;font-size:16px}
     .small-btn{border:1px solid #333;background:#141417;color:#eee;padding:8px 12px;border-radius:8px;font-weight:700;font-size:12px}
+    
     .capture{position:relative;height:100%;width:100%;overflow:hidden;background:#000}
     #camera{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;background:#000}
     .flash-overlay{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:100;transition:opacity .15s ease-out}
@@ -55,6 +56,7 @@
     .permission-card h1{font-size:22px;margin:0 0 8px}
     .permission-card p{margin:0 auto;max-width:420px;color:var(--muted);font-size:13px;line-height:1.5}
     .permission-card .err{color:var(--red);font-size:12px;margin-top:12px;min-height:16px}
+    
     .capture-ui{position:absolute;inset:0;z-index:5;pointer-events:none}
     .capture-top{position:absolute;left:0;right:0;top:max(14px,env(safe-area-inset-top));display:flex;align-items:flex-start;justify-content:space-between;padding:0 16px;z-index:6}
     .capture-title{font-size:14px;font-weight:800;text-shadow:0 1px 4px #000}
@@ -62,41 +64,51 @@
     .capture-tools{display:flex;gap:6px;pointer-events:auto}
     .capture-tools button{border:1px solid #444;background:#000c;color:#fff;border-radius:8px;padding:7px 10px;font-size:12px}
     
-    /* --- GRAND CADRE DE CADRAGE --- */
-    .aim-marker{ position:absolute;left:0;top:0;width:240px;height:160px;margin-left:-120px;margin-top:-80px;z-index:4; will-change:transform; transition:opacity .15s, transform 70ms linear; }
-    .aim-ring{position:absolute;inset:0;border-radius:16px;border:2px dashed rgba(255,255,255,0.7);box-shadow:0 0 0 9999px rgba(0, 0, 0, 0.25);transition:border-color .15s, transform .12s, background-color .15s, border-style .15s}
-    .aim-ring::before, .aim-ring::after { content:''; position:absolute; width:16px; height:16px; border-color:#fff; border-style:solid; }
-    .aim-ring::before { top:-2px; left:-2px; border-width:3px 0 0 3px; border-top-left-radius:14px; }
-    .aim-ring::after { bottom:-2px; right:-2px; border-width:0 3px 3px 0; border-bottom-right-radius:14px; }
-    .aim-ring.ready{border-color:var(--green); border-style:solid; background:rgba(34,197,94,.18); transform:scale(1.05);}
-    .aim-ring.ready::before, .aim-ring.ready::after { border-color:var(--green); }
-    .aim-ring.locked{border-color:var(--green)}
-    
-    .center-dot{position:absolute;left:50%;top:50%;width:9px;height:9px;margin:-4.5px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px #0009;z-index:5;pointer-events:none}
-    .edge-arrow{position:absolute;z-index:4;width:42px;height:42px;margin:-21px;color:#fff;filter:drop-shadow(0 1px 3px #000);pointer-events:none;transition:opacity .15s, transform 70ms linear}
+    /* --- GRAND CADRE PLEIN ÉCRAN (Style ton dessin vert) --- */
+    .fullscreen-frame {
+      position: absolute;
+      inset: 60px 16px 120px 16px;
+      border: 3px dashed rgba(34, 197, 94, 0.75);
+      border-radius: 20px;
+      box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.1);
+      z-index: 4;
+      pointer-events: none;
+      transition: border-color .2s, background-color .2s;
+    }
+    .fullscreen-frame.ready {
+      border-color: var(--green);
+      border-style: solid;
+      background: rgba(34, 197, 94, 0.12);
+    }
+
+    .center-dot{position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px #0009;z-index:5;pointer-events:none}
+    .edge-arrow{position:absolute;z-index:4;width:42px;height:42px;margin:-21px;color:#fff;filter:drop-shadow(0 1px 3px #000);pointer-events:none}
     .edge-arrow svg{width:100%;height:100%}
-    .guidance-wrap{position:absolute;left:50%;top:calc(50% + 105px);transform:translateX(-50%);z-index:6}
-    .guidance{background:#000a;border:1px solid #333;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:800;white-space:nowrap}
+    
+    .guidance-wrap{position:absolute;left:50%;bottom:135px;transform:translateX(-50%);z-index:6}
+    .guidance{background:#000a;border:1px solid #333;padding:6px 16px;border-radius:99px;font-size:12px;font-weight:800;white-space:nowrap}
     .guidance.ready{color:var(--green);border-color:#166534}
-    .minimap{position:absolute;bottom:150px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:4px;background:rgba(10,10,12,0.85);border:1px solid #333;padding:8px 10px;border-radius:12px;pointer-events:none;z-index:6;backdrop-filter:blur(8px)}
+    
+    .minimap{position:absolute;bottom:185px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:4px;background:rgba(10,10,12,0.85);border:1px solid #333;padding:8px 10px;border-radius:12px;pointer-events:none;z-index:6;backdrop-filter:blur(8px)}
     .mini-row{display:flex;gap:5px;justify-content:center;align-items:center}
-    .mini-dot{width:13px;height:13px;border-radius:50%;background:#222;border:1px solid #444;transition:all .2s}
+    .mini-dot{width:11px;height:11px;border-radius:50%;background:#222;border:1px solid #444;transition:all .2s}
     .mini-dot.active{border-color:var(--yellow);background:#422006;transform:scale(1.3);box-shadow:0 0 8px var(--yellow)}
     .mini-dot.done{border-color:var(--green);background:var(--green)}
-    .shutter-zone{position:absolute;left:0;right:0;bottom:max(18px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:10px;z-index:7}
+    
+    .shutter-zone{position:absolute;left:0;right:0;bottom:max(16px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:8px;z-index:7}
     .status-row{display:flex;align-items:center;justify-content:center;gap:6px;pointer-events:none}
     .pill{background:#000c;border:1px solid #333;padding:4px 10px;border-radius:99px;font-size:11px;color:#ddd}
     .pill.ok{color:var(--green);border-color:#166534;background:#052e16cc}
     .pill.bad{color:var(--red);border-color:#7f1d1d;background:#450a0acc}
-    .shutter-wrap{position:relative;width:82px;height:82px;pointer-events:auto}
+    .shutter-wrap{position:relative;width:72px;height:72px;pointer-events:auto}
     .shutter-progress{position:absolute;inset:0;transform:rotate(-90deg)}
     .shutter-progress circle{fill:none;stroke-width:5}
     .shutter-progress .bg{stroke:rgba(255,255,255,.2)}
     .shutter-progress .fg{stroke:var(--green);stroke-linecap:round;transition:stroke-dashoffset .05s linear}
-    .shutter-btn{position:absolute;inset:9px;border-radius:50%;border:3px solid #fff;background:#fff;transition:background-color .15s,transform .1s,border-color .15s}
+    .shutter-btn{position:absolute;inset:8px;border-radius:50%;border:3px solid #fff;background:#fff;transition:background-color .15s,transform .1s}
     .shutter-btn:active{transform:scale(.93)}
     .shutter-btn.ready{background:var(--green);border-color:var(--green)}
-    .shutter-hint{font-size:11px;color:var(--muted);pointer-events:none}
+    
     .viewer{position:absolute;inset:0;background:#000;z-index:20}
     #viewerContainer{width:100%;height:100%;position:absolute;inset:0}
     .viewer-ui{position:absolute;left:16px;top:max(14px,env(safe-area-inset-top));z-index:4;pointer-events:none}
@@ -112,7 +124,6 @@
     @media(max-width:768px){
       .workspace{grid-template-columns:1fr;grid-template-rows:auto 1fr}
       .sidebar{border-right:none;border-bottom:1px solid var(--line);max-height:26vh}
-      .aim-marker{ width:200px; height:140px; margin-left:-100px; margin-top:-70px; }
     }
   </style>
 </head>
@@ -141,9 +152,9 @@
           <div class="capture" id="captureScreen">
             <div class="permission" id="permission">
               <div class="permission-card">
-                <div class="big-icon">⦿</div>
-                <h1>Scan 360° RA</h1>
-                <p>Cadrez avec le grand rectangle visuel et placez le point blanc au centre pour capturer automatiquement chaque angle de la pièce.</p>
+                <div class="big-icon">📱</div>
+                <h1>Scan 360° Séquentiel</h1>
+                <p>Le cadre plein écran vert délimite votre capture. Suivez l'ordre : Tour 360° des murs, puis les hauteurs (plafonds), puis les sols.</p>
                 <button class="primary" id="start360" style="margin-top:16px">Démarrer le Scan</button>
                 <div class="err" id="permError"></div>
               </div>
@@ -154,7 +165,7 @@
             <div class="capture-ui">
               <div class="capture-top">
                 <div>
-                  <div class="capture-title">Alignement Réalité Augmentée</div>
+                  <div class="capture-title" id="phaseTitle">Phase 1 : Tour 360°</div>
                   <div class="capture-sub" id="positionLabel">Initialisation...</div>
                 </div>
                 <div class="capture-tools">
@@ -163,25 +174,24 @@
                 </div>
               </div>
               <div class="center-dot"></div>
-              <div class="aim-marker" id="aimMarker"><div class="aim-ring" id="aimRing"></div></div>
+              <div class="fullscreen-frame" id="fullscreenFrame"></div>
               <div class="edge-arrow hidden" id="edgeArrow">
                 <svg viewBox="0 0 24 24" fill="none"><path d="M12 4 L20 14 L14 14 L14 20 L10 20 L10 14 L4 14 Z" fill="currentColor"/></svg>
               </div>
-              <div class="guidance-wrap"><div class="guidance" id="guidance">Tournez autour de vous...</div></div>
+              <div class="guidance-wrap"><div class="guidance" id="guidance">Tournez pour aligner...</div></div>
               <div class="minimap" id="minimap"></div>
               <div class="shutter-zone">
                 <div class="status-row">
                   <span class="pill" id="counter">Point 0 / 22</span>
-                  <span class="pill bad" id="qualityPill">Cherchez le cadre</span>
+                  <span class="pill bad" id="qualityPill">Alignement requis</span>
                 </div>
                 <div class="shutter-wrap">
                   <svg class="shutter-progress" viewBox="0 0 100 100">
-                    <circle class="bg" cx="50" cy="50" r="44"></circle>
-                    <circle class="fg" id="shutterRing" cx="50" cy="50" r="44" stroke-dasharray="276.5" stroke-dashoffset="276.5"></circle>
+                    <circle class="bg" cx="50" cy="50" r="38"></circle>
+                    <circle class="fg" id="shutterRing" cx="50" cy="50" r="38" stroke-dasharray="238.7" stroke-dashoffset="238.7"></circle>
                   </svg>
                   <button class="shutter-btn" id="shutterBtn" aria-label="Capturer la photo"></button>
                 </div>
-                <div class="shutter-hint">Appuyez pour capturer manuellement</div>
               </div>
             </div>
           </div>
@@ -189,7 +199,7 @@
             <div id="viewerContainer"></div>
             <div class="viewer-ui">
               <h2>Panorama 360° Haute Définition</h2>
-              <p>Glissez pour explorer la pièce · molette/pincer pour zoomer</p>
+              <p>Glissez pour explorer · pincer pour zoomer</p>
             </div>
             <div class="viewer-actions">
               <button id="downloadPano">Télécharger</button>
@@ -197,7 +207,7 @@
             </div>
             <div class="processing hidden" id="processing">
               <div class="spinner"></div>
-              <div id="processingLabel">Assemblage de la sphère...</div>
+              <div id="processingLabel">Assemblage sphérique en cours...</div>
             </div>
           </div>
         </section>
@@ -210,9 +220,8 @@
   <script>
     "use strict";
     const TOTAL_PHOTOS = 22;
-    const ALIGN_ENTER_DEG = 9;
+    const ALIGN_ENTER_DEG = 10;
     const ALIGN_EXIT_DEG  = 16;
-    const HOLD_GRACE_MS = 350;
     const HOLD_MS = 800;
     const V_FOV_DEG = 60;
     const ACC_W = 3000, ACC_H = 1500;
@@ -229,7 +238,6 @@
       locked: false, stableSince: 0, lastAlignedTime: 0, lastAutoCapture: 0, raf: null
     };
 
-    function normalizeAngle(v){ return ((v % 360) + 360) % 360; }
     function degToRad(d){ return d * Math.PI / 180; }
     function escapeHtml(v){ return String(v).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 
@@ -289,9 +297,9 @@
       if(!state.gallery.length){
         wrap.innerHTML = `
           <div class="empty-2d">
-            <div style="font-size:36px;margin-bottom:8px">◎</div>
+            <div style="font-size:36px;margin-bottom:8px">📸</div>
             <h2>Photos 2D</h2>
-            <p>Importez des photos classiques, ou passez en mode 360° pour scanner une pièce complète en réalité augmentée.</p>
+            <p>Importez vos images ou lancez le mode 360° pour un scan guidé complet.</p>
             <button class="primary" id="import2d" style="max-width:240px;margin-top:14px">Importer des photos</button>
           </div>`;
         $("#import2d").addEventListener("click", () => $("#photoInput").click());
@@ -300,7 +308,7 @@
       wrap.innerHTML = `
         <div class="gallery-toolbar">
           <h2>${state.gallery.length} photo(s) 2D</h2>
-          <button class="small-btn" id="addMore">+ Ajouter des photos</button>
+          <button class="small-btn" id="addMore">+ Ajouter</button>
         </div>
         <div class="gallery" id="galleryGrid"></div>`;
       $("#addMore").addEventListener("click", () => $("#photoInput").click());
@@ -328,23 +336,24 @@
       state.scenes.forEach((scene, index) => {
         const item = document.createElement("div");
         item.className = "scene" + (index === state.scenes.length - 1 ? " active" : "");
-        item.innerHTML = `<div class="scene-name">${escapeHtml(scene.name)}</div><div class="scene-meta">${TOTAL_PHOTOS} points HD · ${escapeHtml(scene.date)}</div><div class="scene-actions"><button data-action="open">Ouvrir</button><button data-action="delete">Suppr</button></div>`;
+        item.innerHTML = `<div class="scene-name">${escapeHtml(scene.name)}</div><div class="scene-meta">${TOTAL_PHOTOS} pts · ${escapeHtml(scene.date)}</div><div class="scene-actions"><button data-action="open">Ouvrir</button><button data-action="delete">Suppr</button></div>`;
         item.querySelector('[data-action="open"]').onclick = () => openScene(index);
-        item.querySelector('[data-action="delete"]').onclick = () => {
-          state.scenes.splice(index, 1);
-          renderSceneList();
-        };
+        item.querySelector('[data-action="delete"]').onclick = () => { state.scenes.splice(index, 1); renderSceneList(); };
         list.appendChild(item);
       });
     }
 
+    // Ordre strict demandé : 1. Tour 360° (8 pts) -> 2. Hauteurs/Plafond (7 pts) -> 3. Sol (7 pts) = 22 pts
     function buildTargets(){
       const targets = [];
-      for(let i = 0; i < 8; i++) targets.push({ yaw: i * 45, pitch: 0, label: `Horizon ${i+1}/8` });
-      for(let i = 0; i < 6; i++) targets.push({ yaw: i * 60, pitch: 45, label: `Plafond ${i+1}/6` });
-      targets.push({ yaw: 0, pitch: 85, label: "Zénith — visez le plafond" });
-      for(let i = 0; i < 6; i++) targets.push({ yaw: i * 60, pitch: -45, label: `Sol ${i+1}/6` });
-      targets.push({ yaw: 0, pitch: -85, label: "Nadir — visez vos pieds" });
+      // 1. Tour 360° horizontal (yeux)
+      for(let i = 0; i < 8; i++) targets.push({ yaw: i * 45, pitch: 0, label: `360° Mur ${i+1}/8`, phase: 1 });
+      // 2. Hauteurs (Plafond & Haut des murs)
+      for(let i = 0; i < 6; i++) targets.push({ yaw: i * 60, pitch: 45, label: `Hauteur ${i+1}/6`, phase: 2 });
+      targets.push({ yaw: 0, pitch: 85, label: "Zénith (Plafond haut)", phase: 2 });
+      // 3. Sols (Bas des murs & Nadir)
+      for(let i = 0; i < 6; i++) targets.push({ yaw: i * 60, pitch: -45, label: `Sol ${i+1}/6`, phase: 3 });
+      targets.push({ yaw: 0, pitch: -85, label: "Nadir (Sol bas)", phase: 3 });
 
       targets.forEach(t => {
         const phi = degToRad(90 - t.pitch);
@@ -380,13 +389,13 @@
       const errBox = $("#permError");
       errBox.textContent = "";
       try {
-        if(!window.isSecureContext) throw new Error("HTTPS requis pour la caméra et les capteurs.");
-        if(!navigator.mediaDevices?.getUserMedia) throw new Error("Caméra non supportée sur cet appareil/navigateur.");
+        if(!window.isSecureContext) throw new Error("HTTPS requis pour l'orientation et la caméra.");
+        if(!navigator.mediaDevices?.getUserMedia) throw new Error("Caméra non supportée.");
         
         resetCaptureState();
         if(typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function"){
           const res = await DeviceOrientationEvent.requestPermission();
-          if(res !== "granted") throw new Error("Permission des capteurs de mouvement refusée.");
+          if(res !== "granted") throw new Error("Accès aux capteurs refusé.");
         }
         attachSensors();
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -406,22 +415,12 @@
         state.acc = createAccumulator();
         state.photoCount = 0;
         setStep(0);
-        watchdogOrientation();
         state.raf = requestAnimationFrame(captureLoop);
       } catch(e) {
         stopCamera();
         $("#permission").classList.remove("hidden");
-        errBox.textContent = e && e.message ? e.message : "Une erreur est survenue.";
+        errBox.textContent = e?.message || "Erreur d'initialisation.";
       }
-    }
-
-    function watchdogOrientation(){
-      setTimeout(() => {
-        if(state.running && !state.hasOrientation){
-          $("#guidance").textContent = "Capteurs indisponibles — visez à l'œil et appuyez sur le déclencheur";
-          $("#aimMarker").classList.add("hidden");
-        }
-      }, 2500);
     }
 
     function attachSensors(){
@@ -440,12 +439,10 @@
     function handleOrientation(e){
       if(e.alpha === null || e.alpha === undefined) return;
       state.hasOrientation = true;
-      $("#aimMarker").classList.remove("hidden");
 
       let alpha = e.alpha || 0;
       const beta = e.beta || 0;
       const gamma = e.gamma || 0;
-
       if(typeof e.webkitCompassHeading === "number" && Number.isFinite(e.webkitCompassHeading)){
         alpha = 360 - e.webkitCompassHeading;
       }
@@ -488,52 +485,36 @@
       state.running = false;
       state.captureBusy = false;
       detachSensors();
-      if(state.raf){
-        cancelAnimationFrame(state.raf);
-        state.raf = null;
-      }
-      if(screen.orientation?.unlock){
-        try{ screen.orientation.unlock(); }catch(_){}
-      }
+      if(state.raf){ cancelAnimationFrame(state.raf); state.raf = null; }
+      if(screen.orientation?.unlock){ try{ screen.orientation.unlock(); }catch(_){} }
     }
 
     function resetCaptureState(){
-      state.running = false;
-      state.step = 0;
-      state.acc = null;
-      state.photoCount = 0;
-      state.initQuat = null;
-      state.currentQuat = null;
-      state.hasOrientation = false;
-      state.lastOrientTime = 0;
-      state.targets = [];
-      state.captureBusy = false;
-      state.locked = false;
-      state.stableSince = 0;
-      state.lastAlignedTime = 0;
-
-      $("#aimMarker").classList.remove("hidden");
-      $("#aimRing").classList.remove("locked");
+      state.running = false; state.step = 0; state.acc = null; state.photoCount = 0;
+      state.initQuat = null; state.currentQuat = null; state.hasOrientation = false;
+      state.lastOrientTime = 0; state.targets = []; state.captureBusy = false;
+      state.locked = false; state.stableSince = 0; state.lastAlignedTime = 0;
+      $("#fullscreenFrame").classList.remove("ready");
       $("#counter").textContent = `Point 0 / ${TOTAL_PHOTOS}`;
-      $("#qualityPill").textContent = "Cherchez le cadre";
+      $("#qualityPill").textContent = "Alignement requis";
       $("#qualityPill").className = "pill bad";
       $("#shutterBtn").classList.remove("ready");
-      $("#shutterRing").style.strokeDashoffset = 276.5;
+      $("#shutterRing").style.strokeDashoffset = 238.7;
     }
 
     function setStep(step){
       state.step = step;
       renderMinimap();
-      if(step >= TOTAL_PHOTOS){
-        finishCapture();
-        return;
-      }
+      if(step >= TOTAL_PHOTOS){ finishCapture(); return; }
       const t = state.targets[step];
       $("#counter").textContent = `Point ${step + 1} / ${TOTAL_PHOTOS}`;
       $("#positionLabel").textContent = t.label;
-      state.stableSince = 0;
-      state.locked = false;
-      state.lastAlignedTime = 0;
+
+      if(t.phase === 1) $("#phaseTitle").textContent = "Phase 1 : Tour 360° (Murs)";
+      else if(t.phase === 2) $("#phaseTitle").textContent = "Phase 2 : Hauteurs (Plafond)";
+      else if(t.phase === 3) $("#phaseTitle").textContent = "Phase 3 : Sols";
+
+      state.stableSince = 0; state.locked = false; state.lastAlignedTime = 0;
     }
 
     function captureLoop(){
@@ -546,98 +527,41 @@
         const isAligned = angleDeg <= threshold;
         state.locked = isAligned;
 
-        projectTargetToScreen(target, state.currentQuat, forward);
-
         if(!state.captureBusy){
           const now = performance.now();
           if(isAligned){
             state.lastAlignedTime = now;
             if(!state.stableSince) state.stableSince = now;
-            $("#aimRing").classList.add("ready", "locked");
+            $("#fullscreenFrame").classList.add("ready");
             $("#shutterBtn").classList.add("ready");
-            $("#qualityPill").textContent = "Immobile...";
+            $("#qualityPill").textContent = "Immobile (Prêt)";
             $("#qualityPill").className = "pill ok";
-            $("#guidance").textContent = "Parfait ! Ne bougez plus...";
+            $("#guidance").textContent = "Parfait, maintien...";
             $("#guidance").classList.add("ready");
 
             const elapsed = now - state.stableSince;
             const ratio = Math.min(1, elapsed / HOLD_MS);
-            $("#shutterRing").style.strokeDashoffset = String(276.5 * (1 - ratio));
+            $("#shutterRing").style.strokeDashoffset = String(238.7 * (1 - ratio));
 
             if(elapsed >= HOLD_MS && now - state.lastAutoCapture > 1000){
               capturePhoto();
               state.stableSince = 0;
             }
           } else {
-            const withinGrace = state.lastAlignedTime && (now - state.lastAlignedTime) < HOLD_GRACE_MS;
+            const withinGrace = state.lastAlignedTime && (now - state.lastAlignedTime) < 350;
             if(!withinGrace){
               state.stableSince = 0;
-              $("#shutterRing").style.strokeDashoffset = 276.5;
+              $("#shutterRing").style.strokeDashoffset = 238.7;
             }
-            $("#aimRing").classList.remove("ready", "locked");
+            $("#fullscreenFrame").classList.remove("ready");
             $("#shutterBtn").classList.remove("ready");
             $("#qualityPill").textContent = `Alignez (${Math.round(angleDeg)}°)`;
             $("#qualityPill").className = "pill bad";
             setGuidanceText(target, state.currentQuat);
           }
         }
-      } else if(!state.hasOrientation){
-        $("#shutterRing").style.strokeDashoffset = 276.5;
       }
       state.raf = requestAnimationFrame(captureLoop);
-    }
-
-    function projectTargetToScreen(target, quat, forward){
-      const right = new THREE.Vector3(1, 0, 0).applyQuaternion(quat);
-      const up = new THREE.Vector3(0, 1, 0).applyQuaternion(quat);
-      const dir = target.dir;
-      const zLocal = dir.dot(forward);
-      const xLocal = dir.dot(right);
-      const yLocal = dir.dot(up);
-
-      const w = window.innerWidth, h = window.innerHeight;
-      const vFovRad = degToRad(V_FOV_DEG);
-      const focal = (h / 2) / Math.tan(vFovRad / 2);
-
-      const marker = $("#aimMarker");
-      const arrow = $("#edgeArrow");
-
-      if(zLocal > 0.12){
-        const sx = w / 2 + (xLocal / zLocal) * focal;
-        const sy = h / 2 - (yLocal / zLocal) * focal;
-        const margin = 80;
-        const onScreen = sx > -margin && sx < w + margin && sy > -margin && sy < h + margin;
-
-        if(onScreen){
-          marker.style.opacity = "1";
-          marker.style.transform = `translate(${sx}px, ${sy}px)`;
-          arrow.classList.add("hidden");
-        } else {
-          marker.style.opacity = "0";
-          showEdgeArrow(sx, sy, w, h, arrow);
-        }
-      } else {
-        marker.style.opacity = "0";
-        const sx = w / 2 + Math.sign(xLocal || 1) * w;
-        const sy = h / 2 - yLocal * h;
-        showEdgeArrow(sx, sy, w, h, arrow);
-      }
-    }
-
-    function showEdgeArrow(sx, sy, w, h, arrow){
-      const cx = w / 2, cy = h / 2;
-      const dx = sx - cx, dy = sy - cy;
-      const angle = Math.atan2(dy, dx);
-      const pad = 46;
-      const halfW = w / 2 - pad, halfH = h / 2 - pad;
-      const scale = Math.min(Math.abs(halfW / (Math.cos(angle) || 1e-6)), Math.abs(halfH / (Math.sin(angle) || 1e-6)));
-      const ex = cx + Math.cos(angle) * scale;
-      const ey = cy + Math.sin(angle) * scale;
-
-      arrow.style.left = ex + "px";
-      arrow.style.top = ey + "px";
-      arrow.style.transform = `rotate(${angle + Math.PI/2}rad)`;
-      arrow.classList.remove("hidden");
     }
 
     function setGuidanceText(target, quat){
@@ -647,12 +571,12 @@
       const yLocal = target.dir.dot(up);
 
       const parts = [];
-      if(Math.abs(yLocal) > 0.12) parts.push(yLocal > 0 ? "levez" : "baissez");
-      if(Math.abs(xLocal) > 0.12) parts.push(xLocal > 0 ? "à droite" : "à gauche");
+      if(Math.abs(yLocal) > 0.15) parts.push(yLocal > 0 ? "levez" : "baissez");
+      if(Math.abs(xLocal) > 0.15) parts.push(xLocal > 0 ? "à droite" : "à gauche");
 
       const g = $("#guidance");
       g.classList.remove("ready");
-      g.textContent = parts.length ? `Tournez ${parts.join(" ")}` : "Rapprochez-vous du cadre";
+      g.textContent = parts.length ? `Tournez ${parts.join(" ")}` : "Dans le cadre, restez stable";
     }
 
     function capturePhoto(){
@@ -678,7 +602,7 @@
         setStep(state.step + 1);
       } catch(e){
         state.captureBusy = false;
-        toast("Erreur de capture : " + e.message);
+        toast("Erreur : " + e.message);
       }
     }
 
@@ -700,8 +624,7 @@
 
     function createAccumulator(){
       const canvas = document.createElement("canvas");
-      canvas.width = ACC_W;
-      canvas.height = ACC_H;
+      canvas.width = ACC_W; canvas.height = ACC_H;
       const ctx = canvas.getContext("2d");
       ctx.fillStyle = "#000";
       ctx.fillRect(0, 0, ACC_W, ACC_H);
@@ -837,10 +760,7 @@
 
     function closeViewer(){
       $("#viewer").classList.add("hidden");
-      if(state.viewer){
-        state.viewer.renderer.dispose();
-        state.viewer = null;
-      }
+      if(state.viewer){ state.viewer.renderer.dispose(); state.viewer = null; }
     }
 
     function downloadCurrentPano(){
