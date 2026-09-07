@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#000000">
-  <title>Studio Visite Pro 360° - Auto 24 Photos</title>
+  <title>Studio Visite Pro 360° - Mode Manuel Stable</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
     :root{ --black:#000; --bg:#050505; --panel:#0d0d0d; --line:#222; --text:#fff; --muted:#888; --green:#22c55e; --yellow:#eab308; --red:#ef4444; }
@@ -61,99 +61,68 @@
     .capture-tools{display:flex;gap:6px}
     .capture-tools button{border:1px solid #444;background:#000c;color:#fff;border-radius:8px;padding:7px 10px;font-size:12px}
     
-    /* VISEUR DE PRÉCISION OPTIMISÉ (UN SEUL DÉPLACEMENT CLAIR À LA FOIS) */
+    /* VISEUR SIMPLE ET SANS BUG DE CAPTEUR */
     .target-frame {
       position: absolute;
       left: 50%; top: 50%;
-      width: 220px; height: 220px;
-      margin: -110px 0 0 -110px;
-      border: 3px dashed rgba(234, 179, 8, 0.7);
+      width: 180px; height: 180px;
+      margin: -90px 0 0 -90px;
+      border: 2px solid rgba(255, 255, 255, 0.4);
       border-radius: 50%;
       z-index: 4;
       pointer-events: none;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s;
     }
-    .target-frame.locked {
-      border-color: var(--green);
-      border-style: solid;
-      transform: scale(0.96);
-      box-shadow: 0 0 35px var(--green);
-    }
-    .big-yellow-dot {
-      width: 44px; height: 44px;
-      background: var(--yellow);
-      border-radius: 50%;
-      box-shadow: 0 0 25px var(--yellow), inset 0 0 10px rgba(0,0,0,0.5);
-      z-index: 5;
-      pointer-events: none;
-      transition: transform 0.2s, background-color 0.2s;
-    }
-    .target-frame.locked .big-yellow-dot {
-      background: var(--green);
-      box-shadow: 0 0 35px var(--green);
-      transform: scale(1.2);
-    }
+    .center-dot{position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px;border-radius:50%;background:var(--yellow);box-shadow:0 0 10px var(--yellow), 0 0 0 2px #000;z-index:6;pointer-events:none}
 
-    /* Flèches directionnelles indépendantes : une seule s'allume à la fois pour ne jamais se tromper */
-    .dir-arrow {
-      position: absolute;
-      color: #333;
-      font-size: 36px;
-      font-weight: 900;
-      opacity: 0.15;
-      text-shadow: 0 0 4px #000;
-      transition: all 0.2s;
-    }
-    .dir-arrow.active {
-      opacity: 1;
-      color: #ff3b30; /* Rouge ultra visible pour la direction exacte à suivre */
-      transform: scale(1.4);
-      text-shadow: 0 0 16px #ff3b30, 0 0 4px #000;
-      animation: pulseArrow 0.5s infinite alternate;
-    }
-    @keyframes pulseArrow {
-      from { transform: scale(1.2); }
-      to { transform: scale(1.5); }
-    }
-    .arrow-up { top: -48px; left: 50%; transform: translateX(-50%); }
-    .arrow-down { bottom: -48px; left: 50%; transform: translateX(-50%); }
-    .arrow-left { left: -48px; top: 50%; transform: translateY(-50%); }
-    .arrow-right { right: -48px; top: 50%; transform: translateY(-50%); }
-
-    /* Bandeau d'instruction textuel simple et direct */
     .guidance-text {
       position: absolute;
       top: 65px; left: 50%;
       transform: translateX(-50%);
-      background: rgba(0,0,0,0.9);
+      background: rgba(0,0,0,0.85);
       border: 1px solid #444;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 14px;
+      padding: 6px 14px;
+      border-radius: 16px;
+      font-size: 13px;
       font-weight: 800;
-      color: var(--yellow);
+      color: #fff;
       z-index: 6;
       white-space: nowrap;
       pointer-events: none;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.6);
     }
 
-    .center-dot{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px #000c;z-index:6;pointer-events:none}
+    /* GROS BOUTON DE CAPTURE TACTILE AU CENTRE EN BAS */
+    .shutter-container {
+      position: absolute;
+      bottom: 110px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      pointer-events: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .shutter-btn {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: #fff;
+      border: 4px solid #000;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    .shutter-btn:active { transform: scale(0.92); background: var(--yellow); }
 
     /* RADAR / MINI-CARTE DES 24 PHOTOS */
-    .minimap{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:4px;background:rgba(10,10,12,0.85);border:1px solid #333;padding:8px 12px;border-radius:12px;pointer-events:none;z-index:6;backdrop-filter:blur(8px)}
+    .minimap{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:4px;background:rgba(10,10,12,0.85);border:1px solid #333;padding:6px 10px;border-radius:12px;pointer-events:none;z-index:6}
     .mini-row{display:flex;gap:3px;justify-content:center;align-items:center}
-    .mini-tile{width:16px;height:16px;border-radius:3px;background:#1a1a1f;border:1px solid #333;overflow:hidden;position:relative}
+    .mini-tile{width:14px;height:14px;border-radius:3px;background:#1a1a1f;border:1px solid #333;overflow:hidden;position:relative}
     .mini-tile img { width: 100%; height: 100%; object-fit: cover; }
     .mini-tile.active{border-color:var(--yellow);box-shadow:0 0 6px var(--yellow)}
     .mini-tile.done{border-color:var(--green);background:var(--green)}
-    
-    .auto-indicator{position:absolute;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);border:1px solid #444;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:700;color:var(--yellow);z-index:6;text-align:center}
-    .auto-indicator.ready{color:var(--green);border-color:var(--green);animation: pulse 0.8s infinite alternate;}
-    @keyframes pulse { from { opacity: 0.7; } to { opacity: 1; } }
 
     .viewer{position:absolute;inset:0;background:#000;z-index:20}
     #viewerContainer{width:100%;height:100%;position:absolute;inset:0}
@@ -181,7 +150,7 @@
     <div class="workspace">
       <aside class="sidebar">
         <div class="section-title">Projet</div>
-        <div class="project-name" id="projectName">Visite 360° Automatique</div>
+        <div class="project-name" id="projectName">Visite 360° Manuel Stable</div>
         <button class="primary" id="renameBtn">Renommer le projet</button>
         <div class="section-title" style="margin-top:20px">Scènes 360°</div>
         <div class="scene-list" id="sceneList"></div>
@@ -194,10 +163,10 @@
           <div class="capture" id="captureScreen">
             <div class="permission" id="permission">
               <div class="permission-card">
-                <div class="big-icon">🎯</div>
-                <h1>Scan 360° Guidé Ultra Simple</h1>
-                <p>Alignez le gros point jaune central avec la cible en suivant une seule flèche rouge à la fois. La photo se déclenchera toute seule dès que vous y êtes !</p>
-                <button class="primary" id="start360" style="margin-top:16px">Démarrer le Scan Guidé</button>
+                <div class="big-icon">📸</div>
+                <h1>Mode Manuel Maîtrisé (24 Photos)</h1>
+                <p>Fini les bugs de capteurs ! Tourne-toi simplement pas à pas pour couvrir toute la pièce (12 photos à l'horizontale, 6 en haut, 6 en bas) et appuie sur le gros bouton blanc pour capturer.</p>
+                <button class="primary" id="start360" style="margin-top:16px">Lancer la capture</button>
                 <div class="err" id="permError"></div>
               </div>
             </div>
@@ -208,23 +177,22 @@
               <div class="capture-top">
                 <div>
                   <div class="capture-title" id="phaseTitle">Photo 1 / 24</div>
-                  <div class="capture-sub" id="positionLabel">Initialisation...</div>
+                  <div class="capture-sub" id="positionLabel">Tourne doucement</div>
                 </div>
                 <div class="capture-tools">
                   <button id="restart360">Recommencer</button>
                   <button id="exit360">Quitter</button>
                 </div>
               </div>
-              <div class="guidance-text" id="guidanceText">Initialisation des capteurs...</div>
+              <div class="guidance-text" id="guidanceText">Cadre la zone et clique sur le bouton blanc</div>
               <div class="center-dot"></div>
-              <div class="target-frame" id="targetFrame">
-                <div class="big-yellow-dot"></div>
-                <div class="dir-arrow arrow-up" id="arrowUp">▲</div>
-                <div class="dir-arrow arrow-down" id="arrowDown">▼</div>
-                <div class="dir-arrow arrow-left" id="arrowLeft">◀</div>
-                <div class="dir-arrow arrow-right" id="arrowRight">▶</div>
+              <div class="target-frame"></div>
+              
+              <div class="shutter-container">
+                <button class="shutter-btn" id="shutterBtn" title="Prendre la photo"></button>
+                <div style="font-size:11px;font-weight:700;text-shadow:0 1px 3px #000;color:#fff;">CLIQUE POUR CAPTURER</div>
               </div>
-              <div class="auto-indicator" id="autoIndicator">Suivez la flèche rouge</div>
+
               <div class="minimap" id="minimap"></div>
             </div>
           </div>
@@ -232,7 +200,7 @@
             <div id="viewerContainer"></div>
             <div class="viewer-ui">
               <h2>Panorama 360° Assemblé</h2>
-              <p>Glissez votre doigt pour explorer · Zéro dérive</p>
+              <p>Glisse ton doigt pour explorer</p>
             </div>
             <div class="viewer-actions">
               <button id="downloadPano">Télécharger</button>
@@ -263,8 +231,8 @@
     const state = {
       mode: "2d", running: false, stream: null,
       step: 0, targets: [], acc: null, viewer: null,
-      projectName: "Visite 360° Auto", scenes: [], gallery: [], captureBusy: false,
-      thumbnails: {}, stableTime: 0
+      projectName: "Visite 360° Manuel", scenes: [], gallery: [],
+      thumbnails: {}
     };
 
     function degToRad(d){ return d * Math.PI / 180; }
@@ -287,6 +255,7 @@
       $("#downloadPano").addEventListener("click", downloadCurrentPano);
       $("#renameBtn").addEventListener("click", renameProject);
       $("#photoInput").addEventListener("change", onPhotosImported);
+      $("#shutterBtn").addEventListener("click", handleManualCapture);
       $("#projectName").textContent = state.projectName;
       renderSceneList();
       renderGallery();
@@ -326,7 +295,7 @@
           <div style="min-height:80vh;border:2px dashed #222;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px">
             <div style="font-size:36px;margin-bottom:8px">📸</div>
             <h2>Photos 2D</h2>
-            <p style="color:var(--muted);font-size:13px;max-width:400px;line-height:1.5">Importe tes images ou lance le mode 360° pour un scan automatique guidé.</p>
+            <p style="color:var(--muted);font-size:13px;max-width:400px;line-height:1.5">Importe tes images ou lance le mode 360° pour ta visite virtuelle.</p>
             <button class="primary" id="import2d" style="max-width:240px;margin-top:14px">Importer des photos</button>
           </div>`;
         $("#import2d").addEventListener("click", () => $("#photoInput").click());
@@ -357,7 +326,7 @@
       const list = $("#sceneList");
       list.innerHTML = "";
       if(!state.scenes.length){
-        list.innerHTML = '<div class="scene"><div class="scene-name">Aucune scène HD</div><div class="scene-meta">Effectue un scan 360° auto</div></div>';
+        list.innerHTML = '<div class="scene"><div class="scene-name">Aucune scène HD</div><div class="scene-meta">Effectue un scan 360°</div></div>';
         return;
       }
       state.scenes.forEach((scene, index) => {
@@ -423,13 +392,8 @@
       const errBox = $("#permError");
       errBox.textContent = "";
       try {
-        if(!window.isSecureContext) throw new Error("HTTPS requis pour accéder à la caméra et aux capteurs.");
+        if(!window.isSecureContext) throw new Error("HTTPS requis pour accéder à la caméra.");
         if(!navigator.mediaDevices?.getUserMedia) throw new Error("Caméra non supportée.");
-
-        if(typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function'){
-          const response = await DeviceOrientationEvent.requestPermission();
-          if(response !== 'granted') throw new Error("Accès aux capteurs d'orientation refusé.");
-        }
         
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
@@ -450,8 +414,6 @@
         state.thumbnails = {};
         state.acc = createAccumulator();
         setStep(0);
-
-        window.addEventListener("deviceorientation", handleOrientation, true);
       } catch(e) {
         stopCamera();
         $("#permission").classList.remove("hidden");
@@ -466,8 +428,6 @@
       }
       cameraEl().srcObject = null;
       state.running = false;
-      state.captureBusy = false;
-      window.removeEventListener("deviceorientation", handleOrientation, true);
       if(screen.orientation?.unlock){ try{ screen.orientation.unlock(); }catch(_){} }
     }
 
@@ -478,95 +438,11 @@
       const t = state.targets[step];
       $("#phaseTitle").textContent = `Photo ${step + 1} / ${TOTAL_PHOTOS}`;
       $("#positionLabel").textContent = t.label;
-      state.stableTime = 0;
     }
 
-    function handleOrientation(e){
-      if(!state.running || state.captureBusy) return;
-
-      const alpha = e.alpha;
-      const beta = e.beta;
-      if(alpha === null || beta === null) return;
-
-      let currentYaw = alpha;
-      const currentPitch = beta > 90 ? 180 - beta : (beta < -90 ? -180 - beta : beta);
-
-      const target = state.targets[state.step];
-      if(!target) return;
-
-      let yawError = currentYaw - target.yaw;
-      while (yawError > 180) yawError -= 360;
-      while (yawError < -180) yawError += 360;
-      const pitchError = currentPitch - target.pitch;
-
-      const yawDiff = Math.abs(yawError);
-      const pitchDiff = Math.abs(pitchError);
-
-      const TOLERANCE = 5.0;
-      const isAligned = yawDiff <= TOLERANCE && pitchDiff <= TOLERANCE;
-
-      const frameEl = $("#targetFrame");
-      const indicatorEl = $("#autoIndicator");
-      const guidanceText = $("#guidanceText");
-      const arrowUp = $("#arrowUp");
-      const arrowDown = $("#arrowDown");
-      const arrowLeft = $("#arrowLeft");
-      const arrowRight = $("#arrowRight");
-
-      // On s'assure de n'allumer qu'une seule flèche claire à la fois (priorité verticale puis horizontale)
-      let activeArrow = null;
-      let guidanceMsg = "🎯 Cible atteinte !";
-
-      if (pitchError > TOLERANCE) {
-        activeArrow = arrowDown; // Il faut baisser l'appareil
-        guidanceMsg = "⬇️ BAISSEZ le téléphone";
-      } else if (pitchError < -TOLERANCE) {
-        activeArrow = arrowUp; // Il faut lever l'appareil
-        guidanceMsg = "⬆️ LEVEZ le téléphone";
-      } else if (yawError > TOLERANCE) {
-        activeArrow = arrowLeft; // Il faut tourner à gauche
-        guidanceMsg = "⬅️ Tournez vers la GAUCHE";
-      } else if (yawError < -TOLERANCE) {
-        activeArrow = arrowRight; // Il faut tourner à droite
-        guidanceMsg = "➡️ Tournez vers la DROITE";
-      }
-
-      // Reset de toutes les flèches
-      arrowUp.classList.remove("active");
-      arrowDown.classList.remove("active");
-      arrowLeft.classList.remove("active");
-      arrowRight.classList.remove("active");
-
-      guidanceText.textContent = guidanceMsg;
-
-      if(isAligned){
-        frameEl.classList.add("locked");
-        indicatorEl.classList.add("ready");
-        indicatorEl.textContent = "⚡ Alignement parfait ! Capture imminente...";
-        guidanceText.textContent = "✅ PARFAIT !";
-
-        const now = performance.now();
-        if(state.stableTime === 0){
-          state.stableTime = now;
-        } else if(now - state.stableTime > 200){
-          state.captureBusy = true;
-          triggerAutoCapture();
-        }
-      } else {
-        frameEl.classList.remove("locked");
-        indicatorEl.classList.remove("ready");
-        indicatorEl.textContent = "Suivez la direction indiquée";
-        if(activeArrow) activeArrow.classList.add("active");
-        state.stableTime = 0;
-      }
-    }
-
-    function triggerAutoCapture(){
+    function handleManualCapture(){
       const cam = cameraEl();
-      if(!cam.videoWidth || !cam.videoHeight){
-        state.captureBusy = false;
-        return;
-      }
+      if(!cam.videoWidth || !cam.videoHeight) return;
       flashCapture();
 
       try {
@@ -584,12 +460,9 @@
         const quat = quatFromTarget(target);
         reprojectPhotoIntoAccumulator(cv, quat, w, h);
 
-        setTimeout(() => {
-          state.captureBusy = false;
-          setStep(state.step + 1);
-        }, 150);
+        setStep(state.step + 1);
+        toast(`Photo ${state.step} enregistrée !`);
       } catch(e){
-        state.captureBusy = false;
         toast("Erreur de capture : " + e.message);
       }
     }
@@ -669,7 +542,7 @@
       setTimeout(() => {
         const dataUrl = state.acc ? state.acc.canvas.toDataURL("image/jpeg", 0.9) : "";
         const sceneObj = {
-          name: `Scan Auto ${state.scenes.length + 1}`,
+          name: `Scan Manuel ${state.scenes.length + 1}`,
           date: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
           dataUrl
         };
@@ -757,7 +630,7 @@
       if(!url) return;
       const a = document.createElement("a");
       a.href = url;
-      a.download = `panorama-360-auto-${Date.now()}.jpg`;
+      a.download = `panorama-360-manuel-${Date.now()}.jpg`;
       a.click();
     }
 
